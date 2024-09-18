@@ -42,7 +42,8 @@ Stretch Goals:
 
 ## 6. Release Planning
 1. Sprint 1
-2. Sprint 2
-3. Sprint 3
-4. Sprint 4
-5. Sprint 5
+   - Login function and a simple chart on a UI
+3. Sprint 2
+4. Sprint 3
+5. Sprint 4
+6. Sprint 5
