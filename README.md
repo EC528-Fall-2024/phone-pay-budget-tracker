@@ -21,9 +21,11 @@ In Scope:
 - Track transaction history from popular payment apps
 - Expense categorization, trend analysis, and visualization
 - Daily/Weekly spending breakdowns and insights
-- CI/CD automatic testing through github actions
+- CI/CD automatic testing through Github actions
+- Scalable database for user data
 
 Out of Scope:
+- Connect and scale app using cloud services such as AWS or Azure
 - Fully launched app
 
 ## 4. Solution Concept
