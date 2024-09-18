@@ -46,6 +46,8 @@ Stretch Goals:
 1. Sprint 1
    - Login function and a simple chart on a UI based on uploaded spreadsheet of user financial data. 
 3. Sprint 2
-4. Sprint 3
-5. Sprint 4
-6. Sprint 5
+   - Setup API server and storing user data in a DB
+5. Sprint 3
+   - Define a set schema, make all API endpoints
+7. Sprint 4
+9. Sprint 5
