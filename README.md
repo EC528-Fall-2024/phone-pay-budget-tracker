@@ -23,7 +23,7 @@ This app will be used by anyone who does a lot of online shopping on their phone
 - CI/CD automatic testing through github actions
 
 ## 4. Solution Concept
-Lucid Chart?
+![software architecture](/images/architecture.png)
 
 ## 5. Acceptance Criteria
 Minimum Acceptance Criteria:
