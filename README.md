@@ -23,9 +23,9 @@ In Scope:
 - Daily/Weekly spending breakdowns and insights
 - CI/CD automatic testing through Github actions
 - Scalable database for user data
+- Connect and scale app using cloud services such as AWS or Azure
 
 Out of Scope:
-- Connect and scale app using cloud services such as AWS or Azure
 - Fully launched app
 
 ## 4. Solution Concept
