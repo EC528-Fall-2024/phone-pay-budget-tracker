@@ -15,6 +15,7 @@ This app will be used by anyone who does a lot of online shopping on their phone
    - _Needs_: Hannah needs an intuitive financial app that will analyze her spending habits in a readable and digestible format so she can see how much she spends and work towards her goal of saving money.
 
 ## 3. Scope and Features
+In Scope:
 - User login and authentication
 - Secure payments through the app
 - Track transaction history from popular payment apps
@@ -22,13 +23,21 @@ This app will be used by anyone who does a lot of online shopping on their phone
 - Daily/Weekly spending breakdowns and insights
 - CI/CD automatic testing through github actions
 
+Out of Scope:
+- Fully launched app
+
 ## 4. Solution Concept
 ![software architecture](/images/architecture.png)
 
 ## 5. Acceptance Criteria
 Minimum Acceptance Criteria:
+- App UI able to run on IOS and Android emulator
+- Able to receive financial information
+- Able to create simple analyses and graphs from data received
 
 Stretch Goals:
+- ML analysis of data?
+- payment through app?
 
 
 ## 6. Release Planning
