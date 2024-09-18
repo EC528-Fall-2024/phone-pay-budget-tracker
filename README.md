@@ -44,7 +44,7 @@ Stretch Goals:
 
 ## 6. Release Planning
 1. Sprint 1
-   - Login function and a simple chart on a UI based on uploaded spreadsheet of user financial data. 
+   - Login function and a simple chart on a UI based on hard-coded of user financial data. 
 3. Sprint 2
    - Setup API server and storing user data in a DB
 5. Sprint 3
