@@ -78,9 +78,11 @@ Stretch Goals:
 ## 6. Release Planning
 1. Sprint 1
    - Login function and a simple chart on a UI based on hard-coded of user financial data. 
-3. Sprint 2
+2. Sprint 2
    - Setup API server and storing user data in a DB
-5. Sprint 3
-   - Define a set schema, make all API endpoints
-7. Sprint 4
-9. Sprint 5
+3. Sprint 3
+   - Define a set schema, make all API endpoints, improvements to frontend
+4. Sprint 4
+   - Create CI/CD Job, continue improvements as necessary
+5. Sprint 5
+   - Upload to cloud service and finished touches, create ways to monitor and maintain the application
