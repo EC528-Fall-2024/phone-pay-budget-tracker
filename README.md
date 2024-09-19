@@ -21,6 +21,8 @@ In Scope:
 - Track transaction history from popular payment apps
 - Expense categorization, trend analysis, and visualization
 - Daily/Weekly spending breakdowns and insights
+- App unit test and coverage/code lint checker integration
+- Admin portal with data visualization, system health check, and user management functionalities
 - CI/CD automatic testing through Github actions
 - Scalable database for user data
 - Connect and scale app using cloud services such as AWS or Azure
@@ -37,6 +39,7 @@ Design Implications and Discussion:
 - As the primary focus of this application is to display users financial data in easy to understand and intuitive graphs the front-end UI is an important part of the project. This allows users to easily view their consolidated financial statements from multiple external platforms.
 3. Back-end Application Layer
 - The back-end needs to handle the flow of data within the application. Specifically it needs to be able to send data to the DB when a user is uploading data and send data to UI when users request to see their financial analyzed data.
+- An admin portal should be provided for access to check the overall user activities, backend system sanity, and statistics. The system should also allow partial or full access to the database and be able to perform user account recovery or banning.
 4. Intermediate Layer 
 - Financial statements from various third party services need to be requested, uploaded, and parsed in our application. Since this would require using multiple third party APIs there needs to be a part of the software architecture that organizes the data in a uniform way before it is placed in our DB and displayed to the users.
 5. Integration
@@ -49,6 +52,7 @@ Minimum Acceptance Criteria:
 - App UI able to run on IOS and Android emulator
 - Able to receive financial information
 - Able to create simple analyses and graphs from data received
+- Able to manage data and see its overview from the admin portal
 
 Stretch Goals:
 - ML analysis of data?
