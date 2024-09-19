@@ -29,7 +29,10 @@ Out of Scope:
 - Fully launched app
 
 ## 4. Solution Concept
+Global Architectural Structure:
 ![software architecture](/images/architecture.png)
+
+Design Implications and Discussion:
 
 ## 5. Acceptance Criteria
 Minimum Acceptance Criteria:
