@@ -31,6 +31,18 @@ Out of Scope:
 ## 4. Solution Concept
 Global Architectural Structure:
 ![software architecture](/images/architecture.png)
+- Frontend: React Native + Expo
+- Backend: Node.js + Express.js
+   - AWS Lambda
+   - AWS API Gateway
+- Database: MongoDB
+  - MongoDB Atlas or AWS EC2
+- Cloud: AWS
+  - AWS CLoudwatch: monitor app performance
+  - AWS EC2: host backend on EC2 instances for scaling
+  - AWS Cognito: authentication
+- CI/CD: GitHub Actions + Terraform
+- Security: AWS Cognito
 
 Design Implications and Discussion:
 1. Front-end UI
