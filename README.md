@@ -54,8 +54,8 @@ Minimum Acceptance Criteria:
 - Able to manage data and see its overview from the admin portal
 
 Stretch Goals:
-- ML analysis of data?
-- payment through app?
+- Integrating machine learning for data analysis
+- Integrate payments through the app so financial data will upload automatically instead of manually
 
 
 ## 6. Release Planning
