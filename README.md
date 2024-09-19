@@ -33,6 +33,16 @@ Global Architectural Structure:
 ![software architecture](/images/architecture.png)
 
 Design Implications and Discussion:
+1. Front-end UI
+As the primary focus of this application is to display users financial data in easy to understand and intuitive graphs the front-end UI is an important part of the project. This allows users to easily view their consolidated financial statements from multiple external platforms.
+2. Back-end Application Layer
+The back-end needs to handle the flow of data within the application. Specifically it needs to be able to send data to the DB when a user is uploading data and send data to UI when users request to see their financial analyzed data.
+3. Intermediate Layer 
+Financial statements from various third party services need to be requested, uploaded, and parsed in our application. Since this would require using multiple third party APIs there needs to be a part of the software architecture that organizes the data in a uniform way before it is placed in our DB and displayed to the users.
+4. Integration 
+A CI/CD pipeline is necessary to test written software and ease the deployment of the application 
+5. Cloud Infrastructure
+One of the main goals of this project is to deploy it on a cloud service. Doing this would require research on whether we would want to use containers or severless method to deploy and scale our application. Either option would require integration with a cloud service and the use of their scaling and monitoring tools once the app is deployed
 
 ## 5. Acceptance Criteria
 Minimum Acceptance Criteria:
