@@ -16,16 +16,14 @@ This app will be used by anyone who does a lot of online shopping on their phone
 
 ## 3. Scope and Features
 In Scope:
-- User login and authentication
-- Secure payments through the app
+- User login and authentication: AWS Cognito or Auth0 for authentication and role-based access control
+- Admin management page with user restriction capabilities
 - Track transaction history from popular payment apps
 - Expense categorization, trend analysis, and visualization
 - Daily/Weekly spending breakdowns and insights
-- App unit test and coverage/code lint checker integration
-- Admin portal with data visualization, system health check, and user management functionalities
-- CI/CD automatic testing through Github actions
-- Scalable database for user data
-- Connect and scale app using cloud services such as AWS or Azure
+- CI/CD pipeline: Terraform to manage cloud infrastructure and GitHub Actions for automatic testing and deploying code/infrastructure resources
+- Scalable database for user data: NoSQL DB such as MongoDB
+- Connect and scale app using AWS
 
 Out of Scope:
 - Fully launched app
