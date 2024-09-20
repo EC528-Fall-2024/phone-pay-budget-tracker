@@ -62,11 +62,10 @@ A microservice architecture was used for the benefits of modular development, sc
 3. Authentation 
 - Handles user registration, login, logout, and passwords. This is important to handle the main security of the app and distribute active tokens.
 
-4. Transaction
-- Since finnancial data needs to be aquired from various third-party platforms there needs to be a service that request and accumalates data from the different payment platforms. This microservice will also holds user inputed financial data. Therefore organizing and parsing all user financial data.
+4. Transaction and Data Analysis
+- Since financial data needs to be aquired from various third-party platforms there needs to be a service that request and accumalates data from the different payment platforms. This will also holds user inputed financial data. Therefore, it is necessary to organize and parse all user financial data into a uniform aggregated fashion. In order to understand user data this back-end server also needs to find trend and analyze user's financial statement history. This includes, categorizing expenses and possibly ML based on user data. 
 
-5. Data Analysis 
-- In order to understand user data there needs to be a service that finds trends and analyzes users financial statement history. This includes, categorizing expenses and possibly ML based on user data.
+- The reason why these two task are joined into one service is due to the fact that a bottleneck can be created if all the user financial data is stored in one microservice and a different microservice needs to request all the data to do analysis for that user. The API gateway would constantly need to send user data to the anlysis microservice especially since user finincal data from the third party processing payments would need to be constantly requested and refreshed. Furthermore, conducting the analysis of the data on the same microservice has the benefit of locality to the DB that is storing the financial data.
 
 6. Notifications
 - In order to keep users aware of their budget and spending habits a notification service is needed to creates and sends custom notfications for each user.
@@ -97,11 +96,11 @@ Stretch Goals:
 
 ## 6. Release Planning
 1. Sprint 1
-   - Login function and a simple chart on a UI based on hard-coded of user financial data. 
+   - Create authentication microservice, have a usable API gateway and create front-end sign-in and home page.
 2. Sprint 2
-   - Setup API server and storing user data in a DB
+   - Setup main aggregated financial data DB and have user upload data functionality. Then Link with API gateway accordingly. Furthermore create first UI graph to display data
 3. Sprint 3
-   - Define a set schema, make all API endpoints, improvements to frontend
+   - Set up linking from third party payment processing methods and storing user transaction history from those 
 4. Sprint 4
    - Create CI/CD Job, continue improvements as necessary
 5. Sprint 5
