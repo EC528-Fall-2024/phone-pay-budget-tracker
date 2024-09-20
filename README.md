@@ -37,17 +37,25 @@ Out of Scope:
 Global Architectural Structure:
 ![software architecture](/images/architecture.png)
 - Frontend: React Native + Expo
-- Backend: Node.js + Express.js + Python
-   - AWS Lambda
-   - AWS API Gateway
-- Database: MongoDB
-  - MongoDB Atlas or AWS EC2
-- Cloud: AWS
-  - AWS CLoudwatch: monitor app performance
-  - AWS EC2: host backend on EC2 instances for scaling
-  - AWS Cognito: authentication
+- Authentication: Node.js + Express.js + MongoDB + JWT
+  - AWS Cognito
+  - AWS Lambda
+  - AWS API Gateway
+  - AWS Secrets Manager
+- Transaction and Data Analysis: Node.js + Express.js + MongoDB + Python
+  - AWS Lambda
+  - AWS Step Functions
+  - AWS S3
+- User Profile: Node.js + Express.js + MongoDB
+  - AWS Lambda
+  - AWS S3
+- Admin Control: Node.js + Express.js + MongoDB
+  - AWS IAM
+  - AWS CloudWatch
+  - AWS Lambda
+  - AWS API Gateway
+- API Gateway: AWS API Gateway
 - CI/CD: GitHub Actions + Terraform
-- Security: AWS Cognito
 
 Design Implications and Discussion:
 
