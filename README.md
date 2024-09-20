@@ -50,37 +50,38 @@ Global Architectural Structure:
 - Security: AWS Cognito
 
 Design Implications and Discussion:
+
 A microservice architecture was used for the benefits of modular development, scalability, and the ability to have multiple tech stacks for each individual microservice.
 
 1. Front-end GUI/UI
-- Financial data in easy to understand and intuitive graphs
+- As the primary focus of this application is to display users financial data in easy to understand and intuitive graphs the front-end UI is an important part of the project. This allows users to easily view their consolidated financial statements from multiple external platforms. Furthermore, visual graphics will help users understand trends and behaviors in their spending and display future budgeting tips.
 
 2. API Gateway
-- Responsible for recieving and redirecting API request to the corresponding microservice 
+- The API gateway is important to recieve and redirect API request to the corresponding microservice. It acts as the main link between all thhe seperated microservices and controls the flow of data. 
 
 3. Authentation 
-- Handles user registration, login, logout, and passwords
+- Handles user registration, login, logout, and passwords. This is important to handle the main security of the app and distribute active tokens.
 
 4. Transaction
-- Request and accumalates data from different payment platforms. Then parses this data to house in a uniform format. Also holds user inputed financial data.
+- Since finnancial data needs to be aquired from various third-party platforms there needs to be a service that request and accumalates data from the different payment platforms. This microservice will also holds user inputed financial data. Therefore organizing and parsing all user financial data.
 
 5. Data Analysis 
-- Finds trends and analyzes users financial statement history. Also categorizes expenses.
+- In order to understand user data there needs to be a service that finds trends and analyzes users financial statement history. This includes, categorizing expenses and possibly ML based on user data.
 
 6. Notifications
-- Creates and sends custom notfications for each user
+- In order to keep users aware of their budget and spending habits a notification service is needed to creates and sends custom notfications for each user.
 
 7. User Profile
-- Saves user profile and prefrences including what kinds of graphics they like best to show thier financial data
+- Each individual user can have a different purpose for using the app. Some may want to use it to help budget, others might just want to analyze their statements, ect. This service saves user profile and prefrences including what kinds of graphics they like best to show thier financial data
 
 8. Admin Control
-- Admin user accounts and privalges such as blocking or restricting users
+- It is important for applications to have administator accounts with different privalges from regular users. This service keeps track of admin user accounts and privalges such as blocking or restricting users.
 
 9. Monitoring/Logs
-- Collects logs from all the individual microservices to monitor thier work and help realize when a microservice might need to expand based on demand. 
+- Since microservices are modular and self containting it is important to keep track of how each micro service communicates with the API gatewawy and each other. The purpose of this service is to collect logs from all the individual microservices to monitor thier work and help realize when a microservice might need to expand based on demand. 
 
 10. Integration Layer
-- Unit test coverage and code lint system integration to both the frontend and backend. Also CI/CD pipeline for test and delpoyment of software
+- In order to produce good working software unit test coverage and code lint system integration is important to both the frontend and each individual microservice. Also CI/CD pipeline is necessary for the testing and delpoyment of software.
 
 ## 5. Acceptance Criteria
 Minimum Acceptance Criteria:
