@@ -37,7 +37,7 @@ Out of Scope:
 Global Architectural Structure:
 ![software architecture](/images/architecture.png)
 - Frontend: React Native + Expo
-- Authentication: Node.js + Express.js + MongoDB + JWT
+- Authentication: Node.js + Express.js + MongoDB + JWT or AWS Cognito
   - AWS Cognito
   - AWS Lambda
   - AWS API Gateway
