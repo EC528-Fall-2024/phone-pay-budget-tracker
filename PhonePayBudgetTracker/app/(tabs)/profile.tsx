@@ -1,5 +1,6 @@
 import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, SafeAreaView } from 'react-native';
 import { useNavigation } from 'expo-router';
+import { router } from "expo-router";
 
 export default function ProfileScreen() {
   const navigation = useNavigation();
@@ -23,7 +24,7 @@ export default function ProfileScreen() {
         {/* Account Options */}
         <View style={styles.optionsContainer}>
           <TouchableOpacity style={[styles.optionItem, styles.logoutButton]}>
-            <Text onPress={() => navigation.navigate('auth')} style={[styles.optionText, styles.logoutText]}>Logout</Text>
+            <Text onPress={() => router.replace("/login")} style={[styles.optionText, styles.logoutText]}>Logout</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>

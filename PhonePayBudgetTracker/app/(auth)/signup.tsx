@@ -1,18 +1,19 @@
 import React from 'react';
 import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
 import { useNavigation } from 'expo-router';
+import { router } from "expo-router";
 
-export default function LoginScreen() {
+export default function SignupScreen() {
   const navigation = useNavigation();
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Login</Text>
+      <Text style={styles.title}>Sign Up</Text>
       <TextInput placeholder="Email" style={styles.input} />
       <TextInput placeholder="Password" secureTextEntry style={styles.input} />
-      <Button title="Login" onPress={() => navigation.navigate('(tabs)')} />
-      <Text onPress={() => navigation.navigate('signup')} style={styles.link}>
-        Don't have an account? Sign Up
+      <Button title="Sign Up" onPress={() => router.replace('/home')} />
+      <Text onPress={() => router.replace("/login")} style={styles.link}>
+        Already have an account? Log In
       </Text>
     </View>
   );
