@@ -1,6 +1,8 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import { UserProvider } from './(context)/UserContext';
 import { router } from 'expo-router';
+
 
 export default function IndexPage() {
   return (

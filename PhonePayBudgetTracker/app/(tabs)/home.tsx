@@ -1,6 +1,9 @@
 import { StyleSheet, Text, View, ScrollView, SafeAreaView } from 'react-native';
+import { useUser } from '../(context)/UserContext';
 
 export default function HomeScreen() {
+  const { userData } = useUser();
+  console.log('Home screen userData:', userData);
   // Mock financial data
   const financialData = {
     balance: 8500.75,
@@ -14,6 +17,9 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
+      <Text style={styles.welcomeText}>
+        Welcome, {userData ? userData.name : 'Guest'}
+      </Text>
       <ScrollView style={styles.container}>
         {/* Current Balance */}
         <View style={styles.balanceContainer}>
@@ -61,6 +67,11 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     backgroundColor: '#f5f5f5',
+  },
+  welcomeText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 20,
   },
   balanceContainer: {
     backgroundColor: '#4caf50',

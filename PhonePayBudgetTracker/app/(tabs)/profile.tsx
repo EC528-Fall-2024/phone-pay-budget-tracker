@@ -1,15 +1,23 @@
 import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, SafeAreaView } from 'react-native';
 import { useNavigation } from 'expo-router';
 import { router } from "expo-router";
+import { useUser } from '../(context)/UserContext'; // Import the useUser hook
 
 export default function ProfileScreen() {
   const navigation = useNavigation();
-  // Mock user data
-  const userData = {
-    name: 'John Doe',
-    email: 'johndoe@example.com',
-    profilePicture: 'https://via.placeholder.com/150', // Placeholder image URL
+  const { userData, setUserData } = useUser();
+
+  const handleLogout = () => {
+    setUserData(null);
+
+    router.replace("/login");
   };
+  // Mock user data
+  //const userData = {
+  //  name: 'John Doe',
+  //  email: 'johndoe@example.com',
+  //  profilePicture: 'https://via.placeholder.com/150', // Placeholder image URL
+  //};
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -24,7 +32,7 @@ export default function ProfileScreen() {
         {/* Account Options */}
         <View style={styles.optionsContainer}>
           <TouchableOpacity style={[styles.optionItem, styles.logoutButton]}>
-            <Text onPress={() => router.replace("/login")} style={[styles.optionText, styles.logoutText]}>Logout</Text>
+            <Text onPress={handleLogout} style={[styles.optionText, styles.logoutText]}>Logout</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
