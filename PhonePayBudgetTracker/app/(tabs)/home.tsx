@@ -2,9 +2,11 @@ import React from 'react';
 import { StyleSheet, Text, View, ScrollView, SafeAreaView } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
 import { Dimensions } from 'react-native';
+import { useUser } from '../(context)/UserContext';
 
 export default function HomeScreen() {
   // Extended financial data with more transactions
+  const { userData } = useUser();
   const financialData = {
     balance: 8500.75,
     monthlySpending: 1200.50,
@@ -28,6 +30,9 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
+      <Text style={styles.welcomeText}>
+        Welcome, {userData ? userData.name : 'Guest'}
+      </Text>
       <ScrollView style={styles.container}>
         {/* Current Balance */}
         <View style={styles.balanceContainer}>
@@ -114,6 +119,11 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     backgroundColor: '#f5f5f5',
+  },
+  welcomeText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 20,
   },
   balanceContainer: {
     backgroundColor: '#4caf50',
