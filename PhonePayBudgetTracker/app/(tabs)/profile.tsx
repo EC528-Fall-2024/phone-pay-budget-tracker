@@ -9,7 +9,6 @@ export default function ProfileScreen() {
 
   const handleLogout = () => {
     setUserData(null);
-
     router.replace("/login");
   };
 
@@ -19,10 +18,10 @@ export default function ProfileScreen() {
         {/* Profile Header with Gradient */}
         <View style={styles.profileHeader}>
           <View style={styles.headerBackground}>
-            <Image source={{ uri: userData.profilePicture }} style={styles.profileImage} />
+            <Image source={{ uri: userData ? userData.profilePicture : 'https://via.placeholder.com/150' }} style={styles.profileImage} />
           </View>
-          <Text style={styles.profileName}>{userData.name}</Text>
-          <Text style={styles.profileEmail}>{userData.email}</Text>
+          <Text style={styles.profileName}>{userData ? userData.name : 'Guest'}</Text>
+          <Text style={styles.profileEmail}>{userData ? userData.email : 'guest@example.com'}</Text>
         </View>
 
         {/* Account Options */}
