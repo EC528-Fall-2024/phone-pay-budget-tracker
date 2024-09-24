@@ -6,13 +6,13 @@ Globals:
   Function:
     Timeout: 3
     MemorySize: 128
-    Runtime: python3.8  # Update to your Python version if different
+    Runtime: python3.10
 
 Resources:
   AdminControlFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: ../../../microservices/Admin-Control/
+      CodeUri: ../../microservices/Admin-Control/
       Handler: app.lambda_handler
       Events:
         AdminControlApi:
@@ -24,7 +24,7 @@ Resources:
   AuthenticationFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: ../../../microservices/Authentication/
+      CodeUri: ../../microservices/Authentication/
       Handler: app.lambda_handler
       Events:
         AuthenticationApi:
@@ -36,7 +36,7 @@ Resources:
   NotificationsFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: ../../../microservices/Notifications/
+      CodeUri: ../../microservices/Notifications/
       Handler: app.lambda_handler
       Events:
         NotificationsApi:
@@ -48,7 +48,7 @@ Resources:
   TransDataAnalysisFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: ../../../microservices/Trans-DataAnalysis/
+      CodeUri: ../../microservices/Trans-DataAnalysis/
       Handler: app.lambda_handler
       Events:
         TransDataAnalysisApi:
@@ -60,7 +60,7 @@ Resources:
   UserProfileFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: ../../../microservices/User-Profile/
+      CodeUri: ../../microservices/User-Profile/
       Handler: app.lambda_handler
       Events:
         UserProfileApi:
