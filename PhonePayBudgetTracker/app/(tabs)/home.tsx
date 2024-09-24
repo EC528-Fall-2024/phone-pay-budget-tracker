@@ -51,8 +51,10 @@ export default function HomeScreen() {
           <Text style={styles.transactionsTitle}>Recent Transactions</Text>
           {financialData.recentTransactions.map((transaction) => (
             <View key={transaction.id} style={styles.transactionItem}>
+              <View style={styles.transactionDetails}>
               <Text style={styles.transactionName}>{transaction.name}</Text>
               <Text style={styles.transactionDate}>{transaction.date}</Text>
+              </View>
               <Text
                 style={[
                   styles.transactionAmount,
@@ -174,16 +176,26 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#ddd',
   },
+  transactionDetails: {
+    flexDirection: 'row',
+    flex: 1, 
+  },
   transactionName: {
+    flex: 1,
     fontSize: 16,
     color: '#333',
+    textAlign: 'left',
   },
   transactionDate: {
+    flex: 1,
     fontSize: 14,
     color: '#999',
+    textAlign: 'left',
   },
   transactionAmount: {
     fontSize: 16,
+    textAlign: 'right', 
+    flex: 0.5, 
   },
   positive: {
     color: '#4caf50',
