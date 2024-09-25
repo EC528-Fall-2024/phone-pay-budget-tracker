@@ -65,30 +65,30 @@ A microservice architecture was used for the benefits of modular development, sc
 - As the primary focus of this application is to display users financial data in easy to understand and intuitive graphs the front-end UI is an important part of the project. This allows users to easily view their consolidated financial statements from multiple external platforms. Furthermore, visual graphics will help users understand trends and behaviors in their spending and display future budgeting tips.
 
 2. API Gateway
-- The API gateway is important to recieve and redirect API request to the corresponding microservice. It acts as the main link between all thhe seperated microservices and controls the flow of data. 
+- The API gateway is important to receive and redirect API requests to the corresponding microservice. It acts as the main link between all the separated microservices and controls the flow of data. 
 
-3. Authentation 
+3. Authentication 
 - Handles user registration, login, logout, and passwords. This is important to handle the main security of the app and distribute active tokens.
 
 4. Transaction and Data Analysis
-- Since financial data needs to be aquired from various third-party platforms there needs to be a service that request and accumalates data from the different payment platforms. This will also holds user inputed financial data. Therefore, it is necessary to organize and parse all user financial data into a uniform aggregated fashion. In order to understand user data this back-end server also needs to find trend and analyze user's financial statement history. This includes, categorizing expenses and possibly ML based on user data. 
+- Since financial data needs to be acquired from various third-party platforms there needs to be a service that requests and accumulates data from the different payment platforms. This will also hold user input financial data. Therefore, it is necessary to organize and parse all user financial data into a uniform aggregated fashion. In order to understand user data this back-end server also needs to find trends and analyze the user's financial statement history. This includes, categorizing expenses and possibly ML based on user data. 
 
-- The reason why these two task are joined into one service is due to the fact that a bottleneck can be created if all the user financial data is stored in one microservice and a different microservice needs to request all the data to do analysis for that user. The API gateway would constantly need to send user data to the anlysis microservice especially since user finincal data from the third party processing payments would need to be constantly requested and refreshed. Furthermore, conducting the analysis of the data on the same microservice has the benefit of locality to the DB that is storing the financial data.
+- The reason why these two tasks are joined into one service is due to the fact that a bottleneck can be created if all the user financial data is stored in one microservice and a different microservice needs to request all the data to do analysis for that user. The API gateway would constantly need to send user data to the analysis microservice especially since user financial data from the third party processing payments would need to be constantly requested and refreshed. Furthermore, conducting the analysis of the data on the same microservice has the benefit of locality to the DB that is storing the financial data.
 
 6. Notifications
-- In order to keep users aware of their budget and spending habits a notification service is needed to creates and sends custom notfications for each user.
+- In order to keep users aware of their budget and spending habits a notification service is needed to create and send custom notifications for each user.
 
 7. User Profile
-- Each individual user can have a different purpose for using the app. Some may want to use it to help budget, others might just want to analyze their statements, ect. This service saves user profile and prefrences including what kinds of graphics they like best to show thier financial data
+- Each individual user can have a different purpose for using the app. Some may want to use it to help budget, others might just want to analyze their statements, ect. This service saves user profile and preferences including what kinds of graphics they like best to show their financial data
 
 8. Admin Control
-- It is important for applications to have administator accounts with different privalges from regular users. This service keeps track of admin user accounts and privalges such as blocking or restricting users.
+- It is important for applications to have administrator accounts with different privileges from regular users. This service keeps track of admin user accounts and privileges such as blocking or restricting users.
 
 9. Monitoring/Logs
-- Since microservices are modular and self containting it is important to keep track of how each micro service communicates with the API gatewawy and each other. The purpose of this service is to collect logs from all the individual microservices to monitor thier work and help realize when a microservice might need to expand based on demand. 
+- Since microservices are modular and self-contained it is important to keep track of how each micro service communicates with the API gateway and each other. The purpose of this service is to collect logs from all the individual microservices to monitor their work and help realize when a microservice might need to expand based on demand. 
 
 10. Integration Layer
-- In order to produce good working software unit test coverage and code lint system integration is important to both the frontend and each individual microservice. Also CI/CD pipeline is necessary for the testing and delpoyment of software.
+- In order to produce good working software unit test coverage and code lint system integration is important to both the frontend and each individual microservice. Also CI/CD pipeline is necessary for the testing and deployment of software.
 
 ## 5. Acceptance Criteria
 Minimum Acceptance Criteria:
