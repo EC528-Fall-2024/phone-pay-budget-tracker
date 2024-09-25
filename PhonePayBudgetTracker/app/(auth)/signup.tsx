@@ -1,8 +1,35 @@
 import React from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { router } from "expo-router";
+import SignupForm from "../../components/SignupForm";
+
 
 export default function SignupScreen() {
+  const [username, setUsername] = React.useState('');
+  const [email, setEmail] = React.useState('');
+  const [password, setPassword] = React.useState('');
+  const [cpassword, setcPassword] = React.useState('');
+  //const [profilePicture, setProfilePicture] = React.useState('');
+
+  //const passwordSame = (): boolean => {
+  //  return password === cpassword;
+  //};
+
+  const onSignupPress = () => {
+    ///if (!passwordSame()) {
+    //  return; // Prevent form submission if passwords don't match
+    //}
+    const userData = {
+      username,
+      email,
+      password,
+      //profilePicture,
+    };
+    SignupForm(userData);
+    console.log('User signuping');
+    router.replace("/login");
+  };
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       {/* App Title */}
@@ -13,19 +40,19 @@ export default function SignupScreen() {
         <Text style={styles.title}>Create Your Account</Text>
 
         {/* Name Input */}
-        <TextInput placeholder="Full Name" style={styles.input} />
+        <TextInput value={username} onChangeText={setUsername} placeholder="Full Name" style={styles.input} />
 
         {/* Email Input */}
-        <TextInput placeholder="Email" style={styles.input} />
+        <TextInput value={email} onChangeText={setEmail} placeholder="Email" style={styles.input} />
 
         {/* Password Input */}
-        <TextInput placeholder="Password" secureTextEntry style={styles.input} />
+        <TextInput value={password} onChangeText={setPassword} placeholder="Password" secureTextEntry style={styles.input} />
 
         {/* Confirm Password Input */}
-        <TextInput placeholder="Confirm Password" secureTextEntry style={styles.input} />
+        <TextInput value={cpassword} onChangeText={setcPassword} placeholder="Confirm Password" secureTextEntry style={styles.input} />
 
         {/* Signup Button */}
-        <TouchableOpacity style={styles.signupButton} onPress={() => router.replace("/home")}>
+        <TouchableOpacity style={styles.signupButton} onPress={onSignupPress}>
           <Text style={styles.signupButtonText}>Sign Up</Text>
         </TouchableOpacity>
 
@@ -54,7 +81,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   signupContainer: {
-    width: '100%',
+    width: '40%',
     backgroundColor: '#ffffff',
     padding: 20,
     borderRadius: 10,
