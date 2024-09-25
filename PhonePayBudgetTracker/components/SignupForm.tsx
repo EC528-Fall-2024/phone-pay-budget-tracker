@@ -2,7 +2,6 @@ interface SignupFormData {
   username: string;
   email: string;
   password: string;
-  //profilePicture: string;
 };
 
 export function SignupForm(userData: SignupFormData) {
