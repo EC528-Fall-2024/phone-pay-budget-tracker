@@ -103,7 +103,7 @@ Stretch Goals:
 
 
 ## 6. Release Planning
-1. Sprint 1
+1. Sprint 1 | [Video][https://drive.google.com/file/d/1cg6foiZNHz1umlqbRjRblaXEWv6Vn9a6/view?usp=sharing]
    - Create authentication microservice, have a usable API gateway and create front-end sign-in and home page.
 2. Sprint 2
    - Setup main aggregated financial data DB and have user upload data functionality. Then Link with API gateway accordingly. Furthermore create first UI graph to display data
