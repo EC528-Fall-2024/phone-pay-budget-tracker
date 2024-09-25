@@ -3,27 +3,64 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 
 import { router } from "expo-router";
 import SignupForm from "../../components/SignupForm";
 
+export function checkEmpty(toCheck: string) {
+  if(typeof toCheck!='undefined' && toCheck){
+    return false;
+  }
+  return true;
+}
 
 export default function SignupScreen() {
   const [username, setUsername] = React.useState('');
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
   const [cpassword, setcPassword] = React.useState('');
-  //const [profilePicture, setProfilePicture] = React.useState('');
+  const [errorMsg, setErrorMsg] = React.useState('');
+  const [isEmpty, setIsEmpty] = React.useState({
+    username: false,
+    email: false,
+    password: false,
+    cpassword: false,
+  });
 
-  //const passwordSame = (): boolean => {
-  //  return password === cpassword;
-  //};
+  const passwordSame = (): boolean => {
+    return password == cpassword;
+  };
 
   const onSignupPress = () => {
-    ///if (!passwordSame()) {
-    //  return; // Prevent form submission if passwords don't match
-    //}
+    const emptyCheck = {
+      username: !username,
+      email: !email,
+      password: !password,
+      cpassword: !cpassword,
+    };
+    setIsEmpty(emptyCheck)
+    if (checkEmpty(username)) {
+      setErrorMsg('Full name cannot be empty!');
+      return;
+    };
+    if (checkEmpty(email)) {
+      setErrorMsg('Email cannot be empty!');
+      return;
+    };
+    if (checkEmpty(password)) {
+      setErrorMsg('Password cannot be empty!');
+      return;
+    };
+    if (checkEmpty(cpassword)) {
+      setErrorMsg('Confirm password cannot be empty!');
+      return;
+    };
+    // check password same
+    if (!passwordSame()) {
+      setErrorMsg('Passwords do not match!');
+      return;
+    };
+    setErrorMsg('');
     const userData = {
       username,
       email,
       password,
-      //profilePicture,
     };
     SignupForm(userData);
     console.log('User signuping');
@@ -34,27 +71,28 @@ export default function SignupScreen() {
     <ScrollView contentContainerStyle={styles.container}>
       {/* App Title */}
       <Text style={styles.appTitle}>BudgetTracker</Text>
-      
       {/* Signup Section */}
       <View style={styles.signupContainer}>
         <Text style={styles.title}>Create Your Account</Text>
 
         {/* Name Input */}
-        <TextInput value={username} onChangeText={setUsername} placeholder="Full Name" style={styles.input} />
+        <TextInput value={username} onChangeText={setUsername} placeholder='Full name' style={[styles.input, isEmpty.username && styles.emptyInput]} />
 
         {/* Email Input */}
-        <TextInput value={email} onChangeText={setEmail} placeholder="Email" style={styles.input} />
+        <TextInput value={email} onChangeText={setEmail} placeholder='Email' style={[styles.input, isEmpty.email && styles.emptyInput]} />
 
         {/* Password Input */}
-        <TextInput value={password} onChangeText={setPassword} placeholder="Password" secureTextEntry style={styles.input} />
+        <TextInput value={password} onChangeText={setPassword} placeholder='Password' secureTextEntry style={[styles.input, isEmpty.password && styles.emptyInput]} />
 
         {/* Confirm Password Input */}
-        <TextInput value={cpassword} onChangeText={setcPassword} placeholder="Confirm Password" secureTextEntry style={styles.input} />
+        <TextInput value={cpassword} onChangeText={setcPassword} placeholder="Confirm Password" secureTextEntry style={[styles.input, isEmpty.cpassword && styles.emptyInput]} />
 
         {/* Signup Button */}
         <TouchableOpacity style={styles.signupButton} onPress={onSignupPress}>
           <Text style={styles.signupButtonText}>Sign Up</Text>
         </TouchableOpacity>
+        {/* Error Message */}
+        {errorMsg ? <Text style={styles.error}>{errorMsg}</Text> : null}
 
         {/* Link to Login */}
         <TouchableOpacity onPress={() => router.replace("/login")}>
@@ -72,6 +110,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 20,
     backgroundColor: '#f7f7f7', // Light background color for a clean look
+  },
+  error: {
+    color: 'red',
+    marginBottom: 10, 
+    textAlign: 'center',
   },
   appTitle: {
     fontSize: 32,
@@ -105,6 +148,9 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     paddingHorizontal: 15,
     backgroundColor: '#fafafa', // Light background for input fields
+  },
+  emptyInput:{
+    backgroundColor: '#fddfdf'
   },
   signupButton: {
     backgroundColor: '#4CAF50', // Greenish button color
