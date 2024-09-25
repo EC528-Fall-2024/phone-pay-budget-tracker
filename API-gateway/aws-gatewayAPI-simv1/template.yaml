@@ -1,0 +1,70 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: AWS SAM template to simulate API Gateway with multiple microservices locally.
+
+Globals:
+  Function:
+    Timeout: 3
+    MemorySize: 128
+    Runtime: python3.10
+
+Resources:
+  AdminControlFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../../microservices/Admin-Control/
+      Handler: app.lambda_handler
+      Events:
+        AdminControlApi:
+          Type: Api
+          Properties:
+            Path: /admin-control
+            Method: ANY
+
+  AuthenticationFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../../microservices/Authentication/
+      Handler: app.lambda_handler
+      Events:
+        AuthenticationApi:
+          Type: Api
+          Properties:
+            Path: /authentication
+            Method: ANY
+
+  NotificationsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../../microservices/Notifications/
+      Handler: app.lambda_handler
+      Events:
+        NotificationsApi:
+          Type: Api
+          Properties:
+            Path: /notifications
+            Method: ANY
+
+  TransDataAnalysisFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../../microservices/Trans-DataAnalysis/
+      Handler: app.lambda_handler
+      Events:
+        TransDataAnalysisApi:
+          Type: Api
+          Properties:
+            Path: /trans-dataanalysis
+            Method: ANY
+
+  UserProfileFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../../microservices/User-Profile/
+      Handler: app.lambda_handler
+      Events:
+        UserProfileApi:
+          Type: Api
+          Properties:
+            Path: /user-profile
+            Method: ANY

@@ -11,11 +11,12 @@ export default function HomeScreen() {
     balance: 8500.75,
     monthlySpending: 1200.50,
     recentTransactions: [
-      { id: 1, name: 'Groceries', amount: -150.0, date: '09/15/24' },
+      //Sorted dates for expenses
       { id: 2, name: 'Rent', amount: -850.0, date: '09/01/24' },
-      { id: 3, name: 'Salary', amount: 3000.0, date: '09/10/24' },
       { id: 4, name: 'Electricity Bill', amount: -100.0, date: '09/05/24' },
+      { id: 3, name: 'Salary', amount: 3000.0, date: '09/10/24' },
       { id: 5, name: 'Gym Membership', amount: -60.0, date: '09/12/24' },
+      { id: 1, name: 'Groceries', amount: -150.0, date: '09/15/24' },
       { id: 6, name: 'Freelance Payment', amount: 500.0, date: '09/18/24' },
       { id: 7, name: 'Car Insurance', amount: -200.0, date: '09/20/24' },
       { id: 8, name: 'Dining Out', amount: -120.0, date: '09/22/24' },
@@ -24,9 +25,14 @@ export default function HomeScreen() {
     ],
   };
 
-  // Prepare data for the graph (recent transactions)
-  const transactionAmounts = financialData.recentTransactions.map((t) => t.amount);
-  const transactionDates = financialData.recentTransactions.map((t) => t.date);
+  // Sort transactions from oldest to newest based on the date
+  const sortedTransactions = financialData.recentTransactions.sort(
+    (a, b) => new Date(a.date) - new Date(b.date)
+  );
+
+  // Prepare data for the graph
+  const transactionAmounts = sortedTransactions.map((t) => t.amount);
+  const transactionDates = sortedTransactions.map((t) => t.date);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -49,11 +55,11 @@ export default function HomeScreen() {
         {/* Recent Transactions */}
         <View style={styles.transactionsContainer}>
           <Text style={styles.transactionsTitle}>Recent Transactions</Text>
-          {financialData.recentTransactions.map((transaction) => (
+          {sortedTransactions.map((transaction) => (
             <View key={transaction.id} style={styles.transactionItem}>
               <View style={styles.transactionDetails}>
-              <Text style={styles.transactionName}>{transaction.name}</Text>
-              <Text style={styles.transactionDate}>{transaction.date}</Text>
+                <Text style={styles.transactionName}>{transaction.name}</Text>
+                <Text style={styles.transactionDate}>{transaction.date}</Text>
               </View>
               <Text
                 style={[
@@ -79,8 +85,8 @@ export default function HomeScreen() {
                 },
               ],
             }}
-            width={Dimensions.get('window').width - 40} // from react-native
-            height={220}
+            width={Dimensions.get('window').width - 40} // Adjusted width
+            height={250}
             yAxisLabel="$"
             yAxisSuffix=""
             yAxisInterval={1} // optional, defaults to 1
@@ -101,10 +107,7 @@ export default function HomeScreen() {
               },
             }}
             bezier
-            style={{
-              marginVertical: 8,
-              borderRadius: 16,
-            }}
+            style={styles.chartStyle}
           />
         </View>
       </ScrollView>
@@ -179,7 +182,7 @@ const styles = StyleSheet.create({
   },
   transactionDetails: {
     flexDirection: 'row',
-    flex: 1, 
+    flex: 1,
   },
   transactionName: {
     flex: 1,
@@ -195,8 +198,8 @@ const styles = StyleSheet.create({
   },
   transactionAmount: {
     fontSize: 16,
-    textAlign: 'right', 
-    flex: 0.5, 
+    textAlign: 'right',
+    flex: 0.5,
   },
   positive: {
     color: '#4caf50',
@@ -206,11 +209,17 @@ const styles = StyleSheet.create({
   },
   chartContainer: {
     marginTop: 20,
+    alignItems: 'center', // Center the chart horizontally
   },
   chartTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 10,
     textAlign: 'center',
+  },
+  chartStyle: {
+    marginVertical: 8,
+    borderRadius: 16,
+    alignItems: 'center', // Center the chart content
   },
 });
