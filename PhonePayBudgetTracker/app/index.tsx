@@ -17,11 +17,11 @@ export default function IndexPage() {
 
       {/* Navigate to Auth Button */}
       <TouchableOpacity style={styles.authButton} onPress={() => router.push('/login')}>
-        <Text style={styles.authButtonText}>Login</Text>
+        <Text style={styles.authButtonText}>Go to Login</Text>
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.authButton} onPress={() => router.push('/signup')}>
-        <Text style={styles.authButtonText}>Signup</Text>
+        <Text style={styles.authButtonText}>Go to Signup</Text>
       </TouchableOpacity>
     </ScrollView>
   );
@@ -46,7 +46,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#333',
     textAlign: 'center',
-    marginBottom: 50,
+    marginBottom: 30,
     lineHeight: 24,
   },
   authButton: {
@@ -55,8 +55,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 30,
     borderRadius: 5,
     alignItems: 'center',
-    marginBottom: 20,
-    width: '40%',
+    marginBottom: 15,
+    width: '100%',
   },
   authButtonText: {
     color: '#fff',

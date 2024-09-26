@@ -64,7 +64,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   loginContainer: {
-    width: '40%',
+    width: '85%',
     backgroundColor: '#ffffff',
     padding: 20,
     borderRadius: 10,
