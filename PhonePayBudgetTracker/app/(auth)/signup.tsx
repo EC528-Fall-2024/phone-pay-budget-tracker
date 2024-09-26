@@ -124,7 +124,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   signupContainer: {
-    width: '40%',
+    width: '100%',
     backgroundColor: '#ffffff',
     padding: 20,
     borderRadius: 10,

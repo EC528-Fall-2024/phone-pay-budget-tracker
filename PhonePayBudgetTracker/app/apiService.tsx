@@ -12,6 +12,7 @@ export const getData = async () => {
         'Content-Type': 'application/json',
       },
     });
+    
     return response.data;
   } catch (error) {
     console.error('Error fetching data:', error);
