@@ -129,7 +129,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 20,
-    textAlign: 'center', // Center horizontally
+    textAlign: 'center', 
   },
   balanceContainer: {
     backgroundColor: '#4caf50',
