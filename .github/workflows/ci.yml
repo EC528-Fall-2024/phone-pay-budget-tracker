@@ -22,9 +22,11 @@ jobs:
       with:
         node-version: '16'  
 
-    - name: Install dependencies
+    - name: Navigate to the frontend directory and install dependencies
+      working-directory: ./PhonePayBudgetTracker
       run: npm install
 
-    - name: Run tests
+    - name: Run tests in frontend directory
+      working-directory: ./PhonePayBudgetTracker
       run: npm test
 
