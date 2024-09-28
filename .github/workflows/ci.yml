@@ -1,0 +1,32 @@
+name: CI Pipeline for Expo App
+
+on:
+  push:
+    branches:
+      - dev      # Trigger on pushes to the 'dev' branch
+  pull_request:
+    branches:
+      - stage    # Trigger on pull requests to 'stage' and 'main'
+      - main
+
+jobs:
+  font-end_test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '16'  
+
+    - name: Navigate to the frontend directory and install dependencies
+      working-directory: ./PhonePayBudgetTracker
+      run: npm install
+
+    - name: Run tests in frontend directory
+      working-directory: ./PhonePayBudgetTracker
+      run: npm test
+
