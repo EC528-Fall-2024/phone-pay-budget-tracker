@@ -21,8 +21,8 @@ export const getDBConnection = (): DynamoDBDocument => {
         region: "us-east-2",
         endpoint: "http://localhost:8000",
         credentials: {
-            accessKeyId: "AKIAXNGUVBJOF253QOJU",
-            secretAccessKey: "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",
+            accessKeyId: "Secret",
+            secretAccessKey: "Secret",
         },
         maxAttempts: 2,
         requestHandler: new NodeHttpHandler({
