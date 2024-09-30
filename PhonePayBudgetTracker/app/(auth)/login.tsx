@@ -1,8 +1,25 @@
 import React from 'react';
 import { View, Text, TextInput, Button, TouchableOpacity, StyleSheet } from 'react-native';
 import { router } from "expo-router";
+import { useUser } from '../(context)/UserContext';
+
 
 export default function LoginScreen() {
+  const { setUserData } = useUser();
+  const { userData } = useUser();
+
+  const handleLogin = () => {
+    // Simulate logging in by setting some user data
+    setUserData({
+      name: 'John Doe',
+      email: 'johndoe@example.com',
+      profilePicture: 'https://via.placeholder.com/150',
+    });
+
+    console.log('User data set. Navigating to home...');
+    router.replace("/home");
+  };
+
   return (
     <View style={styles.container}>
       {/* App Title */}
@@ -19,7 +36,7 @@ export default function LoginScreen() {
         <TextInput placeholder="Password" secureTextEntry style={styles.input} />
 
         {/* Login Button */}
-        <TouchableOpacity style={styles.loginButton} onPress={() => router.replace("/home")}>
+        <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
           <Text style={styles.loginButtonText}>Login</Text>
         </TouchableOpacity>
 
