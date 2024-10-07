@@ -1,23 +1,54 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, TextInput, Button, TouchableOpacity, StyleSheet } from 'react-native';
 import { router } from "expo-router";
 import { useUser } from '../(context)/UserContext';
+import { Auth } from 'aws-amplify';
 
 
 export default function LoginScreen() {
   const { setUserData } = useUser();
-  const { userData } = useUser();
+  // const { userData } = useUser();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
 
-  const handleLogin = () => {
-    // Simulate logging in by setting some user data
-    setUserData({
-      name: 'John Doe',
-      email: 'johndoe@example.com',
-      profilePicture: 'https://via.placeholder.com/150',
-    });
 
-    console.log('User data set. Navigating to home...');
-    router.replace("/home");
+  const handleLogin = async () => {
+    console.log('email:', email, 'pass:', password);
+
+    if (!email || !password) {
+      setError('Email and password cannot be empty');
+      return;
+    }
+
+    // login with cognito
+    try {
+      const user = await Auth.signIn(email, password);
+      console.log('User signed in:', user)
+
+      setUserData({
+        name: user.attributes.name,
+        email: user.attributes.email,
+        //profilePicture: 'https://via.placeholder.com/150',
+      });
+      console.log('User data set. Navigating to home...');
+      router.replace("/home");
+    } catch (error) {
+        if (error instanceof Error) {
+          setError(error.message || 'Failed to log in');
+        } else {
+          setError('An unknown error occurred');
+        }
+      }
+
+    // // Simulate logging in by setting some user data
+    // setUserData({
+    //   name: 'John Doe',
+    //   email: 'johndoe@example.com',
+    //   profilePicture: 'https://via.placeholder.com/150',
+    // });
+
+    
   };
 
   return (
@@ -30,10 +61,25 @@ export default function LoginScreen() {
         <Text style={styles.title}>Login</Text>
 
         {/* Email Input */}
-        <TextInput placeholder="Email" style={styles.input} />
+        <TextInput 
+          value={email}
+          onChangeText={setEmail}
+          placeholder="Email"
+          style={styles.input}
+          keyboardType='email-address'
+          autoCapitalize='none'
+        />
 
         {/* Password Input */}
-        <TextInput placeholder="Password" secureTextEntry style={styles.input} />
+        <TextInput
+          value={password}
+          onChangeText={setPassword}
+          placeholder="Password"
+          secureTextEntry 
+          style={styles.input} 
+        />
+
+        {error ? <Text style={styles.error}>{error}</Text> : null}    
 
         {/* Login Button */}
         <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
