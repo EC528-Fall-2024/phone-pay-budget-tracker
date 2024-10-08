@@ -67,4 +67,17 @@ Resources:
           Type: Api
           Properties:
             Path: /user-profile
-            Method: ANY
+            Method: GET
+
+  # New Lambda function for updating the user profile
+  UserProfilePutFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../microservices/User-Profile/
+      Handler: app.lambda_handler_setProfile  # Reference to your new lambda handler
+      Events:
+        UserProfilePutApi:
+          Type: Api
+          Properties:
+            Path: /user-profile
+            Method: POST  # Specify that this Lambda handles PUT requests

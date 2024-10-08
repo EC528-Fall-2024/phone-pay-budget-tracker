@@ -3,6 +3,8 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 
 import { router } from "expo-router";
 import SignupForm from "../../components/SignupForm";
 import { Auth } from 'aws-amplify';
+import { setProfileData } from '../apiService';
+
 
 export function checkEmpty(toCheck: string) {
   return !toCheck
@@ -66,7 +68,11 @@ export default function SignupScreen() {
           email,
         }
       });
+
       console.log('User signed up:', user);
+
+
+
       router.push({
         pathname: "/(auth)/confirm",
         params: { username },  // username is passed as a query param
@@ -107,7 +113,8 @@ export default function SignupScreen() {
         <TextInput value={email} onChangeText={setEmail} placeholder='Email' style={[styles.input, isEmpty.email && styles.emptyInput]} />
 
         {/* Password Input */}
-        <TextInput value={password} onChangeText={setPassword} placeholder='Password' secureTextEntry style={[styles.input, isEmpty.password && styles.emptyInput]} />
+        {/* <TextInput value={password} onChangeText={setPassword} placeholder='Password' secureTextEntry style={[styles.input, isEmpty.password && styles.emptyInput]} /> */}
+        <TextInput value={password} onChangeText={setPassword} placeholder='Password' style={[styles.input, isEmpty.password && styles.emptyInput]} />
 
         {/* Confirm Password Input */}
         <TextInput value={cpassword} onChangeText={setcPassword} placeholder="Confirm Password" secureTextEntry style={[styles.input, isEmpty.cpassword && styles.emptyInput]} />
