@@ -1,9 +1,8 @@
-
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, SafeAreaView, Alert } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, SafeAreaView, Alert, ActivityIndicator } from 'react-native';
 import { useNavigation } from 'expo-router';
 import { router } from 'expo-router';
-import { getData } from '../apiService'; // Import your API call function
+import { getProfileData } from '../apiService'; // Import your API call function
 
 export default function ProfileScreen() {
   const navigation = useNavigation();
@@ -14,23 +13,24 @@ export default function ProfileScreen() {
     username: '',
     password: ''
   });
-  const [loading, setLoading] = useState(false); // State to manage loading
+  const [loading, setLoading] = useState(true); // State to manage loading
 
-  const handleEditProfile = async () => {
-    setLoading(true); // Set loading to true while fetching data
-    try {
-      const profileData = await getData(); // Call the API to get user data
-      console.log(profileData)
-      setUserData(profileData); // Update user data in your context
-      console.log(userData.password)
-      Alert.alert('Profile Updated', 'Your profile information has been updated.');
-    } catch (error) {
-      console.error(error);
-      Alert.alert('Error', 'Failed to fetch profile data.');
-    } finally {
-      setLoading(false); // Set loading back to false after fetching data
-    }
-  };
+  // useEffect to automatically fetch user data when component mounts
+  useEffect(() => {
+    const fetchProfileData = async () => {
+      try {
+        const profileData = await getProfileData(); // Call the API to get user data
+        setUserData(profileData); // Update user data in your state
+      } catch (error) {
+        console.error(error);
+        Alert.alert('Error', 'Failed to fetch profile data.');
+      } finally {
+        setLoading(false); // Set loading back to false after fetching data
+      }
+    };
+
+    fetchProfileData(); // Automatically fetch the profile data on mount
+  }, []);
 
   const handleLogout = () => {
     setUserData({
@@ -43,6 +43,20 @@ export default function ProfileScreen() {
     router.replace('/login');
   };
 
+  const handleEditProfile = () => {
+    // Navigate to the editProfile page
+    router.push('editProfile'); // TO DO: IMPLEMENT THE EDIT PROFILE PAGE
+  };
+
+  if (loading) {
+    return (
+      <View style={styles.loaderContainer}>
+        <ActivityIndicator size="large" color="#4caf50" />
+        <Text>Loading profile...</Text>
+      </View>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView style={styles.container}>
@@ -54,22 +68,21 @@ export default function ProfileScreen() {
               style={styles.profileImage}
             />
           </View>
-          <Text style={styles.profileName}>{userData ? userData.firstName : 'Guest'}</Text>
-          <Text style={styles.profileEmail}>{userData ? userData.lastName : 'guest@example.com'}</Text>
+
+          {/* First and Last Name in one line */}
+          <View style={styles.nameContainer}>
+            <Text style={styles.profileName}>{userData.firstName || 'First'}</Text>
+            <Text style={styles.profileName}> {userData.lastName || 'Last'}</Text>
+          </View>
+
+          {/* Move the username here */}
+          <Text style={styles.profileUsername}>{userData.username || 'username'}</Text>
         </View>
 
         {/* Account Options */}
         <View style={styles.optionsContainer}>
           <TouchableOpacity style={[styles.optionItem, styles.optionButton]} onPress={handleEditProfile}>
-            <Text style={styles.optionText}>{loading ? 'Updating...' : 'Edit Profile'}</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={[styles.optionItem, styles.optionButton]}>
-            <Text style={styles.optionText}>Account Settings</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={[styles.optionItem, styles.optionButton]}>
-            <Text style={styles.optionText}>Transaction History</Text>
+            <Text style={styles.optionText}>Edit Profile</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={[styles.optionItem, styles.logoutButton]}>
@@ -121,16 +134,21 @@ const styles = StyleSheet.create({
     borderColor: '#fff',
     marginTop: -60, // Move the profile image up
   },
-  profileName: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#333',
+  nameContainer: {
+    flexDirection: 'row', // Arrange names in a row
+    justifyContent: 'center',
+    alignItems: 'center',
     marginTop: 15,
   },
-  profileEmail: {
+  profileName: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  profileUsername: {
     fontSize: 16,
     color: '#666',
-    marginBottom: 10,
+    marginTop: 5,
   },
   optionsContainer: {
     backgroundColor: '#fff',
@@ -150,7 +168,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   optionButton: {
-    backgroundColor: '#e3f2fd',
+    backgroundColor: '#e3f2fd', // Blueish background
     borderRadius: 10,
     marginVertical: 10,
     paddingVertical: 15,
@@ -176,5 +194,10 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
     paddingVertical: 15,
+  },
+  loaderContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

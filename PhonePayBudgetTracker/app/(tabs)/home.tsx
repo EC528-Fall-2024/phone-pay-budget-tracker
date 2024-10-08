@@ -1,35 +1,65 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View, ScrollView, SafeAreaView } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
 import { Dimensions } from 'react-native';
+import { getTransactionData } from '../apiService';  // Import your API call function
 
 export default function HomeScreen() {
-  const financialData = {
-    balance: 8500.75,
-    monthlySpending: 1200.50,
-    recentTransactions: [
-      //Sorted dates for expenses
-      { id: 2, name: 'Rent', amount: -850.0, date: '09/01/24' },
-      { id: 4, name: 'Electricity Bill', amount: -100.0, date: '09/05/24' },
-      { id: 3, name: 'Salary', amount: 3000.0, date: '09/10/24' },
-      { id: 5, name: 'Gym Membership', amount: -60.0, date: '09/12/24' },
-      { id: 1, name: 'Groceries', amount: -150.0, date: '09/15/24' },
-      { id: 6, name: 'Freelance Payment', amount: 500.0, date: '09/18/24' },
-      { id: 7, name: 'Car Insurance', amount: -200.0, date: '09/20/24' },
-      { id: 8, name: 'Dining Out', amount: -120.0, date: '09/22/24' },
-      { id: 9, name: 'Rent', amount: -850.0, date: '10/01/24' },
-      { id: 10, name: 'Groceries', amount: -175.0, date: '10/05/24' },
-    ],
-  };
+  const [financialData, setFinancialData] = useState({
+    balance: 0,
+    monthlySpending: 0,
+    recentTransactions: [],
+  });
 
-  
-  const sortedTransactions = financialData.recentTransactions.sort(
-    (a, b) => new Date(a.date) - new Date(b.date)
-  );
+  const [loading, setLoading] = useState(true);
+
+  // API call to fetch data when component mounts
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await getTransactionData(); // Make the API call
+        
+        // Map the response to the format needed for recent transactions
+        const transactions = response.map((item) => ({
+          id: item.sk,  // Use the `sk` as unique transaction ID
+          name: item.expenseName,  // Map `expenseName` to `name`
+          amount: parseFloat(item.amount),  // Convert the string `amount` to a float
+          date: item.sk.split('#')[0],  // Extract date part from `sk`
+        }));
+        
+        // Calculate balance, spending, etc. as needed
+        const balance = 8500.75; // Example balance, adjust as needed
+        const monthlySpending = transactions.reduce((acc, transaction) => {
+          return transaction.amount < 0 ? acc + Math.abs(transaction.amount) : acc;
+        }, 0);
+
+        // Update state with the fetched data
+        setFinancialData({
+          balance,
+          monthlySpending,
+          recentTransactions: transactions,
+        });
+      } catch (error) {
+        console.error('Error fetching transaction data:', error);
+      } finally {
+        setLoading(false); // Hide loading spinner when the data is fetched
+      }
+    };
+
+    fetchData();
+  }, []);
 
   // Prepare data for the graph
-  const transactionAmounts = sortedTransactions.map((t) => t.amount);
-  const transactionDates = sortedTransactions.map((t) => t.date);
+  const transactionAmounts = financialData.recentTransactions.map((t) => t.amount);
+  const transactionDates = financialData.recentTransactions.map((t) => t.date);
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <Text style={styles.loadingText}>Loading...</Text>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -52,7 +82,7 @@ export default function HomeScreen() {
         {/* Recent Transactions */}
         <View style={styles.transactionsContainer}>
           <Text style={styles.transactionsTitle}>Recent Transactions</Text>
-          {sortedTransactions.map((transaction) => (
+          {financialData.recentTransactions.map((transaction) => (
             <View key={transaction.id} style={styles.transactionItem}>
               <View style={styles.transactionDetails}>
                 <Text style={styles.transactionName}>{transaction.name}</Text>
@@ -218,5 +248,10 @@ const styles = StyleSheet.create({
     marginVertical: 8,
     borderRadius: 16,
     alignItems: 'center', // Center the chart content
+  },
+  loadingText: {
+    fontSize: 20,
+    textAlign: 'center',
+    marginTop: 50,
   },
 });
