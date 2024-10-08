@@ -18,6 +18,7 @@
     "@aws-amplify/cli": "^12.13.0",
     "@expo/vector-icons": "^14.0.2",
     "@react-native-async-storage/async-storage": "^1.23.1",
+    "@react-native-community/netinfo": "^11.4.1",
     "@react-navigation/native": "^6.0.2",
     "aws-amplify": "^5.3.24",
     "aws-amplify-react-native": "^7.0.8",

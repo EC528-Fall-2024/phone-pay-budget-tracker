@@ -1,13 +1,19 @@
+
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, SafeAreaView, Alert } from 'react-native';
 import { useNavigation } from 'expo-router';
 import { router } from 'expo-router';
-import { useUser } from '../(context)/UserContext'; // Import the useUser hook
 import { getData } from '../apiService'; // Import your API call function
 
 export default function ProfileScreen() {
   const navigation = useNavigation();
-  const { userData, setUserData } = useUser();
+  const [userData, setUserData] = useState({
+    profilePhoto: '',
+    firstName: '',
+    lastName: '',
+    username: '',
+    password: ''
+  });
   const [loading, setLoading] = useState(false); // State to manage loading
 
   const handleEditProfile = async () => {
@@ -16,6 +22,7 @@ export default function ProfileScreen() {
       const profileData = await getData(); // Call the API to get user data
       console.log(profileData)
       setUserData(profileData); // Update user data in your context
+      console.log(userData.password)
       Alert.alert('Profile Updated', 'Your profile information has been updated.');
     } catch (error) {
       console.error(error);
@@ -26,7 +33,13 @@ export default function ProfileScreen() {
   };
 
   const handleLogout = () => {
-    setUserData(null);
+    setUserData({
+      profilePhoto: '',
+      firstName: '',
+      lastName: '',
+      username: '',
+      password: ''
+    });
     router.replace('/login');
   };
 
@@ -37,12 +50,12 @@ export default function ProfileScreen() {
         <View style={styles.profileHeader}>
           <View style={styles.headerBackground}>
             <Image
-              source={{ uri: userData ? userData.profilePicture : 'https://via.placeholder.com/150' }}
+              source={{ uri: userData.profilePhoto || 'https://via.placeholder.com/150' }}
               style={styles.profileImage}
             />
           </View>
-          <Text style={styles.profileName}>{userData ? userData.name : 'Guest'}</Text>
-          <Text style={styles.profileEmail}>{userData ? userData.email : 'guest@example.com'}</Text>
+          <Text style={styles.profileName}>{userData ? userData.firstName : 'Guest'}</Text>
+          <Text style={styles.profileEmail}>{userData ? userData.lastName : 'guest@example.com'}</Text>
         </View>
 
         {/* Account Options */}
