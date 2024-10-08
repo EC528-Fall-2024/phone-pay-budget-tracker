@@ -67,7 +67,12 @@ export default function SignupScreen() {
         }
       });
       console.log('User signed up:', user);
-      router.replace("/login");
+      router.push({
+        pathname: "/(auth)/confirm",
+        params: { username },  // username is passed as a query param
+      });
+      
+      //router.replace("/login");
     } catch (error) {
       if (error instanceof Error) {
         console.log('Error signing up:', error.message);

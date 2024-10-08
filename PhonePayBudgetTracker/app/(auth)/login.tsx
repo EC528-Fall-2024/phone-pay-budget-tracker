@@ -26,14 +26,15 @@ export default function LoginScreen() {
       const user = await Auth.signIn(email, password);
       console.log('User signed in:', user)
 
-      setUserData({
-        name: user.attributes.name,
-        email: user.attributes.email,
-        //profilePicture: 'https://via.placeholder.com/150',
-      });
+      // setUserData({
+      //   name: user.attributes.name,
+      //   email: user.attributes.email,
+      //   //profilePicture: 'https://via.placeholder.com/150',
+      // });
       console.log('User data set. Navigating to home...');
-      router.replace("/home");
+      router.replace("/home")
     } catch (error) {
+        console.log("couldnt log in")
         if (error instanceof Error) {
           setError(error.message || 'Failed to log in');
         } else {
