@@ -1,32 +1,31 @@
-import json
+
+import boto3
+import os
 
 def lambda_handler(event, context):
-    # Hardcoded transaction data
-    transaction_data = [
-        {
-            'name': 'Transaction 1',
-            'date': '2024-09-30',
-            'amount': 150.50
-        },
-        {
-            'name': 'Transaction 2',
-            'date': '2024-09-28',
-            'amount': 200.00
-        },
-        {
-            'name': 'Transaction 3',
-            'date': '2024-09-27',
-            'amount': 75.25
+    aws_endpoint = os.getenv('AWS_ENDPOINT')
+    table_name = os.getenv('TABLE_NAME')
+
+    dynamodb = boto3.resource('dynamodb', endpoint_url=aws_endpoint)
+    table = dynamodb.Table(table_name)
+
+    # Example: Put an item into DynamoDB
+    table.put_item(
+        Item={
+            'id': 'trans-123',
+            'transaction_data': 'Sample Data'
         }
-    ]
+    )
+
+    # Example: Get the item from DynamoDB
+    response = table.get_item(
+        Key={
+            'id': 'trans-123'
+        }
+    )
 
     return {
         'statusCode': 200,
-        'headers': {
-            'Access-Control-Allow-Origin': '*',  # Allow CORS from any origin
-            'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-            'Access-Control-Allow-Headers': 'Content-Type'
-        },
-        'body': json.dumps(transaction_data)
+        'body': f"Transaction Data Analysis Response: {response['Item']}"
     }
 
