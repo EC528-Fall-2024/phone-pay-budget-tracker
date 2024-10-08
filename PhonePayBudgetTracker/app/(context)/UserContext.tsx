@@ -4,7 +4,7 @@ import React, { createContext, useContext, useState, ReactNode } from 'react';
 interface User {
   name: string;
   email: string;
-  profilePicture: string;
+  //profilePicture: string;
   //phone: string;
   //role: boolean; //(admin)
   //bio: string;
