@@ -2,6 +2,12 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { UserProvider } from './(context)/UserContext';
 import { router } from 'expo-router';
+import { Amplify } from 'aws-amplify';
+import awsconfig from '../constants/config/aws-exports';
+
+
+// initialize aws amplify
+Amplify.configure(awsconfig)
 
 
 export default function IndexPage() {

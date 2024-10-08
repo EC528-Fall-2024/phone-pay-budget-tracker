@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Replace with your actual API Gateway URL and API keys if needed
-const API_URL = 'http://127.0.0.1:3000'; 
+const API_URL = 'http://localhost:3000'; 
 
 // Example function to handle GET request
 export const getData = async () => {

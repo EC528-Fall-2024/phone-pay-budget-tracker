@@ -1,0 +1,25 @@
+{
+    "compilerOptions": {
+        "baseUrl": "src/",
+        "composite": false,
+        "checkJs": false,
+        "noImplicitReturns": true,
+        "outDir": "dist",
+        "module": "CommonJS",
+        "moduleResolution": "node",
+        "removeComments": true,
+        "resolveJsonModule": true,
+        "esModuleInterop": true,
+        "importHelpers": false,
+        "allowJs": false,
+        "strict": true,
+        "useUnknownInCatchVariables": false,
+        "lib": ["es6", "dom"],
+        "target": "ES2022",
+        "forceConsistentCasingInFileNames": true,
+        "skipLibCheck": true,
+        "noUncheckedIndexedAccess": true,
+    },
+    "include": ["src/**/*"],
+    "exclude": ["node_modules"]
+}
