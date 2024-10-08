@@ -1,12 +1,12 @@
 import axios from 'axios';
 
 // Replace with your actual API Gateway URL and API keys if needed
-const API_URL = 'http://localhost:4000'; 
+const API_URL = 'http://localhost:3000'; 
 
 // Example function to handle GET request
 export const getData = async () => {
   try {
-    const response = await axios.get(`${API_URL}/user/user2`, {
+    const response = await axios.get(`${API_URL}/user-profile`, {
       headers: {
         //'x-api-key': 'your-api-key',  // Add if you require an API key
         'Content-Type': 'application/json',
