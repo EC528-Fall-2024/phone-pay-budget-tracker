@@ -1,3 +1,33 @@
+import boto3
+import os
+
+def lambda_handler(event, context):
+    aws_endpoint = os.getenv('AWS_ENDPOINT')
+    table_name = os.getenv('TABLE_NAME')
+
+    dynamodb = boto3.resource('dynamodb', endpoint_url=aws_endpoint)
+    table = dynamodb.Table(table_name)
+
+    table.put_item(
+        Item={
+            'id': 'user-123',
+            'username': 'profileuser'
+        }
+    )
+
+    response = table.get_item(
+        Key={
+            'id': 'user-123'
+        }
+    )
+
+    return {
+        'statusCode': 200,
+        'body': f"User Profile Microservice Response: {response['Item']}"
+    }
+
+
+'''
 def lambda_handler(event, context):
     # hard coded data for demo purposes and to connect to frontend
     user_data = {
@@ -24,4 +54,5 @@ def lambda_handler(event, context):
         'statusCode': 404,
         'body': 'User not found'
     }
+'''
 
