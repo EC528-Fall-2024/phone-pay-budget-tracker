@@ -168,7 +168,7 @@ Resources:
           Type: Api
           Properties:
             Path: /user-profile
-            Method: ANY
+            Method: GET
       Policies:
         - DynamoDBCrudPolicy:
             TableName: profileData
@@ -177,12 +177,19 @@ Resources:
   UserProfilePutFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: ../microservices/User-Profile/
+      CodeUri: ../../microservices/User-Profile/
       Handler: app.lambda_handler_setProfile  # Reference to your new lambda handler
       Runtime: nodejs20.x
+      Environment:
+        Variables:
+          AWS_ENDPOINT: http://172.20.0.2:4566
+          TABLE_NAME: profileData
       Events:
         UserProfilePutApi:
           Type: Api
           Properties:
             Path: /user-profile
             Method: POST  # Specify that this Lambda handles PUT requests
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: profileData

@@ -27,22 +27,22 @@ manifest_hash = ""
 packagetype = "Zip"
 functions = ["NotificationsFunction"]
 
-[function_build_definitions.0314275a-106d-4820-aa81-1c081153b2f3]
+[function_build_definitions.0f811889-2eab-44fa-b76f-7821dc2c367d]
 codeuri = "/Users/naomi_12/repos/dev/microservices/Trans-DataAnalysis"
-runtime = "python3.10"
+runtime = "nodejs20.x"
 architecture = "x86_64"
 handler = "app.lambda_handler"
-manifest_hash = ""
+manifest_hash = "e14156aa13f4286ebf0750225dc13812"
 packagetype = "Zip"
 functions = ["TransDataAnalysisFunction"]
 
-[function_build_definitions.c60bf0d6-b911-465c-9388-a643327cd8c4]
+[function_build_definitions.91776c5d-b875-4487-a438-56da84c69e0c]
 codeuri = "/Users/naomi_12/repos/dev/microservices/User-Profile"
-runtime = "python3.10"
+runtime = "nodejs20.x"
 architecture = "x86_64"
 handler = "app.lambda_handler"
-manifest_hash = ""
+manifest_hash = "6e2977756c66f19c820eeb2a91d5d5c6"
 packagetype = "Zip"
-functions = ["UserProfileFunction"]
+functions = ["UserProfileFunction", "UserProfilePutFunction"]
 
 [layer_build_definitions]
