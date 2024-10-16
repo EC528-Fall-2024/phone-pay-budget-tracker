@@ -16,6 +16,7 @@ export default function LoginScreen() {
 
 
   const handleLogin = async () => {
+    //router.replace("/home")
     console.log('email:', email, 'pass:', password);
 
     if (!email || !password) {
