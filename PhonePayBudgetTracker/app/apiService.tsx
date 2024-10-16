@@ -6,6 +6,47 @@ import { Auth } from 'aws-amplify';  // Import Amplify Auth
 // Replace with your actual API Gateway URL and API keys if needed
 const API_URL = 'http://localhost:3000'; 
 
+const API_BASE_URL = 'http://localhost:3000';
+
+/**
+ * Fetches the Plaid link token from the backend Lambda function.
+ * 
+ * @param {string} userId - Unique identifier for the user.
+ * @returns {Promise<string>} - Returns the link token from Plaid.
+ */
+export const fetchLinkToken = async (userId) => {
+  try {
+    const response = await axios.post(`${API_BASE_URL}/trans-dataanalysis/plaid/create_link_token`, {
+      userId,
+    });
+    return response.data.link_token;
+  } catch (error) {
+    console.error('Error fetching link token:', error);
+    throw new Error('Unable to fetch link token');
+  }
+};
+
+/**
+ * Exchanges the public token for an access token and fetches transactions from Plaid.
+ * 
+ * @param {string} publicToken - The public token received from Plaid Link.
+ * @returns {Promise<object>} - Returns the transaction data from Plaid.
+ */
+export const onSuccess = async (publicToken) => {
+  try {
+    const response = await axios.post(`${API_BASE_URL}/trans-dataanalysis/plaid/get_transactions`, { // Post because we are sending confidential info, we will still receive the transactions
+      public_token: publicToken,
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching transactions:', error);
+    throw new Error('Unable to fetch transactions');
+  }
+};
+
+
+
+
 // Example function to handle GET request
 
 export const getProfileData = async () => {
@@ -64,6 +105,9 @@ export const getTransactionData = async () => {
     throw error;
   }
 };
+
+
+
 
 
 
