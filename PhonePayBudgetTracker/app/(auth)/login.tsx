@@ -34,13 +34,14 @@ export default function LoginScreen() {
       console.log('User data set. Navigating to home...');
       router.replace("/home")
     } catch (error) {
-        console.log("couldnt log in")
-        if (error instanceof Error) {
+      console.log("couldn't log in", error);  // Log the entire error object
+      if (error instanceof Error) {
           setError(error.message || 'Failed to log in');
-        } else {
+      } else {
           setError('An unknown error occurred');
-        }
       }
+  }
+  
 
     // // Simulate logging in by setting some user data
     // setUserData({
@@ -80,7 +81,7 @@ export default function LoginScreen() {
           style={styles.input} 
         />
 
-        {error ? <Text style={styles.error}>{error}</Text> : null}    
+        {/* {error ? <Text style={styles.error}>{error}</Text> : null}   */}
 
         {/* Login Button */}
         <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>

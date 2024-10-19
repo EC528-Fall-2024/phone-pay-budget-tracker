@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
+import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity } from 'react-native';
 import { Auth } from 'aws-amplify';
 import { router, useLocalSearchParams } from 'expo-router';
 
@@ -8,7 +8,6 @@ export default function ConfirmSignUpScreen() {
   const [error, setError] = useState('');
 
   const { username } = useLocalSearchParams();
-
   const userNameString = Array.isArray(username) ? username[0] : username;
 
   const handleConfirm = async () => {
@@ -22,6 +21,11 @@ export default function ConfirmSignUpScreen() {
     }
   };
 
+  // New function to navigate back to the login page
+  const navigateToLogin = () => {
+    router.replace('/login');
+  };
+
   return (
     <View style={styles.container}>
       <Text>Enter confirmation code sent to your email:</Text>
@@ -32,7 +36,13 @@ export default function ConfirmSignUpScreen() {
         style={styles.input}
       />
       {error ? <Text style={styles.error}>{error}</Text> : null}
+
       <Button title="Confirm" onPress={handleConfirm} />
+
+      {/* Green button to navigate back to the login page */}
+      <TouchableOpacity style={styles.greenButton} onPress={navigateToLogin}>
+        <Text style={styles.buttonText}>Go Back to Login</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -40,7 +50,8 @@ export default function ConfirmSignUpScreen() {
 const styles = StyleSheet.create({
   container: {
     padding: 20,
-    justifyContent: 'center',
+    flex: 1,
+    justifyContent: 'center', // Centers everything vertically
   },
   input: {
     borderBottomWidth: 1,
@@ -49,5 +60,17 @@ const styles = StyleSheet.create({
   },
   error: {
     color: 'red',
+    marginBottom: 10,
+  },
+  greenButton: {
+    backgroundColor: 'green',
+    padding: 15,
+    borderRadius: 5,
+    marginTop: 20,
+    alignItems: 'center', // Centers the text horizontally
+  },
+  buttonText: {
+    color: 'white',
+    fontWeight: 'bold',
   },
 });

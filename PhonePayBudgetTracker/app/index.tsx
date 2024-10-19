@@ -4,6 +4,7 @@ import { UserProvider } from './(context)/UserContext';
 import { router } from 'expo-router';
 import { Amplify } from 'aws-amplify';
 import awsconfig from '../constants/config/aws-exports';
+import 'react-native-get-random-values';
 
 
 // initialize aws amplify

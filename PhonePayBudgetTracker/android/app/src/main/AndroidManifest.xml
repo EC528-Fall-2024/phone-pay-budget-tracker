@@ -25,9 +25,20 @@
         <category android:name="android.intent.category.DEFAULT"/>
         <category android:name="android.intent.category.BROWSABLE"/>
         <data android:scheme="myapp"/>
-        <data android:scheme="com.anonymous.PhonePayBudgetTracker"/>
+        <data android:scheme="com.anonymous.phonepaybudgettracker"/>
+        <data android:scheme="exp+phonepaybudgettracker"/>
       </intent-filter>
     </activity>
     <activity android:name="com.facebook.react.devsupport.DevSettingsActivity" android:exported="false"/>
+    <activity 
+      android:name="com.plaid.internal.LinkRedirectActivity"
+      android:exported="true">
+      <intent-filter>
+        <action android:name="android.intent.action.VIEW"/>
+        <category android:name="android.intent.category.DEFAULT"/>
+        <category android:name="android.intent.category.BROWSABLE"/>
+        <data android:scheme="plaid"/>
+      </intent-filter>
+    </activity>
   </application>
 </manifest>
