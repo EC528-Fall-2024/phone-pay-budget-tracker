@@ -1,11 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, SafeAreaView, Alert, ActivityIndicator } from 'react-native';
-import { useNavigation } from 'expo-router';
 import { router } from 'expo-router';
-import { getProfileData } from '../apiService'; // Import your API call function
+import { create, open, dismissLink, LinkSuccess, LinkExit, LinkIOSPresentationStyle, LinkLogLevel } from 'react-native-plaid-link-sdk';
+import { fetchLinkToken, onSuccess, getProfileData } from '../apiService';  // Adjust your API import as needed
 
 export default function ProfileScreen() {
-  const navigation = useNavigation();
   const [userData, setUserData] = useState({
     profilePhoto: '',
     firstName: '',
@@ -13,23 +12,24 @@ export default function ProfileScreen() {
     username: '',
     password: ''
   });
-  const [loading, setLoading] = useState(true); // State to manage loading
+  const [loading, setLoading] = useState(true);  // State to manage loading
+  const [linkToken, setLinkToken] = useState(null);  // State to store the link token
 
-  // useEffect to automatically fetch user data when component mounts
+  // Function to fetch the profile data
   useEffect(() => {
     const fetchProfileData = async () => {
       try {
-        const profileData = await getProfileData(); // Call the API to get user data
-        setUserData(profileData); // Update user data in your state
+        const profileData = await getProfileData();  // Call the API to get user data
+        setUserData(profileData);  // Update user data in the state
       } catch (error) {
         console.error(error);
         Alert.alert('Error', 'Failed to fetch profile data.');
       } finally {
-        setLoading(false); // Set loading back to false after fetching data
+        setLoading(false);  // Set loading to false after fetching data
       }
     };
 
-    fetchProfileData(); // Automatically fetch the profile data on mount
+    fetchProfileData();  // Automatically fetch the profile data on mount
   }, []);
 
   const handleLogout = () => {
@@ -43,9 +43,112 @@ export default function ProfileScreen() {
     router.replace('/login');
   };
 
-  const handleEditProfile = () => {
-    // Navigate to the editProfile page
-    router.push('editProfile'); // TO DO: IMPLEMENT THE EDIT PROFILE PAGE
+  // // Function to fetch the Plaid link token
+  // const createLinkToken = useCallback(async () => {
+  //   try {
+  //     const token = await fetchLinkToken('custom_mahoney');  // Call your API to get the link token
+  //     setLinkToken(token);
+  //     console.log(linkToken)
+  //   } catch (error) {
+  //     console.error('Error fetching link token:', error);
+  //     Alert.alert('Error', 'Failed to fetch link token');
+  //   }
+  // }, []);
+
+  // // Helper function to create the open props for Plaid Link
+  // const createLinkOpenProps = () => {
+  //   return {
+  //     onSuccess: async (success: LinkSuccess) => {
+  //       try {
+  //         console.log("try")
+  //         await onSuccess(success.publicToken);  // Exchange the publicToken for an accessToken
+  //         Alert.alert('Success', 'Account linked successfully');
+  //         router.push('../onSuccess')
+  //       } catch (err) {
+  //         console.error('Error exchanging public token:', err);
+  //         Alert.alert('Error', 'Failed to retrieve transactions');
+  //       }
+  //     },
+  //     onExit: (linkExit: LinkExit) => {
+  //       console.log('Exit: ', linkExit);
+  //       dismissLink();  // Dismiss the Plaid Link UI
+  //     },
+  //     iOSPresentationStyle: LinkIOSPresentationStyle.MODAL,  // Modal presentation on iOS
+  //     logLevel: LinkLogLevel.ERROR,  // Log level for debugging
+  //   };
+  // };
+
+  // // Handler to open the Plaid Link UI
+  // const handleOpenLink = async () => {
+  //   console.log("hello")
+  //   await createLinkToken();
+  //   const openProps = createLinkOpenProps();
+  //   open(openProps);  // Open the Plaid Link UI
+
+  // };
+
+  const createLinkToken = useCallback(async () => {
+    try {
+      const token = await fetchLinkToken('custom_mahoney');
+      setLinkToken(token);
+    } catch (error) {
+      console.error('Error fetching link token:', error);
+      Alert.alert('Error', 'Failed to fetch link token');
+    }
+  }, []);
+
+  useEffect(() => {
+    createLinkToken();
+  }, []);
+
+  // Ensure the create() is called and its success is awaited before opening the link
+  const handleOpenLink = async () => {
+    if (!linkToken) {
+      console.error('Link token is not available.');
+      return;
+    }
+
+    try {
+      const tokenConfig = { token: linkToken };
+      await create(tokenConfig); // Call create with the token
+
+      // Now open the link
+      const openProps = {
+        onSuccess: async (success: LinkSuccess) => {
+          try {
+            console.log(success.publicToken)
+            const response = await onSuccess(success.publicToken); // Exchange the publicToken for an accessToken
+            // Extract the required fields: name, date, amount, and merchant_name (description)
+            
+            console.log(response.transactions)
+            response.transactions.transactions.forEach(transaction => {
+              const { name, date, amount, transaction_type } = transaction;
+              console.log(`Name: ${name}`);
+              console.log(`Date: ${date}`);
+              console.log(`Amount: $${amount}`);
+              console.log(`Description: ${transaction_type}`);
+              console.log('---------------------');
+            });
+            Alert.alert('Success', 'Account linked successfully');
+            router.push('../onSuccess');
+          } catch (err) {
+            console.error('Error exchanging public token:', err);
+            Alert.alert('Error', 'Failed to retrieve transactions');
+          }
+        },
+        onExit: (linkExit: LinkExit) => {
+          console.log('Exit: ', linkExit);
+          dismissLink(); // Dismiss the Plaid Link UI
+        },
+        iOSPresentationStyle: LinkIOSPresentationStyle.MODAL, // Modal presentation on iOS
+        logLevel: LinkLogLevel.ERROR, // Log level for debugging
+      };
+
+      open(openProps); // Open the Plaid Link UI
+    } catch (error) {
+      console.error('Error during Plaid link creation or opening:', error);
+      Alert.alert('Error', 'Unable to initiate Plaid Link.');
+    }
   };
 
   if (loading) {
@@ -75,14 +178,14 @@ export default function ProfileScreen() {
             <Text style={styles.profileName}> {userData.lastName || 'Last'}</Text>
           </View>
 
-          {/* Move the username here */}
+          {/* Username */}
           <Text style={styles.profileUsername}>{userData.username || 'username'}</Text>
         </View>
 
         {/* Account Options */}
         <View style={styles.optionsContainer}>
-          <TouchableOpacity style={[styles.optionItem, styles.optionButton]} onPress={handleEditProfile}>
-            <Text style={styles.optionText}>Edit Profile</Text>
+          <TouchableOpacity style={[styles.optionItem, styles.optionButton]} onPress={handleOpenLink}>
+            <Text style={styles.optionText}>Link your bank account</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={[styles.optionItem, styles.logoutButton]}>

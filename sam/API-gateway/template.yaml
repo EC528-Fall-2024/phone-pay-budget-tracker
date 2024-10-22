@@ -57,6 +57,40 @@ Resources:
             Path: /trans-dataanalysis
             Method: ANY
 
+  # Plaid Lambda function for handling link token creation
+  PlaidFunctionCreateLinkToken:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../microservices/Trans-DataAnalysis/plaid/create_link_token/
+      Handler: app.lambda_handler  # Adjust the handler to match the function name in create_link_token/app.js
+      Events:
+        CreateLinkTokenApi:
+          Type: Api
+          Properties:
+            Path: /trans-dataanalysis/plaid/create_link_token
+            Method: POST
+      Environment:
+        Variables:
+          PLAID_CLIENT_ID: !Ref PlaidClientId
+          PLAID_SECRET: !Ref PlaidSecret
+
+  # Plaid Lambda function for handling transaction fetching
+  PlaidFunctionGetTransactions:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../microservices/Trans-DataAnalysis/plaid/get_transactions/
+      Handler: app.lambda_handler  # Adjust the handler to match the function name in get_transactions/app.js
+      Events:
+        GetTransactionsApi:
+          Type: Api
+          Properties:
+            Path: /trans-dataanalysis/plaid/get_transactions
+            Method: POST
+      Environment:
+        Variables:
+          PLAID_CLIENT_ID: !Ref PlaidClientId
+          PLAID_SECRET: !Ref PlaidSecret
+
   UserProfileFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -80,4 +114,22 @@ Resources:
           Type: Api
           Properties:
             Path: /user-profile
-            Method: POST  # Specify that this Lambda handles PUT requests
+            Method: POST  # Specify that this Lambda handles POST requests
+
+Parameters:
+  PlaidClientId:
+    Type: String
+    Description: Plaid Client ID
+
+  PlaidSecret:
+    Type: String
+    Description: Plaid Secret
+
+Outputs:
+  CreateLinkTokenApi:
+    Description: API Gateway endpoint URL for creating a Plaid link token
+    Value: !Sub 'https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/trans-dataanalysis/plaid/create_link_token'
+  
+  GetTransactionsApi:
+    Description: API Gateway endpoint URL for fetching Plaid transactions
+    Value: !Sub 'https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/trans-dataanalysis/plaid/get_transactions'

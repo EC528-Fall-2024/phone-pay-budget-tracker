@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import { Auth } from 'aws-amplify';
 import { router, useLocalSearchParams } from 'expo-router';
 
@@ -24,30 +24,67 @@ export default function ConfirmSignUpScreen() {
 
   return (
     <View style={styles.container}>
-      <Text>Enter confirmation code sent to your email:</Text>
+      <Text style={styles.title}>Confirm Your Sign-Up</Text>
+      <Text style={styles.subtitle}>Enter the confirmation code sent to your email:</Text>
       <TextInput
         value={code}
         onChangeText={setCode}
         placeholder="Confirmation code"
         style={styles.input}
+        keyboardType="number-pad"
+        maxLength={6}
       />
       {error ? <Text style={styles.error}>{error}</Text> : null}
-      <Button title="Confirm" onPress={handleConfirm} />
+      <TouchableOpacity style={styles.button} onPress={handleConfirm}>
+        <Text style={styles.buttonText}>Confirm</Text>
+      </TouchableOpacity>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
     padding: 20,
     justifyContent: 'center',
+    backgroundColor: '#f0f4f7',
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 20,
+    color: '#333',
+  },
+  subtitle: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+    marginBottom: 20,
   },
   input: {
-    borderBottomWidth: 1,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    padding: 12,
     marginBottom: 20,
-    padding: 10,
+    fontSize: 16,
+    backgroundColor: '#fff',
   },
   error: {
     color: 'red',
+    textAlign: 'center',
+    marginBottom: 10,
+  },
+  button: {
+    backgroundColor: '#4CAF50',
+    paddingVertical: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
 });
