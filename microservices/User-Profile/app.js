@@ -1,7 +1,7 @@
 const AWS = require('aws-sdk');
 const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
-const { DynamoDBDocumentClient, QueryCommand } = require('@aws-sdk/lib-dynamodb');
-const { NodeHttpHandler } = require('@aws-sdk/node-http-handler')
+const { DynamoDBDocumentClient, GetCommand, PutCommand } = require('@aws-sdk/lib-dynamodb');
+const { NodeHttpHandler } = require('@aws-sdk/node-http-handler');
 
 
 // SAM AUTOMATICALLY CONNECTS NOW TO LOCAL DYNAMODB WHEN FUNCTION IS CALLED
@@ -50,33 +50,41 @@ exports.lambda_handler = async (event) => {
     const awsEndpoint = process.env.AWS_ENDPOINT;
     const tableName = process.env.TABLE_NAME;
 
-    const pk = 'bmahoney'; // The user's ID
+    // Parse the pk (primary key) from the query string parameters or event body
+    const pk = event.queryStringParameters?.pk || event.body?.pk;
+    if (!pk) {
+        return {
+            statusCode: 400,  // Bad request if no pk is provided
+            body: JSON.stringify({ error: 'Missing user id (pk)' }),
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        };
+    }
 
-    const dynamodb = new DynamoDBClient({
+    const dynamoClient = new DynamoDBClient({
         endpoint: awsEndpoint, 
         region: 'us-east-2',   
     });
 
+    const dynamodb = DynamoDBDocumentClient.from(dynamoClient);
+
     const params = {
         TableName: tableName,
-        KeyConditionExpression: 'pk = :pk',
-        ExpressionAttributeValues: {
-            ':pk': pk, // The user's primary key
-        },
-        ScanIndexForward: true, // Sort ascending by sort key (`sk`)
+        Key: { pk }
     };
 
     try {
         // Ensure the command is awaited
-        const response = await dynamodb.send(new QueryCommand(params));
+        const response = await dynamodb.send(new GetCommand(params));
 
         console.log('DynamoDB response:', response);
 
-        if (response.Items && response.Items.length > 0) {
-            // Return the found items (transactions)
+        if (response.Item) {
+            // Return the found item
             return {
                 statusCode: 200,
-                body: JSON.stringify(response.Items),
+                body: JSON.stringify(response.Item),
                 headers: {
                     'Content-Type': 'application/json'
                 }
@@ -85,7 +93,7 @@ exports.lambda_handler = async (event) => {
             // Handle not found
             return {
                 statusCode: 404,
-                body: JSON.stringify({ error: 'No transactions found' }),
+                body: JSON.stringify({ error: 'Profile not found' }),
                 headers: {
                     'Content-Type': 'application/json'
                 }
@@ -99,6 +107,58 @@ exports.lambda_handler = async (event) => {
         return {
             statusCode: 500,
             body: JSON.stringify({ error: 'Failed to retrieve transactions', message: error.message }),
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        };
+    }
+};
+
+exports.lambda_handler_setProfile = async (event) => {
+    const awsEndpoint = process.env.AWS_ENDPOINT;
+    const tableName = process.env.TABLE_NAME; 
+
+    const dynamoClient = new DynamoDBClient({
+        endpoint: awsEndpoint, 
+        region: 'us-east-2',   
+    });
+
+    const dynamodb = DynamoDBDocumentClient.from(dynamoClient);
+
+    // Parse the request body
+    const requestBody = JSON.parse(event.body);
+
+    const params = {
+        TableName: tableName,
+        Item: {
+            pk: requestBody.pk || 'abcd',  // Primary key
+            firstName: requestBody.firstName,
+            lastName: requestBody.lastName,
+            username: requestBody.username,
+            email: requestBody.email,
+            profilePhoto: requestBody.profilePhoto,
+        }
+    };
+
+    try {
+        // Use PutCommand to insert or update data in DynamoDB
+        await dynamodb.send(new PutCommand(params));
+
+        // Return success response
+        return {
+            statusCode: 200,
+            body: JSON.stringify({ message: 'Profile data saved successfully' }),
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        };
+    } catch (error) {
+        console.error('Error occurred:', error.message);
+
+        // Return error response
+        return {
+            statusCode: 500,
+            body: JSON.stringify({ error: 'Failed to save profile data', message: error.message }),
             headers: {
                 'Content-Type': 'application/json'
             }

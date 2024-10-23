@@ -29,7 +29,7 @@ Resources:
       Runtime: python3.10
       Environment:
         Variables:
-          AWS_ENDPOINT: http://172.20.0.2:4566  
+          AWS_ENDPOINT: http://localstack:4566  
           TABLE_NAME: AdminControlTable
       Events:
         AdminControlApi:
@@ -41,38 +41,38 @@ Resources:
         - DynamoDBCrudPolicy:
             TableName: AdminControlTable
 
-  # Authentication Service
-  AuthenticationTable:
-    Type: AWS::DynamoDB::Table
-    Properties:
-      TableName: AuthenticationTable
-      AttributeDefinitions:
-        - AttributeName: id
-          AttributeType: S
-      KeySchema:
-        - AttributeName: id
-          KeyType: HASH
-      BillingMode: PAY_PER_REQUEST
+  # # Authentication Service
+  # AuthenticationTable:
+  #   Type: AWS::DynamoDB::Table
+  #   Properties:
+  #     TableName: AuthenticationTable
+  #     AttributeDefinitions:
+  #       - AttributeName: id
+  #         AttributeType: S
+  #     KeySchema:
+  #       - AttributeName: id
+  #         KeyType: HASH
+  #     BillingMode: PAY_PER_REQUEST
 
-  AuthenticationFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: ../../microservices/Authentication/
-      Handler: app.lambda_handler
-      Runtime: python3.10
-      Environment:
-        Variables:
-          AWS_ENDPOINT: http://172.20.0.2:4566
-          TABLE_NAME: AuthenticationTable
-      Events:
-        AuthenticationApi:
-          Type: Api
-          Properties:
-            Path: /authentication
-            Method: ANY
-      Policies:
-        - DynamoDBCrudPolicy:
-            TableName: AuthenticationTable
+  # AuthenticationFunction:
+  #   Type: AWS::Serverless::Function
+  #   Properties:
+  #     CodeUri: ../../microservices/Authentication/
+  #     Handler: app.lambda_handler
+  #     Runtime: python3.10
+  #     Environment:
+  #       Variables:
+  #         AWS_ENDPOINT: http://172.20.0.2:4566
+  #         TABLE_NAME: AuthenticationTable
+  #     Events:
+  #       AuthenticationApi:
+  #         Type: Api
+  #         Properties:
+  #           Path: /authentication
+  #           Method: ANY
+  #     Policies:
+  #       - DynamoDBCrudPolicy:
+  #           TableName: AuthenticationTable
 
   # Notifications Service
   NotificationsTable:
@@ -95,7 +95,7 @@ Resources:
       Runtime: python3.10
       Environment:
         Variables:
-          AWS_ENDPOINT: http://172.20.0.2:4566
+          AWS_ENDPOINT: http://localstack:4566
           TABLE_NAME: NotificationsTable
       Events:
         NotificationsApi:
@@ -128,7 +128,7 @@ Resources:
       Runtime: nodejs20.x
       Environment:
         Variables:
-          AWS_ENDPOINT: http://172.20.0.2:4566
+          AWS_ENDPOINT: http://localstack:4566
           TABLE_NAME: transactionData
       Events:
         TransDataAnalysisApi:
@@ -139,6 +139,42 @@ Resources:
       Policies:
         - DynamoDBCrudPolicy:
             TableName: transactionData
+
+  # Plaid Lambda function for handling link token creation
+  PlaidFunctionCreateLinkToken:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../../microservices/Trans-DataAnalysis/plaid/create_link_token/
+      Handler: app.lambda_handler  # Adjust the handler to match the function name in create_link_token/app.js
+      Runtime: nodejs20.x
+      Events:
+        CreateLinkTokenApi:
+          Type: Api
+          Properties:
+            Path: /trans-dataanalysis/plaid/create_link_token
+            Method: POST
+      Environment:
+        Variables:
+          PLAID_CLIENT_ID: !Ref PlaidClientId
+          PLAID_SECRET: !Ref PlaidSecret
+
+  # Plaid Lambda function for handling transaction fetching
+  PlaidFunctionGetTransactions:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../../microservices/Trans-DataAnalysis/plaid/get_transactions/
+      Handler: app.lambda_handler  # Adjust the handler to match the function name in get_transactions/app.js
+      Runtime: nodejs20.x
+      Events:
+        GetTransactionsApi:
+          Type: Api
+          Properties:
+            Path: /trans-dataanalysis/plaid/get_transactions
+            Method: POST
+      Environment:
+        Variables:
+          PLAID_CLIENT_ID: !Ref PlaidClientId
+          PLAID_SECRET: !Ref PlaidSecret
 
   # User Profile Service
   UserProfileTable:
@@ -161,7 +197,7 @@ Resources:
       Runtime: nodejs20.x
       Environment:
         Variables:
-          AWS_ENDPOINT: http://172.20.0.2:4566
+          AWS_ENDPOINT: http://localstack:4566
           TABLE_NAME: profileData
       Events:
         UserProfileApi:
@@ -182,7 +218,7 @@ Resources:
       Runtime: nodejs20.x
       Environment:
         Variables:
-          AWS_ENDPOINT: http://172.20.0.2:4566
+          AWS_ENDPOINT: http://localstack:4566
           TABLE_NAME: profileData
       Events:
         UserProfilePutApi:
@@ -193,3 +229,21 @@ Resources:
       Policies:
         - DynamoDBCrudPolicy:
             TableName: profileData
+
+Parameters:
+  PlaidClientId:
+    Type: String
+    Description: Plaid Client ID
+
+  PlaidSecret:
+    Type: String
+    Description: Plaid Secret
+
+Outputs:
+  CreateLinkTokenApi:
+    Description: API Gateway endpoint URL for creating a Plaid link token
+    Value: !Sub 'https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/trans-dataanalysis/plaid/create_link_token'
+  
+  GetTransactionsApi:
+    Description: API Gateway endpoint URL for fetching Plaid transactions
+    Value: !Sub 'https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/trans-dataanalysis/plaid/get_transactions'
