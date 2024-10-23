@@ -100,7 +100,7 @@ Stretch Goals:
    - Create an authentication microservice, have a usable API gateway, and create front-end sign-in and home page.
 2. Sprint 2 | [Video](https://drive.google.com/file/d/1vgQqm39kYifTXs3IUkoG8ieGKExtU4m4/view?usp=sharing) | [Slides](https://docs.google.com/presentation/d/1fFp8IKXdV4HfbzRrYJrmV8z269l-AxWpU7dCllMW5pU/edit?usp=sharing)
    - Setup main aggregated financial data DB and have user upload data functionality. Then Link with API gateway accordingly. Furthermore create first UI graph to display data
-3. Sprint 3
+3. Sprint 3 | [Video](https://drive.google.com/file/d/17GjCx7kCwknXN-Tg0384MRtkwxDArMeo/view?usp=sharing) | [Slides](https://docs.google.com/presentation/d/1c-rZZOEFvjer7FCvhaeeOTezc5iSvI8Inz6U74GK3Fc/edit?usp=sharing)
    - Set up linking from third party payment processing methods and storing user transaction history from those 
 4. Sprint 4
    - Create CI/CD Job, continue improvements as necessary
