@@ -3,7 +3,6 @@ import { View, Text, TextInput, Button, TouchableOpacity, StyleSheet } from 'rea
 import { router } from "expo-router";
 import { useUser } from '../(context)/UserContext';
 import { Auth } from 'aws-amplify';
-import { setProfileData } from '../apiService';
 
 
 
@@ -28,31 +27,7 @@ export default function LoginScreen() {
     try {
       const user = await Auth.signIn(email, password);
       console.log('User signed in:', user)
-
-
-      const profileData = {
-        pk: user.username,  // Using the username as the primary key (pk)
-        email: user.attributes.email,
-        username: user.username,
-        firstName: 'Brennan',  // Optionally capture firstName and lastName if available
-        lastName: 'Mahoney',
-        profilePhoto: 'https://www.oakdaleveterinarygroup.com/cdn-cgi/image/q=75,f=auto,metadata=none/sites/default/files/styles/large/public/golden-retriever-dog-breed-info.jpg?itok=NWXHSSii'  // Optionally add a default profile photo URL
-      };
-  
-      // Call the setProfileData API to save the profile data
-      try {
-        await setProfileData(profileData);
-        console.log('Profile data saved successfully');
-      } catch (error) {
-        console.error('Error saving profile data:', error);
-        return;  // Exit if saving profile data fails
-      }
-
-      // setUserData({
-      //   name: user.attributes.name,
-      //   email: user.attributes.email,
-      //   //profilePicture: 'https://via.placeholder.com/150',
-      // });
+      
       console.log('User data set. Navigating to home...');
       router.replace("/home")
     } catch (error) {
@@ -63,13 +38,6 @@ export default function LoginScreen() {
           setError('An unknown error occurred');
         }
       }
-
-    // // Simulate logging in by setting some user data
-    // setUserData({
-    //   name: 'John Doe',
-    //   email: 'johndoe@example.com',
-    //   profilePicture: 'https://via.placeholder.com/150',
-    // });
 
     
   };

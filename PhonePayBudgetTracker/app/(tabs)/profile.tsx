@@ -2,19 +2,21 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, SafeAreaView, Alert, ActivityIndicator } from 'react-native';
 import { router } from 'expo-router';
 import { create, open, dismissLink, LinkSuccess, LinkExit, LinkIOSPresentationStyle, LinkLogLevel } from 'react-native-plaid-link-sdk';
-import { fetchLinkToken, onSuccess, getProfileData } from '../apiService';  // Adjust your API import as needed
+import { fetchLinkToken, onSuccess, getProfileData, getTransactions } from '../apiService';  // Adjust your API import as needed
 
 export default function ProfileScreen() {
   const [userData, setUserData] = useState({
+    pk: '',
     profilePhoto: '',
-    firstName: '',
-    lastName: '',
+    // firstName: '',
+    // lastName: '',
     username: '',
-    password: ''
+    // password: ''
   });
   const [loading, setLoading] = useState(true);  // State to manage loading
   const [linkToken, setLinkToken] = useState(null);  // State to store the link token
 
+  const [access_Token, setAccess_Token] = useState('');
   // Function to fetch the profile data
   useEffect(() => {
     const fetchProfileData = async () => {
@@ -42,50 +44,6 @@ export default function ProfileScreen() {
     });
     router.replace('/login');
   };
-
-  // // Function to fetch the Plaid link token
-  // const createLinkToken = useCallback(async () => {
-  //   try {
-  //     const token = await fetchLinkToken('custom_mahoney');  // Call your API to get the link token
-  //     setLinkToken(token);
-  //     console.log(linkToken)
-  //   } catch (error) {
-  //     console.error('Error fetching link token:', error);
-  //     Alert.alert('Error', 'Failed to fetch link token');
-  //   }
-  // }, []);
-
-  // // Helper function to create the open props for Plaid Link
-  // const createLinkOpenProps = () => {
-  //   return {
-  //     onSuccess: async (success: LinkSuccess) => {
-  //       try {
-  //         console.log("try")
-  //         await onSuccess(success.publicToken);  // Exchange the publicToken for an accessToken
-  //         Alert.alert('Success', 'Account linked successfully');
-  //         router.push('../onSuccess')
-  //       } catch (err) {
-  //         console.error('Error exchanging public token:', err);
-  //         Alert.alert('Error', 'Failed to retrieve transactions');
-  //       }
-  //     },
-  //     onExit: (linkExit: LinkExit) => {
-  //       console.log('Exit: ', linkExit);
-  //       dismissLink();  // Dismiss the Plaid Link UI
-  //     },
-  //     iOSPresentationStyle: LinkIOSPresentationStyle.MODAL,  // Modal presentation on iOS
-  //     logLevel: LinkLogLevel.ERROR,  // Log level for debugging
-  //   };
-  // };
-
-  // // Handler to open the Plaid Link UI
-  // const handleOpenLink = async () => {
-  //   console.log("hello")
-  //   await createLinkToken();
-  //   const openProps = createLinkOpenProps();
-  //   open(openProps);  // Open the Plaid Link UI
-
-  // };
 
   const createLinkToken = useCallback(async () => {
     try {
@@ -117,20 +75,26 @@ export default function ProfileScreen() {
         onSuccess: async (success: LinkSuccess) => {
           try {
             console.log(success.publicToken)
-            const response = await onSuccess(success.publicToken); // Exchange the publicToken for an accessToken
+            console.log(success.metadata.institution?.name) // This is logging the bank they just linked
+            const response = await onSuccess(success.publicToken,success.metadata.institution?.name ); // Exchange the publicToken for an accessToken
             // Extract the required fields: name, date, amount, and merchant_name (description)
-            
-            console.log(response.transactions)
-            response.transactions.transactions.forEach(transaction => {
-              const { name, date, amount, transaction_type } = transaction;
-              console.log(`Name: ${name}`);
-              console.log(`Date: ${date}`);
-              console.log(`Amount: $${amount}`);
-              console.log(`Description: ${transaction_type}`);
-              console.log('---------------------');
-            });
+            console.log(response.accessToken) // This is logging the access token for the bank
+            console.log(response.accounts) // Logging the account ID NEED TO CHANGE TO ALL ACCOUNTS
+            setAccess_Token(response.accessToken)
+
+            const transactionData = await getTransactions({accessToken: response.accessToken}); // Exchange the publicToken for an accessToken
+            // Extract the required fields: name, date, amount, and merchant_name (description)            
+
+            console.log(transactionData)
+            // transactionData.data.transaction.forEach(transaction => {
+            //   const { name, date, amount, transaction_type } = transaction;
+            //   console.log(`Name: ${name}`);
+            //   console.log(`Date: ${date}`);
+            //   console.log(`Amount: $${amount}`);
+            //   console.log(`Description: ${transaction_type}`);
+            //   console.log('---------------------');
+            // });
             Alert.alert('Success', 'Account linked successfully');
-            router.push('../onSuccess');
           } catch (err) {
             console.error('Error exchanging public token:', err);
             Alert.alert('Error', 'Failed to retrieve transactions');
@@ -140,6 +104,7 @@ export default function ProfileScreen() {
           console.log('Exit: ', linkExit);
           dismissLink(); // Dismiss the Plaid Link UI
         },
+        
         iOSPresentationStyle: LinkIOSPresentationStyle.MODAL, // Modal presentation on iOS
         logLevel: LinkLogLevel.ERROR, // Log level for debugging
       };
@@ -163,23 +128,17 @@ export default function ProfileScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView style={styles.container}>
-        {/* Profile Header with Gradient */}
         <View style={styles.profileHeader}>
           <View style={styles.headerBackground}>
             <Image
               source={{ uri: userData.profilePhoto || 'https://via.placeholder.com/150' }}
               style={styles.profileImage}
             />
-          </View>
+          </View >
 
-          {/* First and Last Name in one line */}
           <View style={styles.nameContainer}>
-            <Text style={styles.profileName}>{userData.firstName || 'First'}</Text>
-            <Text style={styles.profileName}> {userData.lastName || 'Last'}</Text>
+            <Text style={styles.profileName}>{userData.pk || 'username'}</Text>
           </View>
-
-          {/* Username */}
-          <Text style={styles.profileUsername}>{userData.username || 'username'}</Text>
         </View>
 
         {/* Account Options */}
@@ -247,11 +206,6 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: 'bold',
     color: '#333',
-  },
-  profileUsername: {
-    fontSize: 16,
-    color: '#666',
-    marginTop: 5,
   },
   optionsContainer: {
     backgroundColor: '#fff',

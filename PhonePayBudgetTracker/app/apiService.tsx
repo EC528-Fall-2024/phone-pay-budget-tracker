@@ -27,16 +27,42 @@ export const fetchLinkToken = async (userId) => {
 };
 
 /**
- * Exchanges the public token for an access token and fetches transactions from Plaid.
+ * Exchanges the public token for an access token
  * 
  * @param {string} publicToken - The public token received from Plaid Link.
  * @returns {Promise<object>} - Returns the transaction data from Plaid.
  */
-export const onSuccess = async (publicToken) => {
+export const onSuccess = async (publicToken, bank) => {
   try {
-    const response = await axios.post(`${API_BASE_URL}/trans-dataanalysis/plaid/get_transactions`, { // Post because we are sending confidential info, we will still receive the transactions
+    const currentUser = await Auth.currentAuthenticatedUser();
+    console.log(currentUser.username)
+    const response = await axios.post(`${API_BASE_URL}/trans-dataanalysis/plaid/get_access_token`, { // Post because we are sending confidential info, we will still receive the transactions
       public_token: publicToken,
+      pk: currentUser.username.toString(),
+      bank: bank,
     });
+    // console.log(response.data.totalTransactions)
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching transactions:', error);
+    throw new Error('Unable to fetch transactions');
+  }
+};
+
+/**
+ * fetches transactions from Plaid.
+ * 
+ * @param {string} accessToken - The public token received from Plaid Link.
+ * @returns {Promise<object>} - Returns the transaction data from Plaid.
+ */
+ export const getTransactions = async (accessToken) => {
+  try {
+    const currentUser = await Auth.currentAuthenticatedUser();
+    const response = await axios.post(`${API_BASE_URL}/trans-dataanalysis/plaid/get_transactions`, { // Post because we are sending confidential info, we will still receive the transactions
+      accessToken: accessToken.accessToken,
+      pk: currentUser.username.toString(),
+    });
+    // console.log(response.data.totalTransactions)
     return response.data;
   } catch (error) {
     console.error('Error fetching transactions:', error);

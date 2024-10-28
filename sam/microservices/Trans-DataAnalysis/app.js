@@ -94,3 +94,43 @@ exports.lambda_handler = async (event) => {
         };
     }
 };
+
+// Lambda handler function to store transactions in DynamoDB
+exports.store_transactions_handler = async (event) => {
+    const tableName = 'transactionData'; // Table name where transactions will be stored
+    const transactions = JSON.parse(event.body).transactions; // Assume transactions are passed in the event body
+    const pk = 'bmahoney'; // Replace this with actual user identifier as needed
+
+    try {
+        const putPromises = transactions.map((transaction) => {
+            const params = {
+                TableName: tableName,
+                Item: {
+                    pk: pk, // Primary key, e.g., user ID
+                    sk: `TRANSACTION#${transaction.transaction_id}`, // Sort key with unique transaction ID
+                    ...transaction,
+                },
+            };
+            return dynamodb.send(new PutCommand(params)); // Execute the put command for each transaction
+        });
+
+        await Promise.all(putPromises); // Wait for all put commands to complete
+
+        return {
+            statusCode: 200,
+            body: JSON.stringify({ message: 'Transactions stored successfully' }),
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        };
+    } catch (error) {
+        console.error('Error occurred while storing transactions:', error.message);
+        return {
+            statusCode: 500,
+            body: JSON.stringify({ error: 'Failed to store transactions', message: error.message }),
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        };
+    }
+};

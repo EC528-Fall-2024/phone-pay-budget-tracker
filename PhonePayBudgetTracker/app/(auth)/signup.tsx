@@ -71,11 +71,9 @@ export default function SignupScreen() {
 
       console.log('User signed up:', user);
 
-
-
       router.push({
         pathname: "/(auth)/confirm",
-        params: { username },  // username is passed as a query param
+        params: { username, email },  // username is passed as a query param
       });
       
       //router.replace("/login");

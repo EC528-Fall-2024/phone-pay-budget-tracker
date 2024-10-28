@@ -21,7 +21,7 @@ exports.lambda_handler = async (event) => {
 
     // Create the link token configuration
     const linkTokenConfig = {
-      user: { client_user_id: 'custom_mahoney' },  // Use the userId received in the request
+      user: { client_user_id: 'custom_brennan' },  // Use the userId received in the request
       client_name: 'Plaid Tutorial',  // Customize this based on your app
       language: 'en',
       products: ['transactions'],  // Add the products you want to use (auth, transactions, etc.)
