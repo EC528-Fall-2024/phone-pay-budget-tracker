@@ -1,14 +1,22 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View, ScrollView, SafeAreaView } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
 import { Dimensions } from 'react-native';
+<<<<<<< HEAD
 import { useUser } from '../(context)/UserContext';
 // import axios from 'axios';
+=======
+import { getTransactionData } from '../apiService';  // Import your API call function
+>>>>>>> cfeef7fc54fe97fa0e13deb404eb0bb15ec3697b
 
 export default function HomeScreen() {
-  // Extended financial data with more transactions
-  const { userData } = useUser();
+  const [financialData, setFinancialData] = useState({
+    balance: 0,
+    monthlySpending: 0,
+    recentTransactions: [],
+  });
 
+<<<<<<< HEAD
 //   const [recentTransactions, setRecentTransactions] = useState([]);
 //   const [error, setError] = useState<string | null>(null);
 
@@ -38,11 +46,66 @@ export default function HomeScreen() {
   // Prepare data for the graph
   const transactionAmounts = sortedTransactions.map((t) => t.amount);
   const transactionDates = sortedTransactions.map((t) => t.date);
+=======
+  const [loading, setLoading] = useState(true);
+
+  // API call to fetch data when component mounts
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await getTransactionData(); // Make the API call
+        
+        // Map the response to the format needed for recent transactions
+        const transactions = response.map((item) => ({
+          id: item.sk,  // Use the `sk` as unique transaction ID
+          name: item.expenseName,  // Map `expenseName` to `name`
+          amount: parseFloat(item.amount),  // Convert the string `amount` to a float
+          date: item.sk.split('#')[0],  // Extract date part from `sk`
+        }));
+        
+        // Calculate balance, spending, etc. as needed
+        const balance = 8500.75; // Example balance, adjust as needed
+        const monthlySpending = transactions.reduce((acc, transaction) => {
+          return transaction.amount < 0 ? acc + Math.abs(transaction.amount) : acc;
+        }, 0);
+
+        // Update state with the fetched data
+        setFinancialData({
+          balance,
+          monthlySpending,
+          recentTransactions: transactions,
+        });
+      } catch (error) {
+        console.error('Error fetching transaction data:', error);
+      } finally {
+        setLoading(false); // Hide loading spinner when the data is fetched
+      }
+    };
+
+    fetchData();
+  }, []);
+>>>>>>> cfeef7fc54fe97fa0e13deb404eb0bb15ec3697b
+
+  // Prepare data for the graph
+  const transactionAmounts = financialData.recentTransactions.map((t) => t.amount);
+  const transactionDates = financialData.recentTransactions.map((t) => t.date);
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <Text style={styles.loadingText}>Loading...</Text>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <Text style={styles.welcomeText}>
+<<<<<<< HEAD
         Welcome, {userData ? userData.name : 'Guest'}
+=======
+        Welcome, {'Guest'}
+>>>>>>> cfeef7fc54fe97fa0e13deb404eb0bb15ec3697b
       </Text>
       <ScrollView style={styles.container}>
         {/* Current Balance */}
@@ -60,7 +123,11 @@ export default function HomeScreen() {
         {/* Recent Transactions */}
         <View style={styles.transactionsContainer}>
           <Text style={styles.transactionsTitle}>Recent Transactions</Text>
+<<<<<<< HEAD
           {sortedTransactions.map((transaction) => (
+=======
+          {financialData.recentTransactions.map((transaction) => (
+>>>>>>> cfeef7fc54fe97fa0e13deb404eb0bb15ec3697b
             <View key={transaction.id} style={styles.transactionItem}>
               <View style={styles.transactionDetails}>
                 <Text style={styles.transactionName}>{transaction.name}</Text>
@@ -227,6 +294,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     alignItems: 'center', // Center the chart content
   },
+<<<<<<< HEAD
 });
 
 //   // Fetch recent transactions from the API
@@ -329,3 +397,11 @@ const styles = StyleSheet.create({
 //     color: '#f44336',
 //   },
 // });
+=======
+  loadingText: {
+    fontSize: 20,
+    textAlign: 'center',
+    marginTop: 50,
+  },
+});
+>>>>>>> cfeef7fc54fe97fa0e13deb404eb0bb15ec3697b
