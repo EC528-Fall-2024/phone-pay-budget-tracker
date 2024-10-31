@@ -4,6 +4,10 @@ apply plugin: "com.facebook.react"
 
 def projectRoot = rootDir.getAbsoluteFile().getParentFile().getAbsolutePath()
 
+project.ext.react = [
+    nodeExecutableAndArgs: ["C:/Program Files/nodejs/node"]
+]
+
 static def versionToNumber(major, minor, patch) {
   return patch * 100 + minor * 10000 + major * 1000000
 }
@@ -172,6 +176,7 @@ dependencies {
 
     // plaid SDK dependency
     implementation 'com.plaid.link:sdk-core:3.5.1'
+    // implementation 'com.plaid.link:sdk-core:4.6.1'
 
     def isGifEnabled = (findProperty('expo.gif.enabled') ?: "") == "true";
     def isWebpEnabled = (findProperty('expo.webp.enabled') ?: "") == "true";
