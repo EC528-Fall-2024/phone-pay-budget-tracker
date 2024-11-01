@@ -1,4 +1,6 @@
 const plaid = require('plaid');
+require('dotenv').config({ path: '../../../../../PhonePayBudgetTracker/.env' });
+
 
 // const PLAID_CLIENT_ID = '67059ac70f3934001bb637ab'; // Move this to the .env file before pushing
 // const PLAID_SECRET = '6480180b111c6e48efe009f6d5d568'; // Move this to the .env file before pushing
@@ -9,8 +11,8 @@ const configuration = new plaid.Configuration({
     basePath: plaid.PlaidEnvironments.sandbox,  // Use sandbox environment for testing
     baseOptions: {
       headers: {
-        'PLAID-CLIENT-ID': '67059ac70f3934001bb637ab',  // Fetch from environment variables
-        'PLAID-SECRET': '6480180b111c6e48efe009f6d5d568',        // Fetch from environment variables
+        'PLAID-CLIENT-ID': "67059ac70f3934001bb637ab",
+        'PLAID-SECRET': "6480180b111c6e48efe009f6d5d568",
       },
     },
   });
@@ -67,6 +69,8 @@ exports.lambda_handler = async (event) => {
     const body = JSON.parse(event.body);
     const publicToken = body.public_token;
     const bank = body.bank
+    const id = body.id
+    const pastAccounts = body.accounts
 
     const tableName = 'profileData';  // Hardcoded table name
     const pk = body.pk;
@@ -88,25 +92,43 @@ exports.lambda_handler = async (event) => {
 
         const accessToken = exchangeResponse.data.access_token;
 
-        const accountResponse = await client.accountsGet({access_token: accessToken});
-        console.log(accountResponse.data.accounts[0].account_id)
+        const accountResponse = await client.accountsGet({access_token: accessToken}); 
+        console.log(accountResponse.data.accounts[0]) 
         
-        console.log(pk)
-        // const params = {
-        //   TableName: tableName,
-        //   Item: {
-        //     pk: pk,  // Use the provided user id (pk) to fetch the data
-        //     accessToken: accessToken,
-        //     email: 'bmahoney132@gmail.com',
-        //     profilePhoto: 'https://www.oakdaleveterinarygroup.com/cdn-cgi/image/q=75,f=auto,metadata=none/sites/default/files/styles/large/public/golden-retriever-dog-breed-info.jpg?itok=NWXHSSii'
-        //   }
-        // };
+        // console.log(accountResponse) 
+
+        console.log(id)
+
+        const logo = await client.institutionsGetById({
+          institution_id: id,
+          country_codes: ['US'], // Specify your region, e.g., 'US'
+          options : {
+            include_optional_metadata: true,
+          }
+        });
+
+        // console.log(logo.data.institution)
+        console.log(logo.data.institution.logo)
+
+
+        const institutionLogo = logo.data.institution.logo;
+        
+        newAccount = [{'Bank':bank, 'Logo': institutionLogo, 'Balance': accountResponse.data.accounts[0].balances.current, 'Mask': accountResponse.data.accounts[0].mask, 'Name': accountResponse.data.accounts[0].name, 'accountID':accountResponse.data.accounts[0].account_id, 'accessToken':accessToken}]
+        let updatedAccounts = [];
+        if (pastAccounts.length != 0) {
+            // Append the new account to existing accounts
+            updatedAccounts = pastAccounts.concat(newAccount[0]);
+        } else {
+            // If no existing accounts, start with the new account
+            updatedAccounts = newAccount;
+        }
+
 
         const params = {
           TableName: tableName,
           Item: {
             pk: pk,  // Use the provided user id (pk) to fetch the data
-            accounts: [{'Bank':bank, 'accountID':accountResponse.data.accounts[0].account_id, 'accessToken':accessToken}],
+            accounts: updatedAccounts,//,
             email: 'bmahoney132@gmail.com',
             profilePhoto: 'https://www.oakdaleveterinarygroup.com/cdn-cgi/image/q=75,f=auto,metadata=none/sites/default/files/styles/large/public/golden-retriever-dog-breed-info.jpg?itok=NWXHSSii'
           }
@@ -128,8 +150,7 @@ exports.lambda_handler = async (event) => {
     } catch (error) {
         return {
             statusCode: 500,
-            body: JSON.stringify({ error: "hello" }),
-            //body: JSON.stringify({ error: error.message }),
+            body: JSON.stringify({ error: error.message }),
         };
     }
 };

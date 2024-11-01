@@ -111,10 +111,9 @@ exports.lambda_handler_setProfile = async (event) => {
     const params = {
         TableName: tableName,
         Item: {
-            pk: requestBody.pk || 'abcd',  // Primary key
+            pk: requestBody.pk,
             //firstName: requestBody.firstName,
             //lastName: requestBody.lastName,
-            //username: requestBody.username,
             email: requestBody.email,
             profilePhoto: requestBody.profilePhoto,
         }

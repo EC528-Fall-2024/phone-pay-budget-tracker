@@ -32,7 +32,7 @@ export const fetchLinkToken = async (userId) => {
  * @param {string} publicToken - The public token received from Plaid Link.
  * @returns {Promise<object>} - Returns the transaction data from Plaid.
  */
-export const onSuccess = async (publicToken, bank) => {
+export const onSuccess = async (publicToken, bank, id, accounts) => {
   try {
     const currentUser = await Auth.currentAuthenticatedUser();
     console.log(currentUser.username)
@@ -40,6 +40,8 @@ export const onSuccess = async (publicToken, bank) => {
       public_token: publicToken,
       pk: currentUser.username.toString(),
       bank: bank,
+      id: id,
+      accounts: accounts,
     });
     // console.log(response.data.totalTransactions)
     return response.data;
@@ -55,7 +57,7 @@ export const onSuccess = async (publicToken, bank) => {
  * @param {string} accessToken - The public token received from Plaid Link.
  * @returns {Promise<object>} - Returns the transaction data from Plaid.
  */
- export const getTransactions = async (accessToken) => {
+ export const getTransactions = async (accessToken) => { // This gets transaction data from Plaid
   try {
     const currentUser = await Auth.currentAuthenticatedUser();
     const response = await axios.post(`${API_BASE_URL}/trans-dataanalysis/plaid/get_transactions`, { // Post because we are sending confidential info, we will still receive the transactions
@@ -116,9 +118,11 @@ export const setProfileData = async (data) => {
   }
 };
 
-export const getTransactionData = async () => {
+export const getTransactionData = async () => { // This gets transaction data from the database
+  const currentUser = await Auth.currentAuthenticatedUser();
   try {
     const response = await axios.get(`${API_URL}/trans-dataanalysis`, {
+      params:{pk: currentUser.username.toString()},
       headers: {
         //'x-api-key': 'your-api-key',  // Add if you require an API key
         'Content-Type': 'application/json',

@@ -43,9 +43,11 @@ const dynamodb = getDBConnection(); // Initialize the DynamoDB client
 
 // Lambda handler function to get all transactions for a user
 exports.lambda_handler = async (event) => {
+    const body = JSON.parse(event.body)
     const tableName = 'transactionData'; // Hardcoded table name
-    const pk = 'bmahoney'; // The user's ID
-
+    // const pk = 'bmahoney'; // The user's ID
+    // Parse the pk (primary key) from the query string parameters or event body
+    const pk = event.queryStringParameters?.pk || event.body?.pk;
     const params = {
         TableName: tableName,
         KeyConditionExpression: 'pk = :pk',

@@ -1,60 +1,10 @@
-// const plaid = require('plaid');
-
-// // const PLAID_CLIENT_ID = '67059ac70f3934001bb637ab'; // Move this to the .env file before pushing
-// // const PLAID_SECRET = '6480180b111c6e48efe009f6d5d568'; // Move this to the .env file before pushing
-// //const PLAID_ENV = plaid.PlaidEnvironments.sandbox;  // Use sandbox environment
-
-// // Initialize the Plaid client
-// const configuration = new plaid.Configuration({
-//     basePath: plaid.PlaidEnvironments.sandbox,  // Use sandbox environment for testing
-//     baseOptions: {
-//       headers: {
-//         'PLAID-CLIENT-ID': '67059ac70f3934001bb637ab',  // Fetch from environment variables
-//         'PLAID-SECRET': '6480180b111c6e48efe009f6d5d568',        // Fetch from environment variables
-//       },
-//     },
-//   });
-  
-//   const client = new plaid.PlaidApi(configuration);
-
-// // Handler to exchange public token for access token and fetch transactions
-// exports.lambda_handler = async (event) => {
-//     const body = JSON.parse(event.body);
-//     const accessToken = body.accessToken;
-
-//     try {
-        
-//         const request = {
-//             access_token: accessToken,
-//             start_date: '2024-01-01',
-//             end_date: '2024-11-01',
-//             //account_ids: [accountResponse.accounts[0].account_id]
-//           };
-
-//         // Fetch transactions in the sandbox environment
-//         const transactionsResponse = await client.transactionsGet(request);
-//         // console.log(transactionsResponse.data)
-        
-//         return {
-//             statusCode: 200,
-//             body: JSON.stringify({
-//                 data: transactionsResponse.data.transactions,    
-//             }),
-
-//         };
-//     } catch (error) {
-//         return {
-//             statusCode: 500,
-//             body: JSON.stringify({ error: error.message }),
-//         };
-//     }
-// };
-
 const AWS = require('aws-sdk');
 const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
 const { DynamoDBDocumentClient, PutCommand } = require('@aws-sdk/lib-dynamodb');
 const { NodeHttpHandler } = require('@aws-sdk/node-http-handler');
 const plaid = require('plaid');
+require('dotenv').config({ path: '../../../../../PhonePayBudgetTracker/.env' });
+
 
 // Function to create the DynamoDB connection
 const getDBConnection = () => {
@@ -85,8 +35,8 @@ const configuration = new plaid.Configuration({
     basePath: plaid.PlaidEnvironments.sandbox,  // Use sandbox environment for testing
     baseOptions: {
       headers: {
-        'PLAID-CLIENT-ID': '67059ac70f3934001bb637ab',  // Fetch from environment variables
-        'PLAID-SECRET': '6480180b111c6e48efe009f6d5d568',        // Fetch from environment variables
+        'PLAID-CLIENT-ID': "67059ac70f3934001bb637ab",
+        'PLAID-SECRET': "6480180b111c6e48efe009f6d5d568",
       },
     },
 });
@@ -129,7 +79,11 @@ exports.lambda_handler = async (event) => {
 
         return {
             statusCode: 200,
-            body: JSON.stringify({ message: 'Transactions stored successfully' }),
+            
+            body: JSON.stringify({ 
+                message: 'Transactions stored successfully',
+                data: transactionsResponse.data.transactions,
+            }),
             headers: {
                 'Content-Type': 'application/json'
             }

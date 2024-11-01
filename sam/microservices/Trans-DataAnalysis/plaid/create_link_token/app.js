@@ -1,3 +1,4 @@
+require('dotenv').config({ path: '../../../../../PhonePayBudgetTracker/.env' });
 const plaid = require('plaid');
 
 // Initialize the Plaid client
@@ -5,8 +6,8 @@ const configuration = new plaid.Configuration({
   basePath: plaid.PlaidEnvironments.sandbox,  // Use sandbox environment for testing
   baseOptions: {
     headers: {
-      'PLAID-CLIENT-ID': '67059ac70f3934001bb637ab',  // Fetch from environment variables
-      'PLAID-SECRET': '6480180b111c6e48efe009f6d5d568',        // Fetch from environment variables
+      'PLAID-CLIENT-ID': "67059ac70f3934001bb637ab",
+      'PLAID-SECRET': "6480180b111c6e48efe009f6d5d568",
     },
   },
 });

@@ -120,6 +120,22 @@ Resources:
         Variables:
           PLAID_CLIENT_ID: !Ref PlaidClientId
           PLAID_SECRET: !Ref PlaidSecret
+    
+  PlaidWebhookFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../microservices/Trans-DataAnalysis/plaid/webhook/
+      Handler: app.webhook_handler  # Handler for webhook events
+      Events:
+        PlaidWebhookApi:
+          Type: Api
+          Properties:
+            Path: /trans-dataanalysis/plaid/webhook
+            Method: ANY
+      Environment:
+        Variables:
+          PLAID_CLIENT_ID: !Ref PlaidClientId
+          PLAID_SECRET: !Ref PlaidSecret
 
   UserProfileFunction:
     Type: AWS::Serverless::Function
