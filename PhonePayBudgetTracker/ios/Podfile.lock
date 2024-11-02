@@ -1211,6 +1211,27 @@ PODS:
   - React-Mapbuffer (0.74.5):
     - glog
     - React-debug
+  - react-native-image-picker (7.1.2):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.01.01.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Codegen
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
   - react-native-netinfo (11.4.1):
     - React-Core
   - react-native-plaid-link-sdk (11.13.0):
@@ -1572,6 +1593,7 @@ DEPENDENCIES:
   - React-jsitracing (from `../node_modules/react-native/ReactCommon/hermes/executor/`)
   - React-logger (from `../node_modules/react-native/ReactCommon/logger`)
   - React-Mapbuffer (from `../node_modules/react-native/ReactCommon`)
+  - react-native-image-picker (from `../node_modules/react-native-image-picker`)
   - "react-native-netinfo (from `../node_modules/@react-native-community/netinfo`)"
   - react-native-plaid-link-sdk (from `../node_modules/react-native-plaid-link-sdk`)
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
@@ -1709,6 +1731,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/logger"
   React-Mapbuffer:
     :path: "../node_modules/react-native/ReactCommon"
+  react-native-image-picker:
+    :path: "../node_modules/react-native-image-picker"
   react-native-netinfo:
     :path: "../node_modules/@react-native-community/netinfo"
   react-native-plaid-link-sdk:
@@ -1826,6 +1850,7 @@ SPEC CHECKSUMS:
   React-jsitracing: 3b6060bbf5317663667e1dd93560c7943ab86ccc
   React-logger: 257858bd55f3a4e1bc0cf07ddc8fb9faba6f8c7c
   React-Mapbuffer: 6c1cacdbf40b531f549eba249e531a7d0bfd8e7f
+  react-native-image-picker: c3afe5472ef870d98a4b28415fc0b928161ee5f7
   react-native-netinfo: f0a9899081c185db1de5bb2fdc1c88c202a059ac
   react-native-plaid-link-sdk: a814ab495f29cad595da29b13432e8277729ba52
   react-native-safe-area-context: a240ad4b683349e48b1d51fed1611138d1bdad97
