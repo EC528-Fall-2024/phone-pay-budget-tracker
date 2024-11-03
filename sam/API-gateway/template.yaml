@@ -56,6 +56,19 @@ Resources:
           Properties:
             Path: /trans-dataanalysis
             Method: ANY
+  
+  # New Lambda function to store transactions in DynamoDB
+  StoreTransactionsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../microservices/Trans-DataAnalysis/
+      Handler: app.store_transactions_handler  # Handler for storing transactions
+      Events:
+        StoreTransactionsApi:
+          Type: Api
+          Properties:
+            Path: /trans-dataanalysis
+            Method: POST
 
   # Plaid Lambda function for handling link token creation
   PlaidFunctionCreateLinkToken:
@@ -73,6 +86,23 @@ Resources:
         Variables:
           PLAID_CLIENT_ID: !Ref PlaidClientId
           PLAID_SECRET: !Ref PlaidSecret
+  
+  # Plaid Lambda function for handling link token creation
+  PlaidFunctionGetAccessToken:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../microservices/Trans-DataAnalysis/plaid/get_access_token/
+      Handler: app.lambda_handler  # Adjust the handler to match the function name in create_link_token/app.js
+      Events:
+        GetAccessTokenTokenApi:
+          Type: Api
+          Properties:
+            Path: /trans-dataanalysis/plaid/get_access_token
+            Method: ANY
+      Environment:
+        Variables:
+          PLAID_CLIENT_ID: !Ref PlaidClientId
+          PLAID_SECRET: !Ref PlaidSecret
 
   # Plaid Lambda function for handling transaction fetching
   PlaidFunctionGetTransactions:
@@ -85,7 +115,23 @@ Resources:
           Type: Api
           Properties:
             Path: /trans-dataanalysis/plaid/get_transactions
-            Method: POST
+            Method: ANY
+      Environment:
+        Variables:
+          PLAID_CLIENT_ID: !Ref PlaidClientId
+          PLAID_SECRET: !Ref PlaidSecret
+    
+  PlaidWebhookFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../microservices/Trans-DataAnalysis/plaid/webhook/
+      Handler: app.webhook_handler  # Handler for webhook events
+      Events:
+        PlaidWebhookApi:
+          Type: Api
+          Properties:
+            Path: /trans-dataanalysis/plaid/webhook
+            Method: ANY
       Environment:
         Variables:
           PLAID_CLIENT_ID: !Ref PlaidClientId
@@ -133,3 +179,7 @@ Outputs:
   GetTransactionsApi:
     Description: API Gateway endpoint URL for fetching Plaid transactions
     Value: !Sub 'https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/trans-dataanalysis/plaid/get_transactions'
+
+  StoreTransactionsApi:
+    Description: API Gateway endpoint URL for storing transactions
+    Value: !Sub 'https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/database/store-transactions'

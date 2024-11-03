@@ -2,19 +2,40 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import { Auth } from 'aws-amplify';
 import { router, useLocalSearchParams } from 'expo-router';
+import { setProfileData } from '../apiService';
+
 
 export default function ConfirmSignUpScreen() {
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
 
-  const { username } = useLocalSearchParams();
+  const { username, email } = useLocalSearchParams();
 
-  const userNameString = Array.isArray(username) ? username[0] : username;
+  //const userNameString = Array.isArray(username) ? username[0] : username;
+  const userNameString = Array.isArray(username) ? username[0].toLowerCase() : username?.toLowerCase();
 
   const handleConfirm = async () => {
     try {
-      await Auth.confirmSignUp(userNameString, code);
-      console.log('User confirmed');
+      const response = await Auth.confirmSignUp(userNameString, code);
+      console.log('User confirmed', response);
+
+
+      const profileData = {
+        pk: userNameString,  // Using the username as the primary key (pk)
+        email: email,
+        profilePhoto: 'https://www.oakdaleveterinarygroup.com/cdn-cgi/image/q=75,f=auto,metadata=none/sites/default/files/styles/large/public/golden-retriever-dog-breed-info.jpg?itok=NWXHSSii'  // Optionally add a default profile photo URL
+      };
+  
+      // Call the setProfileData API to save the profile data
+      try {
+        await setProfileData(profileData);
+        console.log('Profile data saved successfully');
+      } catch (error) {
+        console.error('Error saving profile data:', error);
+        return;  // Exit if saving profile data fails
+      }
+
+
       router.replace("/login"); // Redirect to login page after successful confirmation
     } catch (error) {
       setError('Failed to confirm sign-up. Try again.');
