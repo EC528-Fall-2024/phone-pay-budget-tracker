@@ -5,44 +5,50 @@ const { NodeHttpHandler } = require('@aws-sdk/node-http-handler')
 
 const https = require('https');
 
-// Function to create the DynamoDB connection
-const getDBConnection = () => {
-    console.log('DynamoDB creating connection');
+// // Function to create the DynamoDB connection
+// const getDBConnection = () => {
+//     console.log('DynamoDB creating connection');
 
-    const config = {
-        apiVersion: '2012-08-10',
-        region: "us-east-2",
-        endpoint: "http://host.docker.internal:8000", // Local DynamoDB
-        credentials: {
-            accessKeyId: "Secret",
-            secretAccessKey: "Secret",
-        },
-        maxAttempts: 2,
-        requestHandler: new NodeHttpHandler({
-            socketTimeout: 1000,
-            connectionTimeout: 1000,
-        }),
-    };
+//     const config = {
+//         apiVersion: '2012-08-10',
+//         region: "us-east-2",
+//         endpoint: "http://host.docker.internal:8000", // Local DynamoDB
+//         credentials: {
+//             accessKeyId: "Secret",
+//             secretAccessKey: "Secret",
+//         },
+//         maxAttempts: 2,
+//         requestHandler: new NodeHttpHandler({
+//             socketTimeout: 1000,
+//             connectionTimeout: 1000,
+//         }),
+//     };
 
-    // Adjust the requestHandler if running in AWS by checking if the endpoint is undefined
-    if (!config.endpoint) {
-        return DynamoDBDocumentClient.from(new DynamoDBClient({
-            requestHandler: new AWS.NodeHttpHandler({
-                httpsAgent: new https.Agent({
-                    maxSockets: 30,
-                    keepAlive: true,
-                }),
-            }),
-        }));
-    }
+//     // Adjust the requestHandler if running in AWS by checking if the endpoint is undefined
+//     if (!config.endpoint) {
+//         return DynamoDBDocumentClient.from(new DynamoDBClient({
+//             requestHandler: new AWS.NodeHttpHandler({
+//                 httpsAgent: new https.Agent({
+//                     maxSockets: 30,
+//                     keepAlive: true,
+//                 }),
+//             }),
+//         }));
+//     }
 
-    return DynamoDBDocumentClient.from(new DynamoDBClient(config));
-};
+//     return DynamoDBDocumentClient.from(new DynamoDBClient(config));
+// };
 
-const dynamodb = getDBConnection(); // Initialize the DynamoDB client
+// const dynamodb = getDBConnection(); // Initialize the DynamoDB client
 
 exports.lambda_handler = async (event) => {
-    const tableName = 'profileData';  // Hardcoded table name
+    const awsEndpoint = process.env.AWS_ENDPOINT;
+    const tableName = process.env.TABLE_NAME;
+
+    const dynamodb = new DynamoDBClient({
+        endpoint: awsEndpoint, 
+        region: 'us-east-2',   
+    });
 
     try {
         // Parse the pk (primary key) from the query string parameters or event body
@@ -103,7 +109,7 @@ exports.lambda_handler = async (event) => {
 };
 
 exports.lambda_handler_setProfile = async (event) => {
-    const tableName = 'profileData'; 
+    const tableName = process.env.TABLE_NAME;
 
     // Parse the request body
     const requestBody = JSON.parse(event.body);

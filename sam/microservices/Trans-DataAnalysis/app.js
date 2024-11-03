@@ -3,46 +3,51 @@ const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
 const { DynamoDBDocumentClient, QueryCommand } = require('@aws-sdk/lib-dynamodb');
 const { NodeHttpHandler } = require('@aws-sdk/node-http-handler')
 
-const https = require('https');
 
-// Function to create the DynamoDB connection
-const getDBConnection = () => {
-    console.log('DynamoDB creating connection');
+// SAM AUTOMATICALLY CONNECTS NOW TO LOCAL DYNAMODB WHEN FUNCTION IS CALLED
 
-    const config = {
-        apiVersion: '2012-08-10',
-        region: "us-east-2",
-        endpoint: "http://host.docker.internal:8000", // Local DynamoDB (if applicable)
-        credentials: {
-            accessKeyId: "Secret",
-            secretAccessKey: "Secret",
-        },
-        maxAttempts: 2,
-        requestHandler: new NodeHttpHandler({
-            socketTimeout: 1000,
-            connectionTimeout: 1000,
-        }),
-    };
 
-    // Adjust the requestHandler if running in AWS by checking if the endpoint is undefined
-    if (!config.endpoint) {
-        return DynamoDBDocumentClient.from(new DynamoDBClient({
-            requestHandler: new AWS.NodeHttpHandler({
-                httpsAgent: new https.Agent({
-                    maxSockets: 30,
-                    keepAlive: true,
-                }),
-            }),
-        }));
-    }
+// const https = require('https');
 
-    return DynamoDBDocumentClient.from(new DynamoDBClient(config));
-};
+// // Function to create the DynamoDB connection
+// const getDBConnection = () => {
+//     console.log('DynamoDB creating connection');
 
-const dynamodb = getDBConnection(); // Initialize the DynamoDB client
+//     const config = {
+//         apiVersion: '2012-08-10',
+//         region: "us-east-2",
+//         endpoint: "http://host.docker.internal:8000", // Local DynamoDB (if applicable)
+//         credentials: {
+//             accessKeyId: "Secret",
+//             secretAccessKey: "Secret",
+//         },
+//         maxAttempts: 2,
+//         requestHandler: new NodeHttpHandler({
+//             socketTimeout: 1000,
+//             connectionTimeout: 1000,
+//         }),
+//     };
+
+//     // Adjust the requestHandler if running in AWS by checking if the endpoint is undefined
+//     if (!config.endpoint) {
+//         return DynamoDBDocumentClient.from(new DynamoDBClient({
+//             requestHandler: new AWS.NodeHttpHandler({
+//                 httpsAgent: new https.Agent({
+//                     maxSockets: 30,
+//                     keepAlive: true,
+//                 }),
+//             }),
+//         }));
+//     }
+
+//     return DynamoDBDocumentClient.from(new DynamoDBClient(config));
+// };
+
+// const dynamodb = getDBConnection(); // Initialize the DynamoDB client
 
 // Lambda handler function to get all transactions for a user
 exports.lambda_handler = async (event) => {
+
     const body = JSON.parse(event.body)
     const tableName = 'transactionData'; // Hardcoded table name
     // const pk = 'bmahoney'; // The user's ID
