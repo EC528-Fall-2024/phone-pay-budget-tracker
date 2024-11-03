@@ -41,58 +41,6 @@ const getDBConnection = () => {
 
 const dynamodb = getDBConnection(); // Initialize the DynamoDB client
 
-// Lambda handler function
-// exports.lambda_handler = async (event) => {
-//     const tableName = 'profileData'; // Hardcoded table name
-//     pk = 'abcd'
-
-//     const params = {
-//         TableName: tableName,
-//         Key: {
-//             pk: pk // This will be the unique user id
-//         }
-//     };
-
-//     try {
-//         // Ensure the command is awaited
-//         const response = await dynamodb.send(new GetCommand(params));
-
-//         console.log('DynamoDB response:', response);
-
-//         if (response.Item) {
-//             // Return the found item
-//             return {
-//                 statusCode: 200,
-//                 body: JSON.stringify(response.Item),
-//                 headers: {
-//                     'Content-Type': 'application/json'
-//                 }
-//             };
-//         } else {
-//             // Handle not found
-//             return {
-//                 statusCode: 404,
-//                 body: JSON.stringify({ error: 'Item not found' }),
-//                 headers: {
-//                     'Content-Type': 'application/json'
-//                 }
-//             };
-//         }
-//     } catch (error) {
-//         console.error('Error occurred:', error.message);
-//         console.error('Error details:', error.stack);
-
-//         // Return an error response
-//         return {
-//             statusCode: 500,
-//             body: JSON.stringify({ error: 'Failed to retrieve item', message: error.message }),
-//             headers: {
-//                 'Content-Type': 'application/json'
-//             }
-//         };
-//     }
-// };
-
 exports.lambda_handler = async (event) => {
     const tableName = 'profileData';  // Hardcoded table name
 
@@ -163,10 +111,9 @@ exports.lambda_handler_setProfile = async (event) => {
     const params = {
         TableName: tableName,
         Item: {
-            pk: requestBody.pk || 'abcd',  // Primary key
-            firstName: requestBody.firstName,
-            lastName: requestBody.lastName,
-            username: requestBody.username,
+            pk: requestBody.pk,
+            //firstName: requestBody.firstName,
+            //lastName: requestBody.lastName,
             email: requestBody.email,
             profilePhoto: requestBody.profilePhoto,
         }
