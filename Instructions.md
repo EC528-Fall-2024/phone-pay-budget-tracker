@@ -51,3 +51,12 @@
 `npx expo start `
 `i`
 
+## Addtional Notes
+I usally run the steps in this order when testing the full application:
+
+- Fronted steps: 1, 2, 3
+- Backend steps: 1, 2, 3. 4
+- Fronted step 4 (wait for this to completely load)
+- Backend step 5 (wait for this to load)
+
+Then I login on the simulator and conduct tests 
