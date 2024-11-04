@@ -1,16 +1,19 @@
 # Instructions
 
-## Running the Bakend
+## Running the Backend
 
 ### Requirments
 - SAM CLI 
 - Docker
 
 1. Create custom network for containers to communicate with each other
-```docker network create localstack-sam```
+```bash
+docker network create localstack-sam
+```
 
 2. Run local-stack on network (this will make a local dynamodb)
-```docker run --rm -d \
+```bash
+docker run --rm -d \
   --name localstack \
   --network localstack-sam \
   -p 4566:4566 \
@@ -34,7 +37,7 @@
 - OR run the frontend to test full application
 
 
-## Running the Fronted
+## Running the Frontend
 1. Install dependencies 
 - Travel to `PhonePayBudgetTracker/`
 - Run: `npm install`
@@ -54,9 +57,9 @@
 ## Addtional Notes
 I usally run the steps in this order when testing the full application:
 
-- Fronted steps: 1, 2, 3
-- Backend steps: 1, 2, 3. 4
-- Fronted step 4 (wait for this to completely load)
+- Frontend steps: 1, 2, 3
+- Backend steps: 1, 2, 3, 4
+- Frontend step 4 (wait for this to completely load)
 - Backend step 5 (wait for this to load)
 
 Then I login on the simulator and conduct tests 
