@@ -1,14 +1,13 @@
 {
-  "name": "get_transactions",
+  "name": "webhook",
   "version": "1.0.0",
-  "description": "Lambda function for transaction getting data from Plaid",
+  "description": "Lambda function for webhooks",
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
     "aws-sdk": "^2.1691.0",
-    "dotenv": "^16.4.5",
     "plaid": "^29.0.0"
   }
 }

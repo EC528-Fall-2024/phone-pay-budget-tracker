@@ -62,9 +62,10 @@ create_table "profileData" \
     '[{"AttributeName":"pk","KeyType":"HASH"}]'
 
 # Seed profileData table
-seed_data "profileData" '{"pk": {"S": "abcd"}, "firstName": {"S": "Brennan"}, "lastName": {"S": "Mahoney"}, "password": {"S": "camino"}, "profilePhoto": {"S": "https://www.oakdale"}, "username": {"S": "bmahoney"}, "email": {"S": "bmm1@bu.edu"}}'
-seed_data "profileData" '{"pk": {"S": "b"}, "firstName": {"S": "Brennan"}, "lastName": {"S": "Mahoney"}, "password": {"S": "camino"}, "profilePhoto": {"S": "https://www.oakdale"}, "username": {"S": "b"}, "email": {"S": "Bmahoney132@gmail.com"}}'
-seed_data "profileData" '{"pk": {"S": "bmahoney1"}, "firstName": {"S": "Brennan"}, "lastName": {"S": "Mahoney"}, "password": {"S": "camino"}, "profilePhoto": {"S": "https://www.oakdale"}, "username": {"S": "bmahoney1"}, "email": {"S": "Bmm1@bu.edu"}}'
+seed_data "profileData" '{"pk": {"S": "abcd"}, "firstName": {"S": "Brennan"}, "lastName": {"S": "Mahoney"}, "password": {"S": "camino"}, "profilePhoto": {"S": "https://www.oakdale"}, "username": {"S": "bmahoney"}, "email": {"S": "bmm1@bu.edu"}, "accounts": {"S": ""}}'
+seed_data "profileData" '{"pk": {"S": "user2"}, "firstName": {"S": "Brennan"}, "lastName": {"S": "Mahoney"}, "password": {"S": "camino"}, "profilePhoto": {"S": "https://www.oakdaleveterinarygroup.com/cdn-cgi/image/q=75,f=auto,metadata=none/sites/default/files/styles/large/public/golden-retriever-dog-breed-info.jpg?itok=NWXHSSii"}, "username": {"S": "b"}, "email": {"S": "Bmahoney132@gmail.com"}, "accounts": {"S": ""}}'
+seed_data "profileData" '{"pk": {"S": "bmahoney1"}, "firstName": {"S": "Brennan"}, "lastName": {"S": "Mahoney"}, "password": {"S": "camino"}, "profilePhoto": {"S": "https://www.oakdale"}, "username": {"S": "bmahoney1"}, "email": {"S": "Bmm1@bu.edu"}, "accounts": {"S": ""}}'
+seed_data "profileData" '{"pk": {"S": "ngonz"}, "firstName": {"S": "Naomi"}, "lastName": {"S": "Gonzalez"}, "password": {"S": "test123"}, "profilePhoto": {"S": "https://www.oakdale"}, "username": {"S": "ngonz"}, "email": {"S": "ngonzalz@bu.edu"}, "accounts": {"S": ""}}'
 
 # Create transactionData table
 create_table "transactionData" \
