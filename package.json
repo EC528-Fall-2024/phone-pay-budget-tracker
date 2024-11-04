@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "react-native-plaid-link-sdk": "^11.13.0"
+  }
+}

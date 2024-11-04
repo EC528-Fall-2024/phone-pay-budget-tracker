@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, SafeAreaView, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, SafeAreaView, Alert, ActivityIndicator, Platform, NativeModules } from 'react-native';
 import { router } from 'expo-router';
 import { create, open, dismissLink, LinkSuccess, LinkExit, LinkIOSPresentationStyle, LinkLogLevel } from 'react-native-plaid-link-sdk';
 import { fetchLinkToken, onSuccess, getProfileData } from '../apiService';  // Adjust your API import as needed
@@ -91,11 +91,19 @@ export default function ProfileScreen() {
     try {
       const token = await fetchLinkToken('custom_mahoney');
       setLinkToken(token);
+      openPlaidLinkOnAndroid(token); // pass the token to android
     } catch (error) {
       console.error('Error fetching link token:', error);
       Alert.alert('Error', 'Failed to fetch link token');
     }
   }, []);
+
+  // pass token to PhonePayBudgetTracker\android\app\src\main\java\com\anonymous\PhonePayBudgetTracker\MainActivity.kt
+  const openPlaidLinkOnAndroid = (token) => {
+    if (Platform.OS === 'android' && NativeModules.PlaidModule) { //only do it if its android OS
+      NativeModules.PlaidModule.startPlaidLink(token); //pass the token
+    }
+  };
 
   useEffect(() => {
     createLinkToken();
@@ -107,6 +115,8 @@ export default function ProfileScreen() {
       console.error('Link token is not available.');
       return;
     }
+
+    openPlaidLinkOnAndroid(linkToken); // ensure android trigger plaid link
 
     try {
       const tokenConfig = { token: linkToken };

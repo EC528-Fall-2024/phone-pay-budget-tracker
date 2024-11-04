@@ -175,8 +175,11 @@ dependencies {
     implementation("com.facebook.react:react-android")
 
     // plaid SDK dependency
-    implementation 'com.plaid.link:sdk-core:3.5.1'
-    // implementation 'com.plaid.link:sdk-core:4.6.1'
+    // implementation 'com.plaid.link:sdk-core:3.5.1'
+    implementation 'com.plaid.link:sdk-core:4.6.1'
+
+    implementation project(':react-native-plaid-link-sdk')
+    implementation("com.squareup.okhttp3:okhttp:4.9.3")
 
     def isGifEnabled = (findProperty('expo.gif.enabled') ?: "") == "true";
     def isWebpEnabled = (findProperty('expo.webp.enabled') ?: "") == "true";
