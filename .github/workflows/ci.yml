@@ -38,7 +38,7 @@ jobs:
           localstack/localstack
 
     - name: Wait for LocalStack to be ready
-      run: sleep 15
+      run: sleep 360
 
     - name: Create DynamoDB tables using setup script
       run: |
