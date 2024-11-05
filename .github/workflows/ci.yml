@@ -1,4 +1,4 @@
-name: CI Pipeline 
+name: CI Pipeline
 
 on:
   push:
@@ -6,25 +6,6 @@ on:
       - unit_intTests
 
 jobs:
-  # font-end_test:
-  #   runs-on: ubuntu-latest
-
-  #   steps:
-  #   - name: Checkout code
-  #     uses: actions/checkout@v2
-
-  #   - name: Set up Node.js
-  #     uses: actions/setup-node@v2
-  #     with:
-  #       node-version: '16'  
-
-  #   - name: Navigate to the frontend directory and install dependencies
-  #     working-directory: ./PhonePayBudgetTracker
-  #     run: npm install
-
-  #   - name: Run tests in frontend directory
-  #     working-directory: ./PhonePayBudgetTracker
-  #     run: npm test
   build-APIgateway-test:
     runs-on: ubuntu-latest
 
@@ -33,58 +14,51 @@ jobs:
       uses: actions/checkout@v3
 
     - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+      uses: docker/setup-buildx-action@v2
     
     - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
+      uses: docker/setup-qemu-action@v2
 
-     - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y python3 python3-pip docker.io
-          sudo pip3 install awscli aws-sam-cli
-    
-     - name: Create custom Docker network
-        run: docker network create localstack-sam
-    
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y python3 python3-pip docker.io
+        sudo pip3 install awscli aws-sam-cli awscli-local requests
+
+    - name: Create custom Docker network
+      run: docker network create localstack-sam
+
     - name: Run LocalStack
-        run: |
-          docker run --rm -d \
-            --name localstack \
-            --network localstack-sam \
-            -p 4566:4566 \
-            -e SERVICES="dynamodb,s3" \
-            localstack/localstack
+      run: |
+        docker run --rm -d \
+          --name localstack \
+          --network localstack-sam \
+          -p 4566:4566 \
+          -e SERVICES="dynamodb,s3" \
+          localstack/localstack
 
     - name: Wait for LocalStack to be ready
-        run: sleep 15
-
-    - name: Install awscli-local (awslocal)
-        run: pip3 install awscli-local
+      run: sleep 15
 
     - name: Create DynamoDB table
-        run: |
-          chmod +x API-gateway/aws-gatewayAPI-simv1/tests/integration/setup_dynamodb.sh
-          API-gateway/aws-gatewayAPI-simv1/tests/integration/setup_dynamodb.sh
-    
+      run: |
+        chmod +x API-gateway/aws-gatewayAPI-simv1/tests/integration/setup_dynamodb.sh
+        API-gateway/aws-gatewayAPI-simv1/tests/integration/setup_dynamodb.sh
+
     - name: Build the API Gateway
-        working-directory: API-gateway/aws-gatewayAPI-simv1
-        run: sam build
+      working-directory: API-gateway/aws-gatewayAPI-simv1
+      run: sam build
 
     - name: Start the API Gateway
-        working-directory: API-gateway/aws-gatewayAPI-simv1
-        run: |
-          sam local start-api --docker-network localstack-sam &
-          sleep 15
-    
+      working-directory: API-gateway/aws-gatewayAPI-simv1
+      run: |
+        sam local start-api --docker-network localstack-sam &
+        sleep 15
+
     - name: Run integration tests
-        working-directory: API-gateway/aws-gatewayAPI-simv1
-        run: |
-        python3 API-gateway/aws-gatewayAPI-simv1/tests/integration/test_microservices.py
-    
+      working-directory: API-gateway/aws-gatewayAPI-simv1
+      run: |
+        python3 tests/integration/test_microservices.py
+
     - name: Tear down LocalStack
-        run: docker stop localstack
-    
-
-    
-
+      run: docker stop localstack
