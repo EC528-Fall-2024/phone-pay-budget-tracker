@@ -22,7 +22,7 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y python3 python3-pip docker.io
+        sudo apt-get install -y python3 python3-pip
         sudo pip3 install awscli aws-sam-cli awscli-local requests
 
     - name: Create custom Docker network
@@ -40,7 +40,7 @@ jobs:
     - name: Wait for LocalStack to be ready
       run: sleep 15
 
-    - name: Create DynamoDB table
+    - name: Create DynamoDB tables using setup script
       run: |
         chmod +x API-gateway/aws-gatewayAPI-simv1/tests/integration/setup_dynamodb.sh
         API-gateway/aws-gatewayAPI-simv1/tests/integration/setup_dynamodb.sh
