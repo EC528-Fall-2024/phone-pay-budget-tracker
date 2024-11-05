@@ -22,24 +22,39 @@ Resources:
       BillingMode: PAY_PER_REQUEST
 
   AdminControlFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: ../../microservices/Admin-Control/
-      Handler: app.lambda_handler
-      Runtime: python3.10
-      Environment:
-        Variables:
-          AWS_ENDPOINT: http://localstack:4566  
-          TABLE_NAME: AdminControlTable
-      Events:
-        AdminControlApi:
-          Type: Api
-          Properties:
-            Path: /admin-control
-            Method: ANY
-      Policies:
-        - DynamoDBCrudPolicy:
-            TableName: AdminControlTable
+  Type: AWS::Serverless::Function
+  Properties:
+    CodeUri: ../../microservices/Admin-Control/
+    Handler: app.lambda_handler
+    Runtime: python3.10
+    Environment:
+      Variables:
+        AWS_ENDPOINT: http://localstack:4566  
+        TABLE_NAME: AdminControlTable
+    Events:
+      ListUsersApi:
+        Type: Api
+        Properties:
+          Path: /admin-control/users
+          Method: GET
+      GetUserApi:
+        Type: Api
+        Properties:
+          Path: /admin-control/users/{user_id}
+          Method: GET
+      AddUserApi:
+        Type: Api
+        Properties:
+          Path: /admin-control/users
+          Method: POST
+      DeleteUserApi:
+        Type: Api
+        Properties:
+          Path: /admin-control/users/{user_id}
+          Method: DELETE
+    Policies:
+      - DynamoDBCrudPolicy:
+          TableName: profileData
 
   # # Authentication Service
   # AuthenticationTable:
