@@ -102,7 +102,7 @@ Stretch Goals:
    - Setup main aggregated financial data DB and have user upload data functionality. Then Link with API gateway accordingly. Furthermore create first UI graph to display data
 3. Sprint 3 | [Video](https://drive.google.com/file/d/17GjCx7kCwknXN-Tg0384MRtkwxDArMeo/view?usp=sharing) | [Slides](https://docs.google.com/presentation/d/1c-rZZOEFvjer7FCvhaeeOTezc5iSvI8Inz6U74GK3Fc/edit?usp=sharing)
    - Set up linking from third party payment processing methods and storing user transaction history from those 
-4. Sprint 4
+4. Sprint 4 | [Video](https://drive.google.com/file/d/1OVubMdz_gnoPZWPvgfdGLR3YbKL7gQlS/view?usp=sharing) | [Slides](https://docs.google.com/presentation/d/1bUKGUhu--5mr0x2RcuwG7BEYDW1C2iyG2uoDHJuxKHs/edit?usp=sharing)
    - Create CI/CD Job, continue improvements as necessary
 5. Sprint 5
    - Upload to cloud service and finished touches, create ways to monitor and maintain the application
