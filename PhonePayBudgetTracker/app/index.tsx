@@ -1,11 +1,12 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
-import { UserProvider } from './(context)/UserContext';
+import { UserProvider } from './(components)/UserContext';
 import { router } from 'expo-router';
-
+import { verifyInstallation } from 'nativewind';
 
 export default function IndexPage() {
   return (
+    
     <ScrollView contentContainerStyle={styles.container}>
       {/* App Title */}
       <Text style={styles.appTitle}>Welcome to BudgetTracker</Text>

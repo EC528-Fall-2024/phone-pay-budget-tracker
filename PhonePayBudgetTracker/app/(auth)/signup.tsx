@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, TextInput, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { router } from "expo-router";
 import SignupForm from "../../components/SignupForm";
 
@@ -88,16 +88,16 @@ export default function SignupScreen() {
         <TextInput value={cpassword} onChangeText={setcPassword} placeholder="Confirm Password" secureTextEntry style={[styles.input, isEmpty.cpassword && styles.emptyInput]} />
 
         {/* Signup Button */}
-        <TouchableOpacity style={styles.signupButton} onPress={onSignupPress}>
+        <Pressable style={styles.signupButton} onPress={onSignupPress}>
           <Text style={styles.signupButtonText}>Sign Up</Text>
-        </TouchableOpacity>
+        </Pressable>
         {/* Error Message */}
         {errorMsg ? <Text style={styles.error}>{errorMsg}</Text> : null}
 
         {/* Link to Login */}
-        <TouchableOpacity onPress={() => router.replace("/login")}>
+        <Pressable onPress={() => router.replace("/login")}>
           <Text style={styles.link}>Already have an account? Log In</Text>
-        </TouchableOpacity>
+        </Pressable>
       </View>
     </ScrollView>
   );
@@ -124,7 +124,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   signupContainer: {
-    width: '100%',
+    width: '80%',
     backgroundColor: '#ffffff',
     padding: 20,
     borderRadius: 10,

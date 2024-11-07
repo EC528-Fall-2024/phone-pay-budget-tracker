@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TextInput, Button, TouchableOpacity, StyleSheet } from 'react-native';
 import { router } from "expo-router";
-import { useUser } from '../(context)/UserContext';
+import { useUser } from '../(components)/UserContext';
 
 
 export default function LoginScreen() {
@@ -17,7 +17,7 @@ export default function LoginScreen() {
     });
 
     console.log('User data set. Navigating to home...');
-    router.replace("/home");
+    router.replace("/mainScreen");
   };
 
   return (
@@ -64,7 +64,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   loginContainer: {
-    width: '85%',
+    width: '80%',
     backgroundColor: '#ffffff',
     padding: 20,
     borderRadius: 10,

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, SafeAreaView, Alert } from 'react-native';
 import { useNavigation } from 'expo-router';
 import { router } from 'expo-router';
-import { useUser } from '../(context)/UserContext'; // Import the useUser hook
+import { useUser } from '../(components)/UserContext'; // Import the useUser hook
 import { getData } from '../apiService'; // Import your API call function
 
 export default function ProfileScreen() {
