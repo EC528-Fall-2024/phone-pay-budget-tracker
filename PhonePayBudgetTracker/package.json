@@ -48,7 +48,8 @@
     "react-native-svg": "15.2.0",
     "react-native-vector-icons": "^10.2.0",
     "react-native-web": "~0.19.10",
-    "typescript": "~5.3.3"
+    "typescript": "~5.3.3",
+    "expo-dev-client": "~4.0.29"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
