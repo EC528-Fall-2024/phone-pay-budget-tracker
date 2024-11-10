@@ -71,6 +71,10 @@ export default function SignupScreen() {
 
       console.log('User signed up:', user);
 
+      // clear pass and cpass from memory
+      setPassword('');
+      setcPassword('');
+
       router.push({
         pathname: "/(auth)/confirm",
         params: { username, email },  // username is passed as a query param

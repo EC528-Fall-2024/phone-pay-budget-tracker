@@ -27,6 +27,9 @@ export default function LoginScreen() {
     try {
       const user = await Auth.signIn(email, password);
       console.log('User signed in:', user)
+
+      // clear the password from memory
+      setPassword('');
       
       console.log('User data set. Navigating to home...');
       router.replace("/home")
@@ -38,8 +41,6 @@ export default function LoginScreen() {
           setError('An unknown error occurred');
         }
       }
-
-    
   };
 
   return (

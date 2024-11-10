@@ -8,6 +8,14 @@ const API_URL = 'http://localhost:3000';
 
 const API_BASE_URL = 'http://localhost:3000';
 
+
+// function to get ID token from AWS
+const getIdToken = async () => {
+  const session = await Auth.currentSession();
+  return session.getIdToken().getJwtToken();
+}
+
+
 /**
  * Fetches the Plaid link token from the backend Lambda function.
  * 
@@ -16,9 +24,20 @@ const API_BASE_URL = 'http://localhost:3000';
  */
 export const fetchLinkToken = async (userId) => {
   try {
-    const response = await axios.post(`${API_BASE_URL}/trans-dataanalysis/plaid/create_link_token`, {
-      userId,
-    });
+    // get id token
+    const idToken = await getIdToken();
+    const response = await axios.post(
+      `${API_BASE_URL}/trans-dataanalysis/plaid/create_link_token`,
+      { userId },
+      {
+        // pass the id token as a header
+        headers: {
+          Authorization: `Bearer ${idToken}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
     return response.data.link_token;
   } catch (error) {
     console.error('Error fetching link token:', error);
@@ -34,15 +53,28 @@ export const fetchLinkToken = async (userId) => {
  */
 export const onSuccess = async (publicToken, bank, id, accounts) => {
   try {
+    // get id token
+    const idToken = await getIdToken();
+
     const currentUser = await Auth.currentAuthenticatedUser();
     console.log(currentUser.username)
-    const response = await axios.post(`${API_BASE_URL}/trans-dataanalysis/plaid/get_access_token`, { // Post because we are sending confidential info, we will still receive the transactions
-      public_token: publicToken,
-      pk: currentUser.username.toString(),
-      bank: bank,
-      id: id,
-      accounts: accounts,
-    });
+    const response = await axios.post(
+      `${API_BASE_URL}/trans-dataanalysis/plaid/get_access_token`, // Post because we are sending confidential info, we will still receive the transactions
+      {
+        public_token: publicToken,
+        pk: currentUser.username.toString(),
+        bank: bank,
+        id: id,
+        accounts: accounts,
+      },
+      {
+        // pass the id token as a header
+        headers: {
+          Authorization: `Bearer ${idToken}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
     // console.log(response.data.totalTransactions)
     return response.data;
   } catch (error) {
@@ -59,11 +91,22 @@ export const onSuccess = async (publicToken, bank, id, accounts) => {
  */
  export const getTransactions = async (accessToken) => { // This gets transaction data from Plaid
   try {
+    // get id token
+    const idToken = await getIdToken();
+
     const currentUser = await Auth.currentAuthenticatedUser();
     const response = await axios.post(`${API_BASE_URL}/trans-dataanalysis/plaid/get_transactions`, { // Post because we are sending confidential info, we will still receive the transactions
       accessToken: accessToken.accessToken,
       pk: currentUser.username.toString(),
-    });
+    },
+    {
+      // pass the id token as a header
+      headers: {
+        Authorization: `Bearer ${idToken}`,
+        'Content-Type': 'application/json',
+      },
+    }
+    );
     // console.log(response.data.totalTransactions)
     return response.data;
   } catch (error) {
@@ -79,6 +122,9 @@ export const onSuccess = async (publicToken, bank, id, accounts) => {
 
 export const getProfileData = async () => {
   try {
+    // get id token
+    const idToken = await getIdToken();
+
     // Get the current authenticated user
     const currentUser = await Auth.currentAuthenticatedUser();
     
@@ -89,9 +135,10 @@ export const getProfileData = async () => {
     const response = await axios.get(`${API_URL}/user-profile`, {
       params: { pk: username },  // Pass the username as a query parameter (pk)
       headers: {
+        Authorization: `Bearer ${idToken}`,
         //'x-api-key': 'your-api-key',  // Add if API Gateway requires an API key
         'Content-Type': 'application/json',
-      },
+        }
     });
 
     return response.data;  // Return the fetched profile data
@@ -102,10 +149,13 @@ export const getProfileData = async () => {
 };
 
 export const setProfileData = async (data) => {
-  try {    
+  try {   
+    // get id token
+    const idToken = await getIdToken(); 
 
     const response = await axios.post(`${API_URL}/user-profile`, data, {
       headers: {
+        Authorization: `Bearer ${idToken}`,
         //'x-api-key': 'your-api-key',  // Include if API Gateway requires an API key
         'Content-Type': 'application/json',
       },
@@ -121,9 +171,13 @@ export const setProfileData = async (data) => {
 export const getTransactionData = async () => { // This gets transaction data from the database
   const currentUser = await Auth.currentAuthenticatedUser();
   try {
+    // get id token
+    const idToken = await getIdToken();
+
     const response = await axios.get(`${API_URL}/trans-dataanalysis`, {
       params:{pk: currentUser.username.toString()},
       headers: {
+        Authorization: `Bearer ${idToken}`,
         //'x-api-key': 'your-api-key',  // Add if you require an API key
         'Content-Type': 'application/json',
       },
@@ -137,15 +191,15 @@ export const getTransactionData = async () => { // This gets transaction data fr
 };
 
 
-
-
-
-
 // Example function to handle POST request
 export const postData = async (data) => {
   try {
+    // get id token
+    const idToken = await getIdToken();
+
     const response = await axios.post(`${API_URL}/your-post-endpoint`, data, {
       headers: {
+        Authorization: `Bearer ${idToken}`,
         'x-api-key': 'your-api-key',  // Add if you require an API key
         'Content-Type': 'application/json',
       },
@@ -160,8 +214,12 @@ export const postData = async (data) => {
 // Example function to handle PUT request
 export const updateData = async (id, data) => {
   try {
+    // get id token
+    const idToken = await getIdToken();
+
     const response = await axios.put(`${API_URL}/your-put-endpoint/${id}`, data, {
       headers: {
+        Authorization: `Bearer ${idToken}`,
         'x-api-key': 'your-api-key',  // Add if you require an API key
         'Content-Type': 'application/json',
       },
@@ -176,8 +234,12 @@ export const updateData = async (id, data) => {
 // Example function to handle DELETE request
 export const deleteData = async (id) => {
   try {
+    // get id token
+    const idToken = await getIdToken();
+
     const response = await axios.delete(`${API_URL}/your-delete-endpoint/${id}`, {
       headers: {
+        Authorization: `Bearer ${idToken}`,
         'x-api-key': 'your-api-key',  // Add if you require an API key
         'Content-Type': 'application/json',
       },
