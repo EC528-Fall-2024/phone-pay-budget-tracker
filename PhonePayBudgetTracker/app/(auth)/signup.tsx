@@ -2,6 +2,8 @@ import React from 'react';
 import { View, Text, TextInput, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { router } from "expo-router";
 import SignupForm from "../../components/SignupForm";
+import auth from '@react-native-firebase/auth';
+
 
 export function checkEmpty(toCheck: string) {
   if(typeof toCheck!='undefined' && toCheck){
@@ -64,6 +66,22 @@ export default function SignupScreen() {
     };
     SignupForm(userData);
     console.log('User signuping');
+    auth()
+      .createUserWithEmailAndPassword(email, password)
+      .then(() => {
+        console.log('User account created & signed in!');
+      })
+      .catch(error => {
+        if (error.code === 'auth/email-already-in-use') {
+          console.log('That email address is already in use!');
+        }
+
+        if (error.code === 'auth/invalid-email') {
+          console.log('That email address is invalid!');
+        }
+
+        console.error(error);
+      });
     router.replace("/login");
   };
 

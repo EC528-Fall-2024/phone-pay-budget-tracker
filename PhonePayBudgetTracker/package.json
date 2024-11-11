@@ -20,6 +20,7 @@
     "@react-native-firebase/app": "^21.3.0",
     "@react-native-firebase/auth": "^21.3.0",
     "@react-native-firebase/crashlytics": "^21.3.0",
+    "@react-native-firebase/firestore": "^21.4.0",
     "@react-navigation/drawer": "^6.7.2",
     "@react-navigation/material-bottom-tabs": "^6.2.29",
     "@react-navigation/native": "^6.1.18",
