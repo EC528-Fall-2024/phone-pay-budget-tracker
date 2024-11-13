@@ -13,9 +13,9 @@ const configuration = new Configuration({
 
 const plaidClient = new PlaidApi(configuration);
 
-// Cloud function to create a link token
+
 exports.createLinkToken = functions.https.onRequest(async (req, res) => {
-  const clientUserId = 'user-id'; // Replace with real logic to get a unique user ID
+  const clientUserId = 'user-id'; 
 
   const request = {
     user: {
@@ -48,3 +48,20 @@ exports.createLinkToken = functions.https.onRequest(async (req, res) => {
     res.status(500).send('Failed to create link token');
   }
 });
+
+
+exports.exchangePublicToken = functions.https.onRequest(async (req, res) => {
+    const publicToken = req.body.public_token;
+
+    const request = {
+        public_token: publicToken,
+    };
+  
+    try {
+        const getAccessTokenResponse = await plaidClient.itemPublicTokenExchange(request);
+        res.json(getAccessTokenResponse.data);
+    }catch (error) {
+        console.error('Error exchanging public token:', error);
+        res.status(500).json({ error: 'Failed to exchange public token' });
+    }
+  });

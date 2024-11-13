@@ -47,24 +47,6 @@ function createSubmissionData(phoneNumber: string): SubmissionData {
   };
 }
 
-function createLinkOpenProps(): LinkOpenProps {
-  return {
-    onSuccess: (success: LinkSuccess) => {
-      // User was able to successfully link their account.
-      console.log('Success: ', success);
-      success.metadata.accounts.forEach(it => console.log('accounts', it));
-    },
-    onExit: (linkExit: LinkExit) => {
-      // User exited Link session. There may or may not be an error depending on what occured.
-      console.log('Exit: ', linkExit);
-      dismissLink();
-    },
-    // MODAL or FULL_SCREEEN presentation on iOS. Defaults to MODAL.
-    iOSPresentationStyle: LinkIOSPresentationStyle.MODAL,
-    logLevel: LinkLogLevel.ERROR,
-  };
-}
-
 
 
 export default function PlaidLinkScreen() {
@@ -78,9 +60,31 @@ export default function PlaidLinkScreen() {
     console.log(event);
   });
 
-  const [linkToken, setLinkToken] = useState(null);
+  const [linkToken, setLinkToken] = React.useState('');
   const [text, onChangeText] = React.useState('');
   const [disabled, setDisabled] = React.useState(true);
+  const [publicToken, setPublicToken] = useState('');
+
+  function createLinkOpenProps(): LinkOpenProps {
+    return {
+      onSuccess: (success: LinkSuccess) => {
+        // User was able to successfully link their account.
+        console.log('Success: ', success);
+        success.metadata.accounts.forEach(it => console.log('accounts', it));
+        const { publicToken } = success;
+        setPublicToken(publicToken); // Store the public_token for future use
+        console.log('Public Token:', publicToken);
+      },
+      onExit: (linkExit: LinkExit) => {
+        // User exited Link session. There may or may not be an error depending on what occured.
+        console.log('Exit: ', linkExit);
+        dismissLink();
+      },
+      // MODAL or FULL_SCREEEN presentation on iOS. Defaults to MODAL.
+      iOSPresentationStyle: LinkIOSPresentationStyle.MODAL,
+      logLevel: LinkLogLevel.ERROR,
+    };
+  }
 
   const fetchLinkToken = async () => {
     try {
@@ -104,13 +108,24 @@ export default function PlaidLinkScreen() {
     }
   };
   
+  const exchangePublicToken = async (publicToken: string) => {
+    try {
+      const response = await axios.post('https://us-central1-phonepaybudgettracker.cloudfunctions.net/exchangePublicToken', {
+        public_token: publicToken,
+      });
+      const { access_token, item_id } = response.data;
+  
+      // Store or use the access token and item ID as needed
+      console.log('Access Token:', access_token);
+      console.log('Item ID:', item_id);
+    } catch (error) {
+      console.error('Error exchanging public token:', error);
+      Alert.alert('Error', 'Unable to exchange public token');
+    }
+  };
 
   return (
     <>
-      <TouchableOpacity style={styles.button} onPress={fetchLinkToken}>
-        <Text style={styles.button}>Create Link</Text>
-      </TouchableOpacity>
-
       <TextInput
         style={styles.input}
         onChangeText={onChangeText}
@@ -122,13 +137,15 @@ export default function PlaidLinkScreen() {
         style={styles.button}
         onPress={() => {
           if (isValidString(text)) {
-            const tokenConfiguration = createLinkTokenConfiguration(text);
+            const tokenConfiguration = createLinkTokenConfiguration('text');
             create(tokenConfiguration);
             setDisabled(false);
           }
         }}>
-        <Text style={styles.button}>Create Link</Text>
+        <Text style={styles.button}>Fucked up</Text>
       </TouchableOpacity>
+
+
       <TouchableOpacity
         disabled={disabled}
         style={disabled ? styles.disabledButton : styles.button}
@@ -136,17 +153,36 @@ export default function PlaidLinkScreen() {
           const submissionData = createSubmissionData('415-555-0015');
           submit(submissionData);
         }}>
-        <Text style={styles.button}>Submit Layer Phone Number</Text>
+        <Text style={styles.button}>Dont Press</Text>
       </TouchableOpacity>
+
+      <TouchableOpacity style={styles.button} onPress={fetchLinkToken}>
+        <Text style={styles.button}>Generate Link</Text>
+      </TouchableOpacity>
+
       <TouchableOpacity
-        disabled={disabled}
+        style={styles.button}
+        onPress={() => {
+            create({token: linkToken});
+            setDisabled(false);
+          }
+        }>
+        <Text style={styles.button}>Create Link</Text>
+      </TouchableOpacity>
+      
+      <TouchableOpacity
         style={disabled ? styles.disabledButton : styles.button}
         onPress={() => {
           const openProps = createLinkOpenProps();
           open(openProps);
-          setDisabled(true);
-        }}>
-        <Text style={styles.button}>Open Link</Text>
+        }}
+        disabled={disabled}>
+        <Text style={styles.button}>Link Bank</Text>
+      </TouchableOpacity>
+
+      
+      <TouchableOpacity style={styles.button} onPress={() => exchangePublicToken(publicToken)}>
+        <Text style={styles.button}>Get acesss token</Text>
       </TouchableOpacity>
     </>
   );
