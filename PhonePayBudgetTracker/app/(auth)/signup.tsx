@@ -130,7 +130,8 @@ export default function SignupScreen() {
         {errorMsg ? <Text style={styles.error}>{errorMsg}</Text> : null}
 
         {/* Link to Login */}
-        <Pressable onPress={() => router.replace("/login")}>
+        {/*<Pressable onPress={() => router.replace("/login")}>*/}
+        <Pressable onPress={() => router.replace("/link")}>
           <Text style={styles.link}>Already have an account? Log In</Text>
         </Pressable>
       </View>
