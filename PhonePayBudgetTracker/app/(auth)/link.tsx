@@ -56,7 +56,6 @@ export default function PlaidLinkScreen() {
 
   // Use event emitter to get real time events during a Link Session.
   usePlaidEmitter((event: LinkEvent) => {
-    // Log Link Session events to console.
     console.log(event);
   });
 
@@ -72,11 +71,10 @@ export default function PlaidLinkScreen() {
         console.log('Success: ', success);
         success.metadata.accounts.forEach(it => console.log('accounts', it));
         const { publicToken } = success;
-        setPublicToken(publicToken); // Store the public_token for future use
+        setPublicToken(publicToken);
         console.log('Public Token:', publicToken);
       },
       onExit: (linkExit: LinkExit) => {
-        // User exited Link session. There may or may not be an error depending on what occured.
         console.log('Exit: ', linkExit);
         dismissLink();
       },
@@ -112,6 +110,7 @@ export default function PlaidLinkScreen() {
     try {
       const response = await axios.post('https://us-central1-phonepaybudgettracker.cloudfunctions.net/exchangePublicToken', {
         public_token: publicToken,
+        user_id: '',
       });
       const { access_token, item_id } = response.data;
   

@@ -1,5 +1,9 @@
 const functions = require('firebase-functions');
+const admin = require('firebase-admin');
 const { Configuration, PlaidApi, PlaidEnvironments } = require('plaid');
+
+admin.initializeApp();
+const db = admin.firestore();
 
 const configuration = new Configuration({
   basePath: PlaidEnvironments.sandbox,
@@ -52,6 +56,7 @@ exports.createLinkToken = functions.https.onRequest(async (req, res) => {
 
 exports.exchangePublicToken = functions.https.onRequest(async (req, res) => {
     const publicToken = req.body.public_token;
+    const userId = req.body.user_id;
 
     const request = {
         public_token: publicToken,
@@ -59,7 +64,15 @@ exports.exchangePublicToken = functions.https.onRequest(async (req, res) => {
   
     try {
         const getAccessTokenResponse = await plaidClient.itemPublicTokenExchange(request);
-        res.json(getAccessTokenResponse.data);
+        const { access_token, item_id } = getAccessTokenResponse.data;
+
+        await db.collection('users').doc(userId).set(
+            {
+                plaid_token: access_token,
+            },
+            { merge: true } 
+          );
+        res.json({ message: 'Access token successfully stored in db' });
     }catch (error) {
         console.error('Error exchanging public token:', error);
         res.status(500).json({ error: 'Failed to exchange public token' });

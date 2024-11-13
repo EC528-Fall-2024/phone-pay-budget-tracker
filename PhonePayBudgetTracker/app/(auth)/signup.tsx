@@ -80,7 +80,6 @@ export default function SignupScreen() {
             country: '',
             profile_pic: '',
             plaid_token: '',
-            client_token: '',
             is_admin: false,
           })
           .then(() => {
