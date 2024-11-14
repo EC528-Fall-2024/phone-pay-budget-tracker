@@ -45,7 +45,7 @@ const Sidebar = ({ onClose }) => {
         <TouchableOpacity className="mb-4 p-2 rounded bg-pumpkin" >
         <   Text className="text-l dark:text-white mb-4" style={{fontFamily: "SpaceGroteskBold",}}> Billing Plan</Text>
         </TouchableOpacity>
-        <TouchableOpacity className="mb-4 p-2 rounded bg-pumpkin" onPress={() => router.replace("/profile")}>
+        <TouchableOpacity className="mb-4 p-2 rounded bg-pumpkin" onPress={() => router.replace("/linkScreen")}>
         <   Text className="text-l dark:text-white mb-4" style={{fontFamily: "SpaceGroteskBold",}}> Profile</Text>
         </TouchableOpacity>
         <TouchableOpacity className="mb-4 p-2 rounded bg-pumpkin" onPress={() => router.replace("/index")}>

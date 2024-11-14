@@ -1,20 +1,20 @@
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
-import { getFunctions, httpsCallable } from "firebase/functions";
+import { getFunctions, httpsCallable } from "@react-native-firebase/functions";
 import { checkEmpty, validatePasswordsMatch} from './validationUtils';
-import { getAuth } from "firebase/auth";
 
 export const validateSignup = (
   username: string,
   email: string,
   password: string,
   cpassword: string
-) => {
-  if (checkEmpty(username)) return 'Full name cannot be empty!';
-  if (checkEmpty(email)) return 'Email cannot be empty!';
-  if (checkEmpty(password)) return 'Password cannot be empty!';
-  if (checkEmpty(cpassword)) return 'Confirm password cannot be empty!';
-  if (!validatePasswordsMatch(password, cpassword)) return 'Passwords do not match!';
+): string => {
+  if (!checkEmpty(username).isValid) return 'Full name cannot be empty!';
+  if (!checkEmpty(email).isValid) return 'Email cannot be empty!';
+  if (!checkEmpty(password).isValid) return 'Password cannot be empty!';
+  if (!checkEmpty(cpassword).isValid) return 'Confirm password cannot be empty!';
+  if (!validatePasswordsMatch(password, cpassword).isValid) return 'Passwords do not match!';
+
   return '';
 };
 
@@ -24,6 +24,7 @@ async function createUserProfile(
   uid: string ) {
 
   const functions = getFunctions();
+  console.log(email, username, uid);
   const createUserDocument = httpsCallable(functions, "createUserDocument");
 
   try {
@@ -48,7 +49,8 @@ export const handleSignup = async (
   try {
     const data = await auth().createUserWithEmailAndPassword(email, password);
     console.log('User account created in FB!');
-    createUserProfile(email, username, data.user.uid);
+    
+    await createUserProfile(email, username, data.user.uid);
 
     onSuccess();
   } catch (error: any) {

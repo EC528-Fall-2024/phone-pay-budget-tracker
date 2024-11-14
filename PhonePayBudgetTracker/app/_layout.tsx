@@ -9,8 +9,8 @@ import 'react-native-reanimated';
 import "../global.css";
 
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { UserProvider } from './(components)/UserContext';
-import { TransactionProvider } from './(components)/transactionContext';
+import { UserProvider } from './(context)/UserContext';
+import { TransactionProvider } from './(context)/transactionContext';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();

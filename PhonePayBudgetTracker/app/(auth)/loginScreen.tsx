@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TextInput, Button, TouchableOpacity, StyleSheet } from 'react-native';
 import { router } from "expo-router";
-import { useUser } from '../(components)/UserContext';
+import { useUser } from '../(context)/UserContext';
 
 
 export default function LoginScreen() {

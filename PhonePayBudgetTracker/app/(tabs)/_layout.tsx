@@ -10,6 +10,7 @@ export default function TabLayout() {
     }}
   >
     <Stack.Screen name="mainScreen" />
+    <Stack.Screen name="linkScreen" />
   </Stack>
 );
 }

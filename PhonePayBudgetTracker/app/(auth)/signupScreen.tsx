@@ -1,6 +1,8 @@
 import React from 'react';
 import { View, Text, ScrollView, Pressable } from 'react-native';
 import { router } from "expo-router";
+import auth from '@react-native-firebase/auth';
+import firestore from '@react-native-firebase/firestore';
 
 import FormInput from '../(components)/inputForm';
 import styles from '../(styles)/SignupScreen.styles';
@@ -74,7 +76,7 @@ export default function SignupScreen() {
           <Text style={styles.signupButtonText}>Sign Up</Text>
         </Pressable>
         {errorMsg ? <Text style={styles.error}>{errorMsg}</Text> : null}
-        <Pressable onPress={() => router.replace("/link")}>
+        <Pressable onPress={() => router.replace("/linkScreen")}>
           <Text style={styles.link}>Already have an account? Log In</Text>
         </Pressable>
       </View>

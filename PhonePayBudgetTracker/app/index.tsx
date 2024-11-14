@@ -15,11 +15,11 @@ export default function IndexPage() {
       </Text>
 
       {/* Navigate to Auth Button */}
-      <TouchableOpacity style={styles.authButton} onPress={() => router.push('/login')}>
+      <TouchableOpacity style={styles.authButton} onPress={() => router.push('/loginScreen')}>
         <Text style={styles.authButtonText}>Go to Login</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.authButton} onPress={() => router.push('/signup')}>
+      <TouchableOpacity style={styles.authButton} onPress={() => router.push('/signupScreen')}>
         <Text style={styles.authButtonText}>Go to Signup</Text>
       </TouchableOpacity>
     </ScrollView>

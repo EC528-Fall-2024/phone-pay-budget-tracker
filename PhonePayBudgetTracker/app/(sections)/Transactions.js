@@ -1,6 +1,6 @@
 import { View, Text, FlatList } from "react-native";
 import React from "react";
-import { useTransactionContext } from '../(components)/transactionContext';
+import { useTransactionContext } from '../(context)/transactionContext';
 import TransactionCard from "../(components)/TransactionCard";
 import Animated, { FadeInDown } from "react-native-reanimated";
 

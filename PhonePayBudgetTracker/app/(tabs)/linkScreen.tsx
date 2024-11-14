@@ -1,10 +1,10 @@
 import React from 'react';
 import {TextInput, Text, TouchableOpacity} from 'react-native';
-import {styles} from './Styles';
+import {styles} from '../(styles)/linkScreen.styles';
 import { useState } from 'react';
 import { Button, Alert } from 'react-native';
 import axios from 'axios';
-import { useTransactionContext } from '../(components)/transactionContext';
+import { useTransactionContext } from '../(context)/transactionContext';
 
 interface Transaction {
   account_id: string;

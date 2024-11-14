@@ -34,9 +34,16 @@ function encryptUID(uid) {
 exports.createUserDocument = functions.https.onCall(async (data, context) => {
     const { email, username, uid } = data;
   
+    await db.collection('users').doc(userId).set(
+      {
+          plaid_token: access_token,
+      },
+      { merge: true } 
+    );
+
     const encryptedUID = encryptUID(uid);
     try {
-      await admin.firestore().collection("users").doc(encryptedUID).set({
+      await db.collection('users').doc(encryptedUID).set({
         email: email,
         name: username,
         phone: "",

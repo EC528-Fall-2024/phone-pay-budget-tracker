@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet, Text, View, ScrollView, SafeAreaView } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
 import { Dimensions } from 'react-native';
-import { useUser } from '../(components)/UserContext';
+import { useUser } from '../(context)/UserContext';
 
 export default function HomeScreen() {
   // Extended financial data with more transactions

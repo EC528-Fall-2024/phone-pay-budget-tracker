@@ -11,7 +11,6 @@ export default function AuthLayout() {
       {/* Login and Signup screens are routed here */}
       <Stack.Screen name="loginScreen" />
       <Stack.Screen name="signupScreen" />
-      <Stack.Screen name="link" />
     </Stack>
   );
 }
