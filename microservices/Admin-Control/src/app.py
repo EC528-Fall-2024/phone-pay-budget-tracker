@@ -88,6 +88,7 @@ def add_user(dynamodb, body):
         'body': json.dumps({'message': 'User added successfully'})
     }
 
+# REMOVE FROM AWS COGNITO ALSO
 def delete_user(dynamodb, user_id):
     if not user_id:
         return {

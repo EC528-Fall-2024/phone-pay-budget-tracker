@@ -1,52 +1,15 @@
 const AWS = require('aws-sdk');
-const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
-const { DynamoDBDocumentClient, GetCommand, PutCommand } = require('@aws-sdk/lib-dynamodb');
-const { NodeHttpHandler } = require('@aws-sdk/node-http-handler')
 
-const https = require('https');
+// Initialize the DynamoDB DocumentClient
+const dynamodb = new AWS.DynamoDB.DocumentClient();
 
-// Function to create the DynamoDB connection
-const getDBConnection = () => {
-    console.log('DynamoDB creating connection');
-
-    const config = {
-        apiVersion: '2012-08-10',
-        region: "us-east-2",
-        endpoint: "http://host.docker.internal:8000", // Local DynamoDB
-        credentials: {
-            accessKeyId: "Secret",
-            secretAccessKey: "Secret",
-        },
-        maxAttempts: 2,
-        requestHandler: new NodeHttpHandler({
-            socketTimeout: 1000,
-            connectionTimeout: 1000,
-        }),
-    };
-
-    // Adjust the requestHandler if running in AWS by checking if the endpoint is undefined
-    if (!config.endpoint) {
-        return DynamoDBDocumentClient.from(new DynamoDBClient({
-            requestHandler: new AWS.NodeHttpHandler({
-                httpsAgent: new https.Agent({
-                    maxSockets: 30,
-                    keepAlive: true,
-                }),
-            }),
-        }));
-    }
-
-    return DynamoDBDocumentClient.from(new DynamoDBClient(config));
-};
-
-const dynamodb = getDBConnection(); // Initialize the DynamoDB client
+// Get the table name from environment variables
+const tableName = process.env.TABLE_NAME;
 
 exports.lambda_handler = async (event) => {
-    const tableName = 'profileData';  // Hardcoded table name
-
     try {
         // Parse the pk (primary key) from the query string parameters or event body
-        const pk = event.queryStringParameters?.pk || event.body?.pk;
+        const pk = event.queryStringParameters?.pk || JSON.parse(event.body)?.pk;
 
         if (!pk) {
             return {
@@ -63,8 +26,7 @@ exports.lambda_handler = async (event) => {
             Key: { pk }  // Use the provided user id (pk) to fetch the data
         };
 
-        // Ensure the command is awaited
-        const response = await dynamodb.send(new GetCommand(params));
+        const response = await dynamodb.get(params).promise();
 
         console.log('DynamoDB response:', response);
 
@@ -103,25 +65,21 @@ exports.lambda_handler = async (event) => {
 };
 
 exports.lambda_handler_setProfile = async (event) => {
-    const tableName = 'profileData'; 
-
-    // Parse the request body
-    const requestBody = JSON.parse(event.body);
-
-    const params = {
-        TableName: tableName,
-        Item: {
-            pk: requestBody.pk,
-            //firstName: requestBody.firstName,
-            //lastName: requestBody.lastName,
-            email: requestBody.email,
-            profilePhoto: requestBody.profilePhoto,
-        }
-    };
-
     try {
-        // Use PutCommand to insert or update data in DynamoDB
-        await dynamodb.send(new PutCommand(params));
+        // Parse the request body
+        const requestBody = JSON.parse(event.body);
+
+        const params = {
+            TableName: tableName,
+            Item: {
+                pk: requestBody.pk,
+                email: requestBody.email,
+                profilePhoto: requestBody.profilePhoto,
+            }
+        };
+
+        // Use put method to insert or update data in DynamoDB
+        await dynamodb.put(params).promise();
 
         // Return success response
         return {
