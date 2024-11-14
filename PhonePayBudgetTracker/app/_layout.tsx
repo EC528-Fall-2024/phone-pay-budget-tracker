@@ -10,6 +10,7 @@ import "../global.css";
 
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { UserProvider } from './(components)/UserContext';
+import { TransactionProvider } from './(components)/transactionContext';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -32,6 +33,7 @@ export default function RootLayout() {
 
   return (
     <UserProvider>
+    <TransactionProvider>
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack>
         <Stack.Screen name="index" options={{ headerShown: false }} />
@@ -39,6 +41,7 @@ export default function RootLayout() {
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       </Stack>
     </ThemeProvider>
+    </TransactionProvider>
     </UserProvider>
   );
 }

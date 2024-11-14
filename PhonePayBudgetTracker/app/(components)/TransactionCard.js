@@ -4,11 +4,12 @@ import React from "react";
 const { width, height } = Dimensions.get("window");
 
 export default function TransactionCard({
-  description,
-  category,
+  name,
+  payment_channel,
   amount,
-  date,
-  account,
+  authorized_date,
+  account_id,
+  logo_url,
 }) {
   return (
     <View
@@ -20,8 +21,22 @@ export default function TransactionCard({
       }}
     >
       <View className="flex-row space-x-6 items-center justify-center">
+        <View className="bg-white rounded-xl">
+          <Image
+            source={
+              logo_url
+              ? { uri: logo_url } 
+              : require('../../assets/images/profile_img.png') // Use a default or empty image if logoUrl is null
+          }
+            style={{
+              width: 65,
+              height: 65,
+            }}
+            resizeMode="contain"
+          />
+        </View>
 
-        <View className="space-y-1">
+        <View className="space-y-1" style={{ marginLeft: 8 }}>
           {/* Name */}
           <Text
             className="text-2xl"
@@ -29,7 +44,7 @@ export default function TransactionCard({
               fontFamily: "SpaceGroteskBold",
             }}
           >
-            {description}
+            {name.substring(0, 20)}
           </Text>
 
           {/* Type */}
@@ -39,12 +54,12 @@ export default function TransactionCard({
               fontFamily: "SpaceGroteskMedium",
             }}
           >
-            {category}
+            {payment_channel}
           </Text>
         </View>
       </View>
 
-      <View className="space-y-1">
+      <View className="space-y-1" style={{ marginLeft: 8 }}>
         {/* Amount */}
         <Text
           className="text-xl"
@@ -62,7 +77,7 @@ export default function TransactionCard({
             fontFamily: "SpaceGroteskBold",
           }}
         >
-          {date}
+          {authorized_date}
         </Text>
 
         {/* Account */}
@@ -72,7 +87,7 @@ export default function TransactionCard({
             fontFamily: "SpaceGroteskBold",
           }}
         >
-          {account}
+          {account_id.substring(0, 5)}
         </Text>
       </View>
     </View>

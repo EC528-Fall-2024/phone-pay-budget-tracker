@@ -4,7 +4,18 @@ import {styles} from './Styles';
 import { useState } from 'react';
 import { Button, Alert } from 'react-native';
 import axios from 'axios';
+import { useTransactionContext } from '../(components)/transactionContext';
 
+interface Transaction {
+  account_id: string;
+  amount: number;
+  authorized_date: string;
+  iso_currency_code: string;
+  logo_url: string;
+  merchant_name: string;
+  name: string;
+  payment_channel: string;
+}
 
 import {
   LinkExit,
@@ -65,7 +76,8 @@ export default function PlaidLinkScreen() {
   const [disabled, setDisabled] = React.useState(true);
   const [publicToken, setPublicToken] = useState('');
 
-  const [transactions, setTransactions] = useState([]);
+  const { transactions, addTransactions } = useTransactionContext();
+
   const [loading, setLoading] = useState(false);
 
   function createLinkOpenProps(): LinkOpenProps {
@@ -145,8 +157,20 @@ export default function PlaidLinkScreen() {
       }
 
       const data = await response.json();
-      console.log(data);
-      setTransactions(data.transactions); // Set transactions in state
+
+      const pTransactions = data.transactions.map((transaction :Transaction) => ({
+        account_id: transaction.account_id,
+        amount: Math.abs(transaction.amount),
+        authorized_date: transaction.authorized_date,
+        iso_currency_code: transaction.iso_currency_code,
+        logo_url: transaction.logo_url,
+        name: transaction.name,
+        payment_channel: transaction.payment_channel
+    }));
+    
+    console.log("parsed:", pTransactions);
+    addTransactions(pTransactions);
+    console.log("saved:", transactions);
     } catch (error) {
       console.error('Error fetching transactions:', error);
       Alert.alert('Error', 'Could not fetch transactions');

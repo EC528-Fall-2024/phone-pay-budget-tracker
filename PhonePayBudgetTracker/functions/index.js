@@ -89,7 +89,13 @@ exports.fetchTransactions = functions.https.onRequest(async (req, res) => {
     const endDate = req.body.end_date || new Date().toISOString().split('T')[0];
   
     const defaultStartDate = new Date();
-    defaultStartDate.setFullYear(defaultStartDate.getFullYear() - 1);
+    // 1 year before
+    //defaultStartDate.setFullYear(defaultStartDate.getFullYear() - 1);
+
+    // 1 month before
+    defaultStartDate.setMonth(defaultStartDate.getMonth() - 1);
+
+    //defaultStartDate.setDate(defaultStartDate.getDate() - 7);
     const startDate = req.body.start_date || defaultStartDate.toISOString().split('T')[0];
   
     try {

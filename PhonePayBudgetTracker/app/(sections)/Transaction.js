@@ -1,10 +1,11 @@
 import { View, Text, FlatList } from "react-native";
 import React from "react";
-import { transactionData } from "../(components)/transactionData";
+import { useTransactionContext } from '../(components)/transactionContext';
 import TransactionCard from "../(components)/TransactionCard";
 import Animated, { FadeInDown } from "react-native-reanimated";
 
 export default function Transactions() {
+  const { transactions, addTransactions } = useTransactionContext();
   return (
     <Animated.View
       className="mt-8"
@@ -14,7 +15,7 @@ export default function Transactions() {
 
 
       <FlatList
-        data={transactionData}
+        data={transactions}
         keyExtractor={(item) => item.id}
         initialNumToRender={20}
         contentContainerStyle={{ paddingBottom: 100 }}

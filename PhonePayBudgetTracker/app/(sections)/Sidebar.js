@@ -34,19 +34,16 @@ const Sidebar = ({ onClose }) => {
             <Text className="text-l dark:text-white mb-4" style={{fontFamily: "SpaceGroteskBold",}}> Home</Text>
         </TouchableOpacity>
         <TouchableOpacity className="mb-4 p-2 rounded bg-pumpkin" >
-        <   Text className="text-l dark:text-white mb-4" style={{fontFamily: "SpaceGroteskBold",}}> Report</Text>
+        <   Text className="text-l dark:text-white mb-4" style={{fontFamily: "SpaceGroteskBold",}}> Data Analysis</Text>
         </TouchableOpacity>
         <TouchableOpacity className="mb-4 p-2 rounded bg-pumpkin" >
-        <   Text className="text-l dark:text-white mb-4" style={{fontFamily: "SpaceGroteskBold",}}> Subscriptios</Text>
+        <   Text className="text-l dark:text-white mb-4" style={{fontFamily: "SpaceGroteskBold",}}> Financial Tracker</Text>
         </TouchableOpacity>
         <TouchableOpacity className="mb-4 p-2 rounded bg-pumpkin" >
-        <   Text className="text-l dark:text-white mb-4" style={{fontFamily: "SpaceGroteskBold",}}> Budget</Text>
+        <   Text className="text-l dark:text-white mb-4" style={{fontFamily: "SpaceGroteskBold",}}> Sync Data</Text>
         </TouchableOpacity>
         <TouchableOpacity className="mb-4 p-2 rounded bg-pumpkin" >
-        <   Text className="text-l dark:text-white mb-4" style={{fontFamily: "SpaceGroteskBold",}}> Loans</Text>
-        </TouchableOpacity>
-        <TouchableOpacity className="mb-4 p-2 rounded bg-pumpkin" >
-        <   Text className="text-l dark:text-white mb-4" style={{fontFamily: "SpaceGroteskBold",}}> Savings</Text>
+        <   Text className="text-l dark:text-white mb-4" style={{fontFamily: "SpaceGroteskBold",}}> Billing Plan</Text>
         </TouchableOpacity>
         <TouchableOpacity className="mb-4 p-2 rounded bg-pumpkin" onPress={() => router.replace("/profile")}>
         <   Text className="text-l dark:text-white mb-4" style={{fontFamily: "SpaceGroteskBold",}}> Profile</Text>
