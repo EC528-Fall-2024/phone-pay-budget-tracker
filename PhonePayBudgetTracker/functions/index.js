@@ -16,7 +16,41 @@ const configuration = new Configuration({
 });
 
 const plaidClient = new PlaidApi(configuration);
+// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
+const crypto = require('crypto');
+
+const key = crypto.createHash('sha256').update("phonepaybudgettracker").digest();
+const iv = crypto.randomBytes(16);
+
+function encryptUID(uid) {
+    const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
+    let encrypted = cipher.update(uid, 'utf8', 'hex');
+    encrypted += cipher.final('hex');
+    return encrypted;
+  }
+// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+exports.createUserDocument = functions.https.onCall(async (data, context) => {
+    const { email, username, uid } = data;
+  
+    const encryptedUID = encryptUID(uid);
+    try {
+      await admin.firestore().collection("users").doc(encryptedUID).set({
+        email: email,
+        name: username,
+        phone: "",
+        country: "",
+        profile_pic: "",
+        plaid_token: "",
+        is_admin: false,
+      });
+      return { success: true };
+    } catch (error) {
+      console.error("Error creating user document:", error);
+      throw new functions.https.HttpsError("internal", "Failed to create user document.");
+    }
+  });
 
 // =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 

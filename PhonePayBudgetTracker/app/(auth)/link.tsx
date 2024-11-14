@@ -126,7 +126,7 @@ export default function PlaidLinkScreen() {
     try {
       const response = await axios.post('https://us-central1-phonepaybudgettracker.cloudfunctions.net/exchangePublicToken', {
         public_token: publicToken,
-        user_id: '',
+        user_id: 'EFubzb6vVXbCx1iCSVoOzKmY2k23',
       });
       const { access_token, item_id } = response.data;
   
@@ -142,7 +142,7 @@ export default function PlaidLinkScreen() {
   const fetchTransactions = async () => {
     setLoading(true);
     try {
-      const userId = '';
+      const userId = 'EFubzb6vVXbCx1iCSVoOzKmY2k23';
 
       const response = await fetch('https://us-central1-phonepaybudgettracker.cloudfunctions.net/fetchTransactions', {
         method: 'POST',

@@ -1,7 +1,7 @@
 import { View, Text, ScrollView } from "react-native";
 import React from "react";
 import { carousalData } from "../(components)/transactionData";
-import CardItem from "../(components)/CardItem";
+import CardItem from "../(components)/AccountCard";
 import Animated, { FadeInDown } from "react-native-reanimated";
 
 export default function Card() {
@@ -16,7 +16,7 @@ export default function Card() {
         }}
         className="text-3xl mb-4 dark:text-white"
       >
-        Payment Method
+        My Accounts
       </Text>
 
       <ScrollView
