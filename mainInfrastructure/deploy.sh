@@ -34,3 +34,17 @@ sam deploy \
   --parameter-overrides \
     ProfileDataTableName=$PROFILE_DATA_TABLE_NAME \
     SharedApiGatewayId=$API_GATEWAY_ID
+cd ../..
+
+# Deploy admin control service
+echo "Deploying admin control service..."
+cd microservices/admin-control/
+sam build
+sam deploy \
+  --stack-name admin-control-service \
+  --s3-bucket $S3_BUCKET_NAME \
+  --capabilities CAPABILITY_IAM \
+  --parameter-overrides \
+    ProfileDataTableName=$PROFILE_DATA_TABLE_NAME \
+    ApiGatewayId=$API_GATEWAY_ID
+cd ../..

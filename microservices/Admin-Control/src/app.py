@@ -4,15 +4,11 @@ import json
 
 def lambda_handler(event, context):
     try:
-        aws_endpoint = os.getenv('AWS_ENDPOINT')
-        print(f"Connecting to DynamoDB at endpoint: {aws_endpoint}")
-
-        dynamodb = boto3.resource('dynamodb', endpoint_url=aws_endpoint)
+        dynamodb = boto3.resource('dynamodb')
 
         http_method = event.get('httpMethod')
         path = event.get('path')
         path_parameters = event.get('pathParameters') or {}
-        query_string_parameters = event.get('queryStringParameters') or {}
         body = event.get('body')
 
         if path == '/admin-control/users' and http_method == 'GET':
@@ -36,6 +32,7 @@ def lambda_handler(event, context):
             }
 
     except Exception as e:
+        print(f"Error: {str(e)}")
         return {
             'statusCode': 500,
             'body': json.dumps({'error': str(e)})
@@ -88,7 +85,6 @@ def add_user(dynamodb, body):
         'body': json.dumps({'message': 'User added successfully'})
     }
 
-# REMOVE FROM AWS COGNITO ALSO
 def delete_user(dynamodb, user_id):
     if not user_id:
         return {
