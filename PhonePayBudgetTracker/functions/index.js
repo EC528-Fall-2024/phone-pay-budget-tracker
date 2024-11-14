@@ -18,6 +18,8 @@ const configuration = new Configuration({
 const plaidClient = new PlaidApi(configuration);
 
 
+// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
 exports.createLinkToken = functions.https.onRequest(async (req, res) => {
   const clientUserId = 'user-id'; 
 
@@ -53,6 +55,7 @@ exports.createLinkToken = functions.https.onRequest(async (req, res) => {
   }
 });
 
+// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
 exports.exchangePublicToken = functions.https.onRequest(async (req, res) => {
     const publicToken = req.body.public_token;
@@ -78,3 +81,36 @@ exports.exchangePublicToken = functions.https.onRequest(async (req, res) => {
         res.status(500).json({ error: 'Failed to exchange public token' });
     }
   });
+
+// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+exports.fetchTransactions = functions.https.onRequest(async (req, res) => {
+    const userId = req.body.user_id;
+    const endDate = req.body.end_date || new Date().toISOString().split('T')[0];
+  
+    const defaultStartDate = new Date();
+    defaultStartDate.setFullYear(defaultStartDate.getFullYear() - 1);
+    const startDate = req.body.start_date || defaultStartDate.toISOString().split('T')[0];
+  
+    try {
+      const userDoc = await db.collection('users').doc(userId).get();
+      if (!userDoc.exists) return res.status(404).json({ error: 'User not found' });
+  
+      const accessToken = userDoc.data()?.plaid_token;
+      if (!accessToken) return res.status(400).json({ error: 'Access token not available' });
+  
+      const request = {
+        access_token: accessToken,
+        start_date: startDate,
+        end_date: endDate,
+      };
+      const transactionsResponse = await plaidClient.transactionsGet(request);
+      const transactions = transactionsResponse.data.transactions;
+  
+      res.json({ transactions });
+    } catch (error) {
+      console.error('Error fetching transactions:', error);
+      res.status(500).json({ error: 'Failed to fetch transactions' });
+    }
+  });
+  

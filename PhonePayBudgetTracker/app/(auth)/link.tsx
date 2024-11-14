@@ -60,9 +60,13 @@ export default function PlaidLinkScreen() {
   });
 
   const [linkToken, setLinkToken] = React.useState('');
+
   const [text, onChangeText] = React.useState('');
   const [disabled, setDisabled] = React.useState(true);
   const [publicToken, setPublicToken] = useState('');
+
+  const [transactions, setTransactions] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   function createLinkOpenProps(): LinkOpenProps {
     return {
@@ -123,6 +127,35 @@ export default function PlaidLinkScreen() {
     }
   };
 
+  const fetchTransactions = async () => {
+    setLoading(true);
+    try {
+      const userId = '';
+
+      const response = await fetch('https://us-central1-phonepaybudgettracker.cloudfunctions.net/fetchTransactions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ user_id: userId }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch transactions');
+      }
+
+      const data = await response.json();
+      console.log(data);
+      setTransactions(data.transactions); // Set transactions in state
+    } catch (error) {
+      console.error('Error fetching transactions:', error);
+      Alert.alert('Error', 'Could not fetch transactions');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
   return (
     <>
       <TextInput
@@ -182,6 +215,10 @@ export default function PlaidLinkScreen() {
       
       <TouchableOpacity style={styles.button} onPress={() => exchangePublicToken(publicToken)}>
         <Text style={styles.button}>Get acesss token</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={styles.button} onPress={() => fetchTransactions()}>
+        <Text style={styles.button}>Get Transactions</Text>
       </TouchableOpacity>
     </>
   );
