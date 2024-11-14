@@ -53,6 +53,12 @@ Resources:
         - Key: Environment
           Value: Production
 
+  SharedApiGateway:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: SharedApiGateway
+      StageName: Prod
+
 Outputs:
   ProfileDataTableName:
     Description: "Name of the profileData DynamoDB table"
@@ -61,3 +67,11 @@ Outputs:
   TransactionTableName:
     Description: "Name of the transactionData DynamoDB table"
     Value: !Ref TransDataAnalysisTable
+  
+  SharedApiGatewayId:
+    Description: "ID of the shared API Gateway"
+    Value: !Ref SharedApiGateway
+
+  SharedApiGatewayRootUrl:
+    Description: "Root URL of the shared API Gateway"
+    Value: !Sub "https://${SharedApiGateway}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
