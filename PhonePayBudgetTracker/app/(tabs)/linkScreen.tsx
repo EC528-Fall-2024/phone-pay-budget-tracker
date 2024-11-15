@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { Button, Alert } from 'react-native';
 import axios from 'axios';
 import { useTransactionContext } from '../(context)/transactionContext';
+import { useAccountContext } from '../(context)/accountContext';
 import { router } from "expo-router";
 
 interface Transaction {
@@ -16,6 +17,19 @@ interface Transaction {
   merchant_name: string;
   name: string;
   payment_channel: string;
+}
+
+interface Account {
+  account_id: string;
+  balances: {
+    current: number;
+    limit: number | null;
+    iso_currency_code: string;
+  };
+  mask: string;
+  name: string;
+  subtype: string;
+  type: string;
 }
 
 import {
@@ -78,6 +92,7 @@ export default function PlaidLinkScreen() {
   const [publicToken, setPublicToken] = useState('');
 
   const { transactions, addTransactions } = useTransactionContext();
+  const { accounts, addAccounts } = useAccountContext();
 
   const [loading, setLoading] = useState(false);
 
@@ -179,6 +194,44 @@ export default function PlaidLinkScreen() {
     }
   };
 
+  const fetchAccountBalances = async () => {
+    try {
+      const userId = 'KX1AXEGMHgfMlawWDNTQlx4Z8O43';
+      const response = await fetch('https://us-central1-phonepaybudgettracker.cloudfunctions.net/getAccountBalances', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userId }),
+      });
+  
+      if (!response.ok) {
+        throw new Error('Failed to fetch account balances');
+      }
+  
+      const data = await response.json();
+      console.log('Account Balances:', data.accounts);
+      
+      const pAccounts = data.accounts.map((account :Account) => ({
+        account_id: account.account_id,
+        current_balance: account.balances.current,
+        iso_currency_code: account.balances.iso_currency_code || 'N/A',
+        credit_limit: account.balances.limit || 0, // Fallback to 0 if null
+        mask: account.mask,
+        name: account.name,
+        subtype: account.subtype,
+        type: account.subtype,
+      }));
+
+      addTransactions(pAccounts);
+      console.log("saved:", accounts);
+
+    } catch (error) {
+      console.error('Error fetching account balances:', error);
+      throw error;
+    }
+  };
+
 
   return (
     <>
@@ -243,6 +296,10 @@ export default function PlaidLinkScreen() {
 
       <TouchableOpacity style={styles.button} onPress={() => fetchTransactions()}>
         <Text style={styles.button}>Get Transactions</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={styles.button} onPress={() => fetchAccountBalances()}>
+        <Text style={styles.button}>Get Accounts</Text>
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.button} onPress={() => router.replace("/mainScreen")}>

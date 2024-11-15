@@ -4,7 +4,10 @@ import { carousalData } from "../(components)/transactionData";
 import CardItem from "../(components)/AccountCard";
 import Animated, { FadeInDown } from "react-native-reanimated";
 
+import { useAccountContext } from '../(context)/accountContext';
+
 export default function Card() {
+  const { accounts, addAccounts } = useAccountContext();
   return (
     <Animated.View
       className="mt-8 mb-4"

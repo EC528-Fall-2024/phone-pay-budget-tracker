@@ -172,3 +172,31 @@ exports.fetchTransactions = functions.https.onRequest(async (req, res) => {
     }
   });
   
+// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+exports.getAccountBalances = functions.https.onRequest(async (req, res) => {
+  try {
+    const { userId } = req.body;
+    if (!userId) return res.status(400).json({ error: 'User ID is required' });
+
+    const encryptedUID = encryptUID(userId);
+    const userDoc = await admin.firestore().collection('users').doc(encryptedUID).get();
+
+    if (!userDoc.exists) return res.status(404).json({ error: 'User not found' });
+
+    const accessToken = userDoc.data()?.plaid_token;
+    if (!accessToken) return res.status(400).json({ error: 'Access token not available' });
+    
+    const request = {
+      access_token: accessToken,
+    };
+
+    const balanceResponse = await plaidClient.accountsBalanceGet(request);
+
+    res.json( balanceResponse.data )
+
+  } catch (error) {
+    console.error('Error fetching account balances:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
