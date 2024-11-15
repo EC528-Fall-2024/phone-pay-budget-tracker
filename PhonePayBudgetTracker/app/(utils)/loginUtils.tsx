@@ -15,6 +15,20 @@ interface Transaction {
   payment_channel: string;
 }
 
+interface Account {
+  account_id: string;
+  balances: {
+    current: number;
+    limit: number | null;
+    iso_currency_code: string;
+  };
+  mask: string;
+  name: string;
+  subtype: string;
+  type: string;
+}
+
+
 interface UserData {
   name: string;
   country: string;
@@ -56,6 +70,7 @@ export const handleLogin = async (
     password: string,
     setUserData: (data: any) => void,
     addTranscations: (data: any) => void,
+    addAccounts: (data: any) => void,
     onSuccess: () => void,
     onError: (message: string) => void
   ) => {
@@ -71,8 +86,11 @@ export const handleLogin = async (
         phone: response.phone ||'',
       });
 
-      const tranDetails = await fetchTransactions(data.user.uid)
+      const tranDetails = await fetchTransactions(data.user.uid);
       addTranscations(tranDetails);
+
+      const accDetails = await fetchAccountBalances(data.user.uid);
+      addAccounts(accDetails);
 
       onSuccess();
     } catch (error: any) {
@@ -121,5 +139,44 @@ export const fetchTransactions = async (uid: string)  => {
     console.error('Error fetching transactions:', error);
     Alert.alert('Error', 'Could not fetch transactions');
   } finally {
+  }
+};
+
+// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+export const fetchAccountBalances = async (uid: string)  => {
+  try {
+    const userId = uid;
+    const response = await fetch('https://us-central1-phonepaybudgettracker.cloudfunctions.net/getAccountBalances', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ userId }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch account balances');
+    }
+
+    const data = await response.json();
+    console.log('accounts fetched successfully');
+    
+    const pAccounts = data.accounts.map((account :Account) => ({
+      account_id: account.account_id,
+      current_balance: account.balances.current,
+      iso_currency_code: account.balances.iso_currency_code || 'N/A',
+      credit_limit: account.balances.limit || 0, // Fallback to 0 if null
+      mask: account.mask,
+      name: account.name,
+      subtype: account.subtype,
+      type: account.subtype,
+    }));
+
+    return pAccounts;
+
+  } catch (error) {
+    console.error('Error fetching account balances:', error);
+    throw error;
   }
 };

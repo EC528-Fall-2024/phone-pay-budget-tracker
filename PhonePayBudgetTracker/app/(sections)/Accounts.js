@@ -32,7 +32,7 @@ export default function Card() {
             price={(item.iso_currency_code + " "  + item.current_balance.toFixed(2))}
             cardName={item.name}
             cardType={item.type}
-            cardNumber={("****"+item.mask)}
+            cardNumber={("**** **** **** "+item.mask)}
           />
         ))}
       </ScrollView>

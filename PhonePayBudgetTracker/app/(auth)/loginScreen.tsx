@@ -4,6 +4,7 @@ import { router } from "expo-router";
 
 import { useUserContext } from '../(context)/UserContext';
 import { useTransactionContext } from '../(context)/transactionContext';
+import { useAccountContext } from '../(context)/accountContext';
 import FormInput from '../(components)/inputForm';
 import styles from '../(styles)/authScreen.styles';
 import { validateLogin, handleLogin } from '../(utils)/loginUtils';
@@ -21,6 +22,7 @@ export default function LoginScreen() {
 
   const { setUserData } = useUserContext();
   const { addTransactions } = useTransactionContext();
+  const { addAccounts } = useAccountContext();
 
   const onLoginPress = () => {
     const validationError = validateLogin(email, password);
@@ -35,6 +37,7 @@ export default function LoginScreen() {
       password,
       setUserData,
       addTransactions,
+      addAccounts,
       () => {
         console.log('Login successful');
         router.replace('/mainScreen');
