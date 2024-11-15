@@ -4,11 +4,9 @@ import React from "react";
 const { width, height } = Dimensions.get("window");
 
 export default function CardItem({
-  imgUrl,
   price,
   cardType,
   cardNumber,
-  backgroundColor,
 }) {
   return (
     <TouchableOpacity className="mr-4 snap-center">
@@ -17,17 +15,8 @@ export default function CardItem({
         style={{
           width: width * 0.8,
           height: height * 0.20,
-          backgroundColor: backgroundColor,
-        }}
-      >
-        <Image
-          source={imgUrl}
-          style={{
-            width: 65,
-            height: 10,
-          }}
-          resizeMode="contain"
-        />
+          backgroundColor: "purple",
+        }}>
 
         <View className="space-y-2">
           <Text

@@ -1,13 +1,13 @@
 import { View, Text, ScrollView } from "react-native";
 import React from "react";
-import { carousalData } from "../(components)/transactionData";
 import CardItem from "../(components)/AccountCard";
 import Animated, { FadeInDown } from "react-native-reanimated";
-
+import { carousalData } from "../(components)/transactionData";
 import { useAccountContext } from '../(context)/accountContext';
 
 export default function Card() {
   const { accounts, addAccounts } = useAccountContext();
+  console.log("saved accounts", accounts);
   return (
     <Animated.View
       className="mt-8 mb-4"
@@ -27,14 +27,12 @@ export default function Card() {
         className="snap-x space-x-7"
         showsHorizontalScrollIndicator={false}
       >
-        {carousalData.map((item) => (
+        {accounts.map((item) => (
           <CardItem
             key={item.id}
-            imgUrl={item.imgUrl}
-            price={item.price}
-            cardType={item.cardType}
-            cardNumber={item.cardNumber}
-            backgroundColor={item.backgroundColor}
+            price={item.current_balance}
+            cardType={item.type}
+            cardNumber={item.mask}
           />
         ))}
       </ScrollView>

@@ -223,7 +223,7 @@ export default function PlaidLinkScreen() {
         type: account.subtype,
       }));
 
-      addTransactions(pAccounts);
+      addAccounts(pAccounts);
       console.log("saved:", accounts);
 
     } catch (error) {

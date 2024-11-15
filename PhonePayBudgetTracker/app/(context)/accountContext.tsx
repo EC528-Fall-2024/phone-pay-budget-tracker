@@ -2,12 +2,13 @@ import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 interface Account {
   account_id: string;
-  amount: number;
-  authorized_date: string;
+  current_balance: number;
   iso_currency_code: string;
-  logo_url: string;
+  credit_limit: number | null;
+  mask: string;
   name: string;
-  payment_channel: string;
+  subtype: string;
+  type: string;
 }
 
 interface AccountContextType {
