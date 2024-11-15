@@ -6,6 +6,7 @@ const { width, height } = Dimensions.get("window");
 export default function CardItem({
   price,
   cardType,
+  cardName,
   cardNumber,
 }) {
   return (
@@ -14,13 +15,22 @@ export default function CardItem({
         className="rounded-3xl py-8 px-4 justify-between"
         style={{
           width: width * 0.8,
-          height: height * 0.20,
-          backgroundColor: "purple",
+          height: height * 0.2,
+          backgroundColor: "blue",
         }}>
 
         <View className="space-y-2">
+          
           <Text
-            className="text-lg text-white"
+            className="text-2xl text-white"
+            style={{
+              fontFamily: "SpaceGroteskBold",
+            }}
+          >
+            {cardName}
+          </Text>
+          <Text
+            className="text-m text-white"
             style={{
               fontFamily: "SpaceGroteskBold",
             }}
@@ -28,10 +38,10 @@ export default function CardItem({
             {cardNumber}
           </Text>
         </View>
-
-        <View className="space-y-2">
+        
+        <View className="space-y-2 ">
           <Text
-            className="text-2xl text-white"
+            className="text-3xl text-white"
             style={{
               fontFamily: "SpaceGroteskBold",
             }}

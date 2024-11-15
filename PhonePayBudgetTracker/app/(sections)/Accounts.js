@@ -7,7 +7,6 @@ import { useAccountContext } from '../(context)/accountContext';
 
 export default function Card() {
   const { accounts, addAccounts } = useAccountContext();
-  console.log("saved accounts", accounts);
   return (
     <Animated.View
       className="mt-8 mb-4"
@@ -30,9 +29,10 @@ export default function Card() {
         {accounts.map((item) => (
           <CardItem
             key={item.id}
-            price={item.current_balance}
+            price={(item.iso_currency_code + " "  + item.current_balance.toFixed(2))}
+            cardName={item.name}
             cardType={item.type}
-            cardNumber={item.mask}
+            cardNumber={("****"+item.mask)}
           />
         ))}
       </ScrollView>
