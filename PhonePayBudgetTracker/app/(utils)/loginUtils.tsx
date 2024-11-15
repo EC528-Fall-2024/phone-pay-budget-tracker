@@ -1,54 +1,125 @@
 import auth from '@react-native-firebase/auth';
-import { getFunctions, httpsCallable } from "firebase/functions";
+import { getFunctions, httpsCallable } from "@react-native-firebase/functions";
 import { checkEmpty, validateEmail} from './validationUtils';
+import { useState } from 'react';
+import { Alert } from 'react-native';
+
+interface Transaction {
+  account_id: string;
+  amount: number;
+  authorized_date: string;
+  iso_currency_code: string;
+  logo_url: string;
+  merchant_name: string;
+  name: string;
+  payment_channel: string;
+}
+
+interface UserData {
+  name: string;
+  country: string;
+  phone: string;
+}
+
+// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
 export const validateLogin = (
     email: string,
     password: string,
   ) => {
     if (!validateEmail(email)) return 'Invalid email format!';
-    if (checkEmpty(email)) return 'Email cannot be empty!';
-    if (checkEmpty(password)) return 'Password cannot be empty!';
+    if (!checkEmpty(email).isValid) return 'Email cannot be empty!';
+    if (!checkEmpty(password).isValid) return 'Password cannot be empty!';
     return '';
   };
 
-async function getUserProfile(
-    email: string, 
-    username: string,
-    uid: string ) {
+// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
+const fetchUserData = async (uid: string) => {
     const functions = getFunctions();
-    const createUserDocument = httpsCallable(functions, "createUserDocument");
-
+    const getUserData = httpsCallable(functions, 'getUserData');
     try {
-        const result = await createUserDocument({
-        email: email,
-        username: username,
-        uid: uid,
-        });
-        console.log(uid, 'has registered db successfully');;
+      const result = await getUserData({ uid });
+      const userData = result.data as UserData;
+      console.log('User data fetched successfully:', userData);
+      return userData;
     } catch (error) {
-        console.error(uid, "db failed");
+      console.error('Error fetching user data:', error);
+      throw error;
     }
-}
+  };
+
+// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
 export const handleLogin = async (
-    username: string,
     email: string,
     password: string,
+    setUserData: (data: any) => void,
+    addTranscations: (data: any) => void,
     onSuccess: () => void,
     onError: (message: string) => void
   ) => {
     try {
       const data = await auth().signInWithEmailAndPassword(email, password);
-      getUserProfile(email, username, data.user.uid);
+
+      const response = await fetchUserData(data.user.uid);
+      setUserData({
+        uid: data.user.uid,
+        email: email,
+        name: response.name || '',
+        country: response.country ||'',
+        phone: response.phone ||'',
+      });
+
+      const tranDetails = await fetchTransactions(data.user.uid)
+      addTranscations(tranDetails);
+
       onSuccess();
     } catch (error: any) {
         if (error.code === 'auth/invalid-email') {
             onError('That email address is invalid!');
         } else {
-            onError('Signup failed. Please try again.');
+            onError('Login failed. Please try again.');
             console.error(error);
       }
     }
   };
+
+// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+export const fetchTransactions = async (uid: string)  => {
+  try {
+    const userId = uid;
+    const response = await fetch('https://us-central1-phonepaybudgettracker.cloudfunctions.net/fetchTransactions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ user_id: userId }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch transactions');
+    }
+    const data = await response.json();
+    console.log('transactions fetched successfully')
+
+    const pTransactions = data.transactions.map((transaction :Transaction) => ({
+      account_id: transaction.account_id,
+      amount: Math.abs(transaction.amount),
+      authorized_date: transaction.authorized_date,
+      iso_currency_code: transaction.iso_currency_code,
+      logo_url: transaction.logo_url,
+      name: transaction.name,
+      payment_channel: transaction.payment_channel
+  }));
+  
+  console.log("parsed:", pTransactions);
+  return pTransactions;
+
+  } catch (error) {
+    console.error('Error fetching transactions:', error);
+    Alert.alert('Error', 'Could not fetch transactions');
+  } finally {
+  }
+};

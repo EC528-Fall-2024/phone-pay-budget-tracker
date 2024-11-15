@@ -21,7 +21,7 @@ const styles = StyleSheet.create({
       marginBottom: 50, 
       textAlign: 'center',
     },
-    signupContainer: {
+    authContainer: {
       width: '80%',
       backgroundColor: '#ffffff',
       padding: 20,
@@ -50,14 +50,14 @@ const styles = StyleSheet.create({
     emptyInput:{
       backgroundColor: '#fddfdf'
     },
-    signupButton: {
+    authButton: {
       backgroundColor: '#4CAF50', 
       paddingVertical: 15,
       borderRadius: 5,
       alignItems: 'center',
       marginBottom: 20,
     },
-    signupButtonText: {
+    authButtonText: {
       color: '#fff',
       fontSize: 18,
       fontWeight: 'bold',

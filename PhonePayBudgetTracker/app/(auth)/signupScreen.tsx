@@ -1,11 +1,9 @@
 import React from 'react';
 import { View, Text, ScrollView, Pressable } from 'react-native';
 import { router } from "expo-router";
-import auth from '@react-native-firebase/auth';
-import firestore from '@react-native-firebase/firestore';
 
 import FormInput from '../(components)/inputForm';
-import styles from '../(styles)/SignupScreen.styles';
+import styles from '../(styles)/authScreen.styles';
 import { validateSignup, handleSignup } from '../(utils)/signupUtils';
 
 export default function SignupScreen() {
@@ -44,7 +42,7 @@ export default function SignupScreen() {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.appTitle}>BudgetTracker</Text>
-      <View style={styles.signupContainer}>
+      <View style={styles.authContainer}>
         <Text style={styles.title}>Create Your Account</Text>
         <FormInput
           value={username}
@@ -72,8 +70,8 @@ export default function SignupScreen() {
           secureTextEntry
           isEmpty={isEmpty.cpassword}
         />
-        <Pressable style={styles.signupButton} onPress={onSignupPress}>
-          <Text style={styles.signupButtonText}>Sign Up</Text>
+        <Pressable style={styles.authButton} onPress={onSignupPress}>
+          <Text style={styles.authButtonText}>Sign Up</Text>
         </Pressable>
         {errorMsg ? <Text style={styles.error}>{errorMsg}</Text> : null}
         <Pressable onPress={() => router.replace("/linkScreen")}>

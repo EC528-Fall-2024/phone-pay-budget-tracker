@@ -21,7 +21,7 @@ const plaidClient = new PlaidApi(configuration);
 const crypto = require('crypto');
 
 const key = crypto.createHash('sha256').update("phonepaybudgettracker").digest();
-const iv = crypto.randomBytes(16);
+const iv = Buffer.alloc(16, 0);
 
 function encryptUID(uid) {
     const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
@@ -33,14 +33,6 @@ function encryptUID(uid) {
 
 exports.createUserDocument = functions.https.onCall(async (data, context) => {
     const { email, username, uid } = data;
-  
-    await db.collection('users').doc(userId).set(
-      {
-          plaid_token: access_token,
-      },
-      { merge: true } 
-    );
-
     const encryptedUID = encryptUID(uid);
     try {
       await db.collection('users').doc(encryptedUID).set({
@@ -58,6 +50,24 @@ exports.createUserDocument = functions.https.onCall(async (data, context) => {
       throw new functions.https.HttpsError("internal", "Failed to create user document.");
     }
   });
+
+// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+exports.getUserData = functions.https.onCall(async (data, context) => {
+  const { uid } = data;
+  const encryptedUID = encryptUID(uid);
+  try {
+    const userDoc = await db.collection('users').doc(encryptedUID).get();
+    if (!userDoc.exists) {
+      throw new functions.https.HttpsError('not-found', 'User data not found.');
+    }
+    const { name, country, phone } = userDoc.data();
+    return { name, country, phone };
+  } catch (error) {
+    console.error("Error fetching user data:", error);
+    throw new functions.https.HttpsError("internal", "Failed to fetch user data.");
+  }
+});
 
 // =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
@@ -109,8 +119,8 @@ exports.exchangePublicToken = functions.https.onRequest(async (req, res) => {
     try {
         const getAccessTokenResponse = await plaidClient.itemPublicTokenExchange(request);
         const { access_token, item_id } = getAccessTokenResponse.data;
-
-        await db.collection('users').doc(userId).set(
+        const encryptedUID = encryptUID(userID);
+        await db.collection('users').doc(encryptedUID).set(
             {
                 plaid_token: access_token,
             },
@@ -128,19 +138,20 @@ exports.exchangePublicToken = functions.https.onRequest(async (req, res) => {
 exports.fetchTransactions = functions.https.onRequest(async (req, res) => {
     const userId = req.body.user_id;
     const endDate = req.body.end_date || new Date().toISOString().split('T')[0];
+    // modfify, startDate, and endDate, to show monthly
   
     const defaultStartDate = new Date();
+    const encryptedUID = encryptUID(userId);
     // 1 year before
     //defaultStartDate.setFullYear(defaultStartDate.getFullYear() - 1);
 
     // 1 month before
     defaultStartDate.setMonth(defaultStartDate.getMonth() - 1);
 
-    //defaultStartDate.setDate(defaultStartDate.getDate() - 7);
     const startDate = req.body.start_date || defaultStartDate.toISOString().split('T')[0];
   
     try {
-      const userDoc = await db.collection('users').doc(userId).get();
+      const userDoc = await db.collection('users').doc(encryptedUID).get();
       if (!userDoc.exists) return res.status(404).json({ error: 'User not found' });
   
       const accessToken = userDoc.data()?.plaid_token;

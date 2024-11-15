@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { Button, Alert } from 'react-native';
 import axios from 'axios';
 import { useTransactionContext } from '../(context)/transactionContext';
+import { router } from "expo-router";
 
 interface Transaction {
   account_id: string;
@@ -142,8 +143,7 @@ export default function PlaidLinkScreen() {
   const fetchTransactions = async () => {
     setLoading(true);
     try {
-      const userId = 'EFubzb6vVXbCx1iCSVoOzKmY2k23';
-
+      const userId = 'KX1AXEGMHgfMlawWDNTQlx4Z8O43';
       const response = await fetch('https://us-central1-phonepaybudgettracker.cloudfunctions.net/fetchTransactions', {
         method: 'POST',
         headers: {
@@ -243,6 +243,10 @@ export default function PlaidLinkScreen() {
 
       <TouchableOpacity style={styles.button} onPress={() => fetchTransactions()}>
         <Text style={styles.button}>Get Transactions</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={styles.button} onPress={() => router.replace("/mainScreen")}>
+        <Text style={styles.button}>Main Screen</Text>
       </TouchableOpacity>
     </>
   );

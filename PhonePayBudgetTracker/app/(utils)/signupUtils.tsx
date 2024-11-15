@@ -1,5 +1,4 @@
 import auth from '@react-native-firebase/auth';
-import firestore from '@react-native-firebase/firestore';
 import { getFunctions, httpsCallable } from "@react-native-firebase/functions";
 import { checkEmpty, validatePasswordsMatch} from './validationUtils';
 
