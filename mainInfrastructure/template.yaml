@@ -54,10 +54,9 @@ Resources:
           Value: Production
 
   SharedApiGateway:
-    Type: AWS::Serverless::Api
+    Type: AWS::ApiGateway::RestApi
     Properties:
       Name: SharedApiGateway
-      StageName: Prod
 
 Outputs:
   ProfileDataTableName:

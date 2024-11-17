@@ -3,7 +3,7 @@ Transform: AWS::Serverless-2016-10-31
 Description: User Profile Microservice
 
 Parameters:
-  ProfileDataTableName:
+  ProfileDataTableName
     Type: String
     Description: Name of the profileData DynamoDB table
   ApiGatewayId:
