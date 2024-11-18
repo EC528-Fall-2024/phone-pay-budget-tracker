@@ -142,7 +142,7 @@ export default function PlaidLinkScreen() {
     try {
       const response = await axios.post('https://us-central1-phonepaybudgettracker.cloudfunctions.net/exchangePublicToken', {
         public_token: publicToken,
-        user_id: 'EFubzb6vVXbCx1iCSVoOzKmY2k23',
+        user_id: 'KX1AXEGMHgfMlawWDNTQlx4Z8O43',
       });
       const { access_token, item_id } = response.data;
   
@@ -305,6 +305,7 @@ export default function PlaidLinkScreen() {
       <TouchableOpacity style={styles.button} onPress={() => router.replace("/mainScreen")}>
         <Text style={styles.button}>Main Screen</Text>
       </TouchableOpacity>
+
     </>
   );
 }

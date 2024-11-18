@@ -119,7 +119,7 @@ exports.exchangePublicToken = functions.https.onRequest(async (req, res) => {
     try {
         const getAccessTokenResponse = await plaidClient.itemPublicTokenExchange(request);
         const { access_token, item_id } = getAccessTokenResponse.data;
-        const encryptedUID = encryptUID(userID);
+        const encryptedUID = encryptUID(userId);
         await db.collection('users').doc(encryptedUID).set(
             {
                 plaid_token: access_token,
