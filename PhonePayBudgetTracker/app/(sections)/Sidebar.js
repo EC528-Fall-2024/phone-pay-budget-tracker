@@ -6,7 +6,7 @@ import Animated, { FadeInLeft } from 'react-native-reanimated';
 const Sidebar = ({ onClose }) => {
   return (
 
-    <Animated.View className="bg-primary w-64 my-6 mx-5" entering={FadeInLeft.duration(500).springify().delay(200)}>
+    <Animated.View className="bg-primary w-64 my-6 mx-5 h-screen" entering={FadeInLeft.duration(500).springify().delay(200)}>
       {/* User Info */}
       <TouchableOpacity onPress={onClose}>
         <View className="flex-row items-center space-x-4">

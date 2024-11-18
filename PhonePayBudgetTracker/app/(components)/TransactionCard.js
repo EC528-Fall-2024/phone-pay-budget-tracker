@@ -67,7 +67,7 @@ export default function TransactionCard({
             fontFamily: "SpaceGroteskBold",
           }}
         >
-          {amount}
+          {"$" + amount.toFixed(2)}
         </Text>
 
         {/* Date */}

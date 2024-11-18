@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Pressable } from 'react-native';
+import { View, Text, Pressable, ActivityIndicator } from 'react-native';
 import { router } from "expo-router";
 
 import { useUserContext } from '../(context)/UserContext';
@@ -12,6 +12,7 @@ import { validateLogin, handleLogin } from '../(utils)/loginUtils';
 
 
 export default function LoginScreen() {
+  const [isLoading, setIsLoading] = React.useState(false);
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
   const [errorMsg, setErrorMsg] = React.useState('');
@@ -25,13 +26,14 @@ export default function LoginScreen() {
   const { addAccounts } = useAccountContext();
 
   const onLoginPress = () => {
+    
     const validationError = validateLogin(email, password);
     console.log('validation complete');
     if (validationError) {
       setErrorMsg(validationError);
       return;
     }
-    setErrorMsg('');
+    setIsLoading(true);
     handleLogin(
       email,
       password,
@@ -39,10 +41,14 @@ export default function LoginScreen() {
       addTransactions,
       addAccounts,
       () => {
+        setIsLoading(false);
         console.log('Login successful');
         router.replace('/mainScreen');
       },
-      (error: string) => setErrorMsg(error)
+      (error: string) => {
+        setIsLoading(false);
+        setErrorMsg(error)
+      }
     );
   };
 
@@ -64,8 +70,19 @@ export default function LoginScreen() {
           secureTextEntry
           isEmpty={isEmpty.password}
         />
-        <Pressable style={styles.authButton} onPress={onLoginPress}>
-          <Text style={styles.authButtonText}>Login</Text>
+        <Pressable 
+          disabled={isLoading} 
+          style={styles.authButton} 
+          onPress={onLoginPress} 
+          className={`${isLoading ? 'opacity-50' : 'opacity-100'}`}>
+
+        {isLoading ? (
+          <View className="flex-row justify-center items-center">
+            <ActivityIndicator size="small" color="white" />
+          </View>
+        ) : (
+          <Text style={styles.authButtonText} className="text-white font-bold">Login</Text>
+        )}
         </Pressable>
         {errorMsg ? <Text style={styles.error}>{errorMsg}</Text> : null}
         <Pressable onPress={() => router.replace("/signupScreen")}>

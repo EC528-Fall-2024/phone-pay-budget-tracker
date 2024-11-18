@@ -6,17 +6,17 @@ import Card from "../(sections)/Accounts";
 import Transactions from "../(sections)/Transactions";
 import Header from "../(sections)/Header";
 import Sidebar from "../(sections)/Sidebar";
-import { useColorScheme } from "nativewind";
 import { useFonts } from "expo-font";
 import { useCallback } from "react";
 import * as SplashScreen from "expo-splash-screen";
 import { cssInterop } from "nativewind";
 import Animated, { FadeInLeft, FadeInRight } from "react-native-reanimated";
+import { colorScheme, useColorScheme } from "nativewind";
 
 cssInterop(SafeAreaView, { className: "style" });
+colorScheme.set("dark");
 
 export default function App() {
-  const { colorScheme, toggleColorScheme } = useColorScheme();
   const [sidebarVisible, setSidebarVisible] = React.useState(false);
 
   const [fontsLoaded, fontError] = useFonts({
@@ -35,7 +35,7 @@ export default function App() {
     return null;
   }
   return (
-    <SafeAreaView className="p-6 dark:bg-neutral-900">
+    <SafeAreaView className="p-6 h-screen dark:bg-neutral-900">
       <StatusBar style={"dark"} />
       <View onLayout={onLayoutRootView}>
           {sidebarVisible && (

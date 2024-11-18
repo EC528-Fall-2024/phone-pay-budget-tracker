@@ -97,7 +97,7 @@ export const handleLogin = async (
         if (error.code === 'auth/invalid-email') {
             onError('That email address is invalid!');
         } else {
-            onError('Login failed. Please try again.');
+            onError('Please check login credentials and try again.');
             console.error(error);
       }
     }

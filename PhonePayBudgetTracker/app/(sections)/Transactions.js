@@ -11,16 +11,14 @@ export default function Transactions() {
       className="mt-8"
       entering={FadeInDown.duration(500).springify().delay(300)}
     >
-      <Text className="text-3xl dark:text-white mb-4" style={{fontFamily: "SpaceGroteskBold",}}> Recent Transactions </Text>
-
-
+      <Text className="text-3xl dark:text-white mb-4" style={{fontFamily: "SpaceGroteskBold",}}>Recent Activity</Text>
       <FlatList
         data={transactions}
         keyExtractor={(item) => item.id}
         initialNumToRender={20}
-        contentContainerStyle={{ paddingBottom: 100 }}
+        contentContainerStyle={{ paddingBottom: 100, flexGrow: 1}}
         removeClippedSubviews={false}
-        height={400}
+        height={500}
         renderItem={({ item }) => <TransactionCard {...item} />}
         showsVerticalScrollIndicator={false}
         ItemSeparatorComponent={() => <View className="h-4" />}
