@@ -1,0 +1,202 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Transaction Analysis Microservice
+
+Parameters:
+  TransactionDataTableName:
+    Type: String
+    Description: Name of the transactionData DynamoDB table
+
+  ApiGatewayId:
+    Type: String
+    Description: ID of the shared API Gateway
+
+  PlaidClientId:
+    Type: String
+    Description: PLAID_CLIENT_ID for Plaid API
+
+  PlaidSecret:
+    Type: String
+    Description: PLAID_SECRET for Plaid API
+
+Resources:
+  # Create Link Token Function
+  CreateLinkTokenFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./src/plaid/create_link_token/
+      Handler: app.lambda_handler
+      Runtime: nodejs14.x
+      Environment:
+        Variables:
+          PLAID_CLIENT_ID: !Ref PlaidClientId
+          PLAID_SECRET: !Ref PlaidSecret
+      Events:
+        CreateLinkTokenApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGatewayId
+            Path: /plaid/create-link-token
+            Method: POST
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:PutItem
+              Resource: !GetAtt TransactionDataTable.Arn
+
+  # Get Access Token Function
+  GetAccessTokenFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./src/plaid/get_access_token/
+      Handler: app.getAccessTokenHandler
+      Runtime: nodejs14.x
+      Environment:
+        Variables:
+          PLAID_CLIENT_ID: !Ref PlaidClientId
+          PLAID_SECRET: !Ref PlaidSecret
+          TABLE_NAME: !Ref TransactionDataTableName
+      Events:
+        GetAccessTokenApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGatewayId
+            Path: /plaid/get-access-token
+            Method: POST
+      Policies:
+        - DynamoDBWritePolicy:
+            TableName: !Ref TransactionDataTableName
+
+  # Get Transactions Function
+  GetTransactionsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./src/plaid/get_transactions/
+      Handler: app.getTransactionsHandler
+      Runtime: nodejs14.x
+      Environment:
+        Variables:
+          PLAID_CLIENT_ID: !Ref PlaidClientId
+          PLAID_SECRET: !Ref PlaidSecret
+          TABLE_NAME: !Ref TransactionDataTableName
+      Events:
+        GetTransactionsApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGatewayId
+            Path: /plaid/get-transactions
+            Method: POST
+      Policies:
+        - DynamoDBWritePolicy:
+            TableName: !Ref TransactionDataTableName
+
+  # Webhook Function
+  WebhookFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./src/plaid/webhook/
+      Handler: app.webhook_handler
+      Runtime: nodejs14.x
+      Environment:
+        Variables:
+          PLAID_CLIENT_ID: !Ref PlaidClientId
+          PLAID_SECRET: !Ref PlaidSecret
+          TABLE_NAME: !Ref TransactionDataTableName
+      Events:
+        WebhookApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGatewayId
+            Path: /plaid/webhook
+            Method: POST
+      Policies:
+        - DynamoDBWritePolicy:
+            TableName: !Ref TransactionDataTableName
+
+  # Database Function
+  DatabaseFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./src/database/
+      Handler: app.lambda_handler
+      Runtime: nodejs14.x
+      Environment:
+        Variables:
+          PLAID_CLIENT_ID: !Ref PlaidClientId
+          PLAID_SECRET: !Ref PlaidSecret
+          TABLE_NAME: !Ref TransactionDataTableName
+      Events:
+        DatabaseApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGatewayId
+            Path: /plaid/database
+            Method: POST
+      Policies:
+        - DynamoDBWritePolicy:
+            TableName: !Ref TransactionDataTableName
+
+  # TransactionData DynamoDB Table Reference
+  TransactionDataTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Ref TransactionDataTableName
+      AttributeDefinitions:
+        - AttributeName: pk
+          AttributeType: S
+        - AttributeName: sk
+          AttributeType: S
+        - AttributeName: expenseName
+          AttributeType: S
+      KeySchema:
+        - AttributeName: pk
+          KeyType: HASH
+        - AttributeName: sk
+          KeyType: RANGE
+      BillingMode: PAY_PER_REQUEST
+      SSESpecification:
+        SSEEnabled: true
+      GlobalSecondaryIndexes:
+        - IndexName: ExpenseNameIndex
+          KeySchema:
+            - AttributeName: pk
+              KeyType: HASH
+            - AttributeName: expenseName
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+      Tags:
+        - Key: Environment
+          Value: Production
+
+Outputs:
+  # Create Link Token API URL
+  CreateLinkTokenApiUrl:
+    Description: "API Gateway endpoint URL for Create Link Token Service"
+    Value: !Sub "https://${ApiGatewayId}.execute-api.${AWS::Region}.amazonaws.com/Prod/plaid/create-link-token"
+
+  # Get Access Token API URL
+  GetAccessTokenApiUrl:
+    Description: "API Gateway endpoint URL for Get Access Token Service"
+    Value: !Sub "https://${ApiGatewayId}.execute-api.${AWS::Region}.amazonaws.com/Prod/plaid/get-access-token"
+
+  # Get Transactions API URL
+  GetTransactionsApiUrl:
+    Description: "API Gateway endpoint URL for Get Transactions Service"
+    Value: !Sub "https://${ApiGatewayId}.execute-api.${AWS::Region}.amazonaws.com/Prod/plaid/get-transactions"
+
+  # Webhook API URL
+  WebhookApiUrl:
+    Description: "API Gateway endpoint URL for Webhook Service"
+    Value: !Sub "https://${ApiGatewayId}.execute-api.${AWS::Region}.amazonaws.com/Prod/plaid/webhook"
+
+  # Database API URL
+  DatabaseApiUrl:
+    Description: "API Gateway endpoint URL for Database Service"
+    Value: !Sub "https://${ApiGatewayId}.execute-api.${AWS::Region}.amazonaws.com/Prod/plaid/database"
+
+  # TransactionDataTable ARN
+  TransactionDataTableArn:
+    Description: "ARN of the transactionData DynamoDB table"
+    Value: !GetAtt TransactionDataTable.Arn

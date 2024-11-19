@@ -3,11 +3,6 @@ const jwt = require('jsonwebtoken');
 const jwkToPem = require('jwk-to-pem');
 const axios = require('axios');
 
-// Initialize the DynamoDB DocumentClient
-const dynamodb = new AWS.DynamoDB.DocumentClient();
-
-// Get the table name from environment variables
-const tableName = process.env.TABLE_NAME;
 
 // Cognito configuration
 const cognitoIssuer = `https://cognito-idp.${process.env.AWS_REGION}.amazonaws.com/${process.env.USER_POOL_ID}`;
@@ -27,14 +22,21 @@ const validateToken = async (token) => {
 };
 
 exports.lambda_handler = async (event) => {
+    const dynamodb = new AWS.DynamoDB.DocumentClient();
+    const tableName = process.env.TABLE_NAME;
+
     try {
+
+        // Parse the pk (primary key) from the query string parameters or event body
+        const requestBody = event.body ? JSON.parse(event.body) : {};
+        const pk = event.queryStringParameters?.pk || requestBody.pk;
+      
         // Validate Authorization header
         const authHeader = event.headers.Authorization || '';
         const token = authHeader.replace('Bearer ', '');
         await validateToken(token);
 
-        // Parse the pk (primary key) from the query string parameters
-        const pk = event.queryStringParameters?.pk;
+
 
         if (!pk) {
             return {
@@ -75,6 +77,9 @@ exports.lambda_handler = async (event) => {
 };
 
 exports.lambda_handler_setProfile = async (event) => {
+    const dynamodb = new AWS.DynamoDB.DocumentClient();
+    const tableName = process.env.TABLE_NAME;
+
     try {
         // Validate Authorization header
         const authHeader = event.headers.Authorization || '';

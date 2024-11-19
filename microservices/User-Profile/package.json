@@ -1,0 +1,16 @@
+{
+  "name": "user-profile",
+  "version": "1.0.0",
+  "description": "User Profile Microservice",
+  "main": "app.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.1000.0"
+  },
+  "devDependencies": {
+    "aws-sdk-mock": "^5.4.0",
+    "jest": "^26.6.0"
+  }
+}

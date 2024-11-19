@@ -1,21 +1,8 @@
-require('dotenv').config({ path: '../../../../../PhonePayBudgetTracker/.env' });
+require('dotenv').config({ path: '../../../../../Fronted/.env' });
 const plaid = require('plaid');
 const jwt = require('jsonwebtoken');
 const jwkToPem = require('jwk-to-pem');
 const axios = require('axios');
-
-// Initialize the Plaid client
-const configuration = new plaid.Configuration({
-  basePath: plaid.PlaidEnvironments.sandbox,  // Use sandbox environment for testing
-  baseOptions: {
-    headers: {
-      'PLAID-CLIENT-ID': "67059ac70f3934001bb637ab",
-      'PLAID-SECRET': "6480180b111c6e48efe009f6d5d568",
-    },
-  },
-});
-
-const client = new plaid.PlaidApi(configuration);
 
 // Function to validate the Cognito token
 const validateToken = async (token) => {
@@ -48,11 +35,47 @@ exports.lambda_handler = async (event) => {
     // Parse the request body
     const body = JSON.parse(event.body);
     const userId = body.userId; // Extract userId from the request
+    
+    const configuration = new plaid.Configuration({
+      basePath: plaid.PlaidEnvironments.sandbox,  // Use sandbox environment for testing
+      baseOptions: {
+        headers: {
+          'PLAID-CLIENT-ID': "67059ac70f3934001bb637ab",
+          'PLAID-SECRET': "6480180b111c6e48efe009f6d5d568",
+        },
+      },
+    });
+
+    const client = new plaid.PlaidApi(configuration);
+
+    // Validate the presence of userId
+    if (!userId) {
+      return {
+          statusCode: 400, // Bad request if no pk is provided
+          body: JSON.stringify({ error: 'Missing userId' }),
+          headers: {
+              'Content-Type': 'application/json'
+          }
+      };
+    }
+
+    // Initialize the Plaid client
+    const configuration = new plaid.Configuration({
+      basePath: plaid.PlaidEnvironments.sandbox,  // Use sandbox environment for testing
+      baseOptions: {
+        headers: {
+          'PLAID-CLIENT-ID': "67059ac70f3934001bb637ab",
+          'PLAID-SECRET': "6480180b111c6e48efe009f6d5d568",
+        },
+      },
+    });
+
+    const client = new plaid.PlaidApi(configuration);
 
     // Create the link token configuration
     const linkTokenConfig = {
-      user: { client_user_id: userId }, // Use the userId received in the request
-      client_name: 'Plaid Tutorial',
+      user: { client_user_id: userId }, 
+      client_name: 'Plaid Tutorial',  
       language: 'en',
       products: ['transactions'], // Add the products you want to use
       country_codes: ['US'], // Country codes where you want to use Plaid

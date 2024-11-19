@@ -48,3 +48,16 @@ echo "TRANSACTION_TABLE: $TRANSACTION_TABLE"
 #     ProfileDataTableName=$PROFILE_DATA_TABLE_NAME \
 #     ApiGatewayId=$API_GATEWAY_ID
 # cd ../..
+
+# # Deploy Transaction Analysis microservice
+# echo "Deploying Transaction Analysis microservice..."
+# cd microservices/Trans-DataAnalysis/
+# sam build
+# sam package --output-template-file packaged.yaml --s3-bucket $S3_BUCKET_NAME
+# sam deploy --template-file packaged.yaml --stack-name transaction-analysis-stack --region $REGION --capabilities CAPABILITY_IAM \
+#   --parameter-overrides \
+#     TransactionDataTableName=$TRANSACTION_TABLE \
+#     ApiGatewayId=$API_GATEWAY_ID \
+#     PlaidClientId=$PLAID_CLIENT_ID \
+#     PlaidSecret=$PLAID_SECRET
+# cd ..
