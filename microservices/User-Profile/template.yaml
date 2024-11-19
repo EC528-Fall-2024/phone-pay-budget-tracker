@@ -3,7 +3,7 @@ Transform: AWS::Serverless-2016-10-31
 Description: User Profile Microservice
 
 Parameters:
-  ProfileDataTableName
+  ProfileDataTableName:
     Type: String
     Description: Name of the profileData DynamoDB table
   ApiGatewayId:
@@ -11,6 +11,30 @@ Parameters:
     Description: ID of the shared API Gateway
 
 Resources:
+  UserProfileFunctionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: "lambda.amazonaws.com"
+            Action: "sts:AssumeRole"
+      Policies:
+        - PolicyName: UserProfileDynamoDBAccess
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:GetItem
+                  - dynamodb:Query
+                  - dynamodb:PutItem
+                Resource: !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${ProfileDataTableName}"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+
   UserProfileFunctionGet:
     Type: AWS::Serverless::Function
     Properties:
@@ -20,6 +44,7 @@ Resources:
       Environment:
         Variables:
           TABLE_NAME: !Ref ProfileDataTableName
+      Role: !GetAtt UserProfileFunctionRole.Arn
       Events:
         GetUserProfile:
           Type: Api
@@ -27,9 +52,6 @@ Resources:
             RestApiId: !Ref ApiGatewayId
             Path: /user-profile
             Method: GET
-      Policies:
-        - DynamoDBReadPolicy:
-            TableName: !Ref ProfileDataTableName
 
   UserProfileFunctionSet:
     Type: AWS::Serverless::Function
@@ -40,6 +62,7 @@ Resources:
       Environment:
         Variables:
           TABLE_NAME: !Ref ProfileDataTableName
+      Role: !GetAtt UserProfileFunctionRole.Arn
       Events:
         SetUserProfile:
           Type: Api
@@ -47,9 +70,6 @@ Resources:
             RestApiId: !Ref ApiGatewayId
             Path: /user-profile
             Method: POST
-      Policies:
-        - DynamoDBWritePolicy:
-            TableName: !Ref ProfileDataTableName
 
 Outputs:
   UserProfileApiUrl:
