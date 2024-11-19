@@ -1,100 +1,138 @@
-require('dotenv').config({ path: '../../../../../Fronted/.env' });
-const plaid = require('plaid');
+const AWS = require('aws-sdk');
 const jwt = require('jsonwebtoken');
 const jwkToPem = require('jwk-to-pem');
 const axios = require('axios');
 
-// Function to validate the Cognito token
+// Cognito configuration
+const cognitoIssuer = `https://cognito-idp.${process.env.AWS_REGION}.amazonaws.com/${process.env.USER_POOL_ID}`;
+
 const validateToken = async (token) => {
-  try {
-    // Fetch Cognito's JWKS (JSON Web Key Set)
-    const { data: jwks } = await axios.get(`${cognitoIssuer}/.well-known/jwks.json`);
-    const { header } = jwt.decode(token, { complete: true });
-    const jwk = jwks.keys.find((key) => key.kid === header.kid);
-    if (!jwk) throw new Error('Invalid token');
-
-    // Convert JWK to PEM
-    const pem = jwkToPem(jwk);
-
-    // Verify the token
-    return jwt.verify(token, pem, { issuer: cognitoIssuer });
-  } catch (error) {
-    console.error('Token validation failed:', error);
-    throw new Error('Unauthorized');
-  }
+    try {
+        const { data: jwks } = await axios.get(`${cognitoIssuer}/.well-known/jwks.json`);
+        const { header } = jwt.decode(token, { complete: true });
+        const jwk = jwks.keys.find((key) => key.kid === header.kid);
+        if (!jwk) throw new Error('Invalid token');
+        const pem = jwkToPem(jwk);
+        return jwt.verify(token, pem, { issuer: cognitoIssuer });
+    } catch (error) {
+        console.error('Token validation failed:', error.message);
+        throw new Error('Unauthorized');
+    }
 };
 
-// Lambda handler to create a link token
 exports.lambda_handler = async (event) => {
-  try {
-    // Extract and validate the token
-    const authHeader = event.headers.Authorization || '';
-    const token = authHeader.replace('Bearer ', '');
-    const decodedToken = await validateToken(token);
+    const dynamodb = new AWS.DynamoDB.DocumentClient();
+    const tableName = process.env.TABLE_NAME;
 
-    // Parse the request body
-    const body = JSON.parse(event.body);
-    const userId = body.userId; // Extract userId from the request
-    
-    const configuration = new plaid.Configuration({
-      basePath: plaid.PlaidEnvironments.sandbox,  // Use sandbox environment for testing
-      baseOptions: {
-        headers: {
-          'PLAID-CLIENT-ID': "67059ac70f3934001bb637ab",
-          'PLAID-SECRET': "6480180b111c6e48efe009f6d5d568",
-        },
-      },
-    });
+    try {
+        // Validate Authorization header
+        const authHeader = event.headers?.Authorization || '';
+        const token = authHeader.replace('Bearer ', '');
 
-    const client = new plaid.PlaidApi(configuration);
+        if (!token) {
+            return {
+                statusCode: 401,
+                body: JSON.stringify({ error: 'Missing Authorization token' }),
+                headers: { 'Content-Type': 'application/json' },
+            };
+        }
 
-    // Validate the presence of userId
-    if (!userId) {
-      return {
-          statusCode: 400, // Bad request if no pk is provided
-          body: JSON.stringify({ error: 'Missing userId' }),
-          headers: {
-              'Content-Type': 'application/json'
-          }
-      };
+        await validateToken(token);
+
+        // Parse the pk (primary key) from the query string parameters or event body
+        const requestBody = event.body ? JSON.parse(event.body) : {};
+        const pk = event.queryStringParameters?.pk || requestBody.pk;
+
+        if (!pk) {
+            return {
+                statusCode: 400,
+                body: JSON.stringify({ error: 'Missing user id (pk)' }),
+                headers: { 'Content-Type': 'application/json' },
+            };
+        }
+
+        const params = {
+            TableName: tableName,
+            Key: { pk },
+        };
+
+        const response = await dynamodb.get(params).promise();
+
+        if (response.Item) {
+            return {
+                statusCode: 200,
+                body: JSON.stringify(response.Item),
+                headers: { 'Content-Type': 'application/json' },
+            };
+        } else {
+            return {
+                statusCode: 404,
+                body: JSON.stringify({ error: 'Profile not found' }),
+                headers: { 'Content-Type': 'application/json' },
+            };
+        }
+    } catch (error) {
+        console.error('Error occurred:', error.message);
+        return {
+            statusCode: error.message === 'Unauthorized' ? 401 : 500,
+            body: JSON.stringify({ error: error.message }),
+            headers: { 'Content-Type': 'application/json' },
+        };
     }
+};
 
-    // Initialize the Plaid client
-    const configuration = new plaid.Configuration({
-      basePath: plaid.PlaidEnvironments.sandbox,  // Use sandbox environment for testing
-      baseOptions: {
-        headers: {
-          'PLAID-CLIENT-ID': "67059ac70f3934001bb637ab",
-          'PLAID-SECRET': "6480180b111c6e48efe009f6d5d568",
-        },
-      },
-    });
+exports.lambda_handler_setProfile = async (event) => {
+    const dynamodb = new AWS.DynamoDB.DocumentClient();
+    const tableName = process.env.TABLE_NAME;
 
-    const client = new plaid.PlaidApi(configuration);
+    try {
+        // Validate Authorization header
+        const authHeader = event.headers?.Authorization || '';
+        const token = authHeader.replace('Bearer ', '');
 
-    // Create the link token configuration
-    const linkTokenConfig = {
-      user: { client_user_id: userId }, 
-      client_name: 'Plaid Tutorial',  
-      language: 'en',
-      products: ['transactions'], // Add the products you want to use
-      country_codes: ['US'], // Country codes where you want to use Plaid
-      webhook: 'https://www.example.com/webhook', // Optional: Add a webhook if needed
-    };
+        if (!token) {
+            return {
+                statusCode: 401,
+                body: JSON.stringify({ error: 'Missing Authorization token' }),
+                headers: { 'Content-Type': 'application/json' },
+            };
+        }
 
-    // Generate the link token using Plaid's API
-    const tokenResponse = await client.linkTokenCreate(linkTokenConfig);
+        await validateToken(token);
 
-    // Return the link token to the client
-    return {
-      statusCode: 200,
-      body: JSON.stringify({ link_token: tokenResponse.data.link_token }),
-    };
-  } catch (error) {
-    console.error('Error creating link token:', error);
-    return {
-      statusCode: error.message === 'Unauthorized' ? 401 : 500,
-      body: JSON.stringify({ error: error.message }),
-    };
-  }
+        // Parse the request body
+        const requestBody = JSON.parse(event.body);
+
+        if (!requestBody.pk) {
+            return {
+                statusCode: 400,
+                body: JSON.stringify({ error: 'Missing user id (pk)' }),
+                headers: { 'Content-Type': 'application/json' },
+            };
+        }
+
+        const params = {
+            TableName: tableName,
+            Item: {
+                pk: requestBody.pk,
+                email: requestBody.email,
+                profilePhoto: requestBody.profilePhoto,
+            },
+        };
+
+        await dynamodb.put(params).promise();
+
+        return {
+            statusCode: 200,
+            body: JSON.stringify({ message: 'Profile data saved successfully' }),
+            headers: { 'Content-Type': 'application/json' },
+        };
+    } catch (error) {
+        console.error('Error occurred:', error.message);
+        return {
+            statusCode: error.message === 'Unauthorized' ? 401 : 500,
+            body: JSON.stringify({ error: error.message }),
+            headers: { 'Content-Type': 'application/json' },
+        };
+    }
 };

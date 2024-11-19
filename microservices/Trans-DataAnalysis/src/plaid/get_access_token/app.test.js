@@ -1,15 +1,22 @@
 jest.mock('plaid');
+jest.mock('axios');
+jest.mock('jsonwebtoken');
 
 const AWSMock = require('aws-sdk-mock');
 const AWS = require('aws-sdk');
 const plaid = require('plaid');
+const axios = require('axios');
+const jwt = require('jsonwebtoken');
 const { lambda_handler } = require('./app'); 
+
 describe('Get Access Token Microservice Tests', () => {
     beforeAll(() => {
+        // Set environment variables required by the Lambda function
         process.env.PLAID_CLIENT_ID = 'test-client-id';
         process.env.PLAID_SECRET = 'test-secret';
         process.env.TABLE_NAME = 'test-transactionData'; 
-        //AWS.config.update({ region: 'us-east-2' });
+        process.env.AWS_REGION = 'us-east-2';
+        process.env.USER_POOL_ID = 'us-east-2_example'; 
     });
 
     afterEach(() => {
@@ -19,6 +26,25 @@ describe('Get Access Token Microservice Tests', () => {
     });
 
     test('lambda_handler - success', async () => {
+        // Mock Cognito JWKS response
+        const mockJwks = {
+            keys: [
+                {
+                    kid: 'test-kid',
+                    kty: 'RSA',
+                    n: 'test-n',
+                    e: 'AQAB'
+                }
+            ]
+        };
+        axios.get.mockResolvedValue({ data: mockJwks });
+
+        // Mock jwt.decode to return a decoded token header
+        jwt.decode.mockReturnValue({ header: { kid: 'test-kid' } });
+
+        // Mock jwt.verify to successfully verify the token
+        jwt.verify.mockReturnValue({ sub: 'user123' });
+
         // Mock PlaidApi methods
         const mockAccessToken = 'access-token-123';
         const mockAccountId = 'account-id-456';
@@ -50,7 +76,11 @@ describe('Get Access Token Microservice Tests', () => {
         AWSMock.setSDKInstance(AWS);
         AWSMock.mock('DynamoDB.DocumentClient', 'put', putMock);
 
+        // Create a mock event with Authorization header
         const event = {
+            headers: {
+                Authorization: 'Bearer valid-token'
+            },
             body: JSON.stringify({
                 public_token: 'public-token-789',
                 bank: 'Test Bank',
@@ -60,8 +90,10 @@ describe('Get Access Token Microservice Tests', () => {
             })
         };
 
+        // Invoke the Lambda handler
         const response = await lambda_handler(event);
 
+        // Assertions
         expect(response.statusCode).toBe(200);
         const responseBody = JSON.parse(response.body);
         expect(responseBody).toEqual({
@@ -86,7 +118,7 @@ describe('Get Access Token Microservice Tests', () => {
             }
         });
 
-        // Verify that DynamoDB put was called once
+        // Verify that DynamoDB put was called once with correct parameters
         expect(putMock).toHaveBeenCalledTimes(1);
         expect(putMock).toHaveBeenCalledWith({
             TableName: 'test-transactionData', // From process.env.TABLE_NAME
@@ -109,6 +141,9 @@ describe('Get Access Token Microservice Tests', () => {
 
     test('lambda_handler - missing user id (pk)', async () => {
         const event = {
+            headers: {
+                Authorization: 'Bearer valid-token'
+            },
             body: JSON.stringify({
                 public_token: 'public-token-789',
                 bank: 'Test Bank',
@@ -135,6 +170,25 @@ describe('Get Access Token Microservice Tests', () => {
     });
 
     test('lambda_handler - Plaid API error during itemPublicTokenExchange', async () => {
+        // Mock Cognito JWKS response
+        const mockJwks = {
+            keys: [
+                {
+                    kid: 'test-kid',
+                    kty: 'RSA',
+                    n: 'test-n',
+                    e: 'AQAB'
+                }
+            ]
+        };
+        axios.get.mockResolvedValue({ data: mockJwks });
+
+        // Mock jwt.decode to return a decoded token header
+        jwt.decode.mockReturnValue({ header: { kid: 'test-kid' } });
+
+        // Mock jwt.verify to successfully verify the token
+        jwt.verify.mockReturnValue({ sub: 'user123' });
+
         // Mock PlaidApi to throw an error on itemPublicTokenExchange
         plaid.PlaidApi.mockImplementation(() => ({
             itemPublicTokenExchange: jest.fn().mockRejectedValue(new Error('Plaid API Error'))
@@ -147,7 +201,11 @@ describe('Get Access Token Microservice Tests', () => {
         AWSMock.setSDKInstance(AWS);
         AWSMock.mock('DynamoDB.DocumentClient', 'put', putMock);
 
+        // Create a mock event with Authorization header
         const event = {
+            headers: {
+                Authorization: 'Bearer valid-token'
+            },
             body: JSON.stringify({
                 public_token: 'public-token-789',
                 bank: 'Test Bank',
@@ -157,8 +215,10 @@ describe('Get Access Token Microservice Tests', () => {
             })
         };
 
+        // Invoke the Lambda handler
         const response = await lambda_handler(event);
 
+        // Assertions
         expect(response.statusCode).toBe(500);
         const responseBody = JSON.parse(response.body);
         expect(responseBody).toEqual({ error: 'Plaid API Error' });
@@ -175,6 +235,25 @@ describe('Get Access Token Microservice Tests', () => {
     });
 
     test('lambda_handler - DynamoDB put error', async () => {
+        // Mock Cognito JWKS response
+        const mockJwks = {
+            keys: [
+                {
+                    kid: 'test-kid',
+                    kty: 'RSA',
+                    n: 'test-n',
+                    e: 'AQAB'
+                }
+            ]
+        };
+        axios.get.mockResolvedValue({ data: mockJwks });
+
+        // Mock jwt.decode to return a decoded token header
+        jwt.decode.mockReturnValue({ header: { kid: 'test-kid' } });
+
+        // Mock jwt.verify to successfully verify the token
+        jwt.verify.mockReturnValue({ sub: 'user123' });
+
         // Mock PlaidApi methods
         const mockAccessToken = 'access-token-123';
         const mockAccountId = 'account-id-456';
@@ -206,7 +285,11 @@ describe('Get Access Token Microservice Tests', () => {
         AWSMock.setSDKInstance(AWS);
         AWSMock.mock('DynamoDB.DocumentClient', 'put', putMock);
 
+        // Create a mock event with Authorization header
         const event = {
+            headers: {
+                Authorization: 'Bearer valid-token'
+            },
             body: JSON.stringify({
                 public_token: 'public-token-789',
                 bank: 'Test Bank',
@@ -216,8 +299,10 @@ describe('Get Access Token Microservice Tests', () => {
             })
         };
 
+        // Invoke the Lambda handler
         const response = await lambda_handler(event);
 
+        // Assertions
         expect(response.statusCode).toBe(500);
         const responseBody = JSON.parse(response.body);
         expect(responseBody).toEqual({ error: 'DynamoDB Error' });
