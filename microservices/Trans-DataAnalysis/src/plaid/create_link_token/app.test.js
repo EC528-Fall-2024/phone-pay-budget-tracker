@@ -23,7 +23,7 @@ describe('Create Link Token Microservice Tests', () => {
         jest.clearAllMocks();
     });
 
-    test('lambda_handler - success', async () => {
+    beforeEach(() => {
         // Mock Cognito JWKS response
         const mockJwks = {
             keys: [
@@ -42,8 +42,9 @@ describe('Create Link Token Microservice Tests', () => {
 
         // Mock jwt.verify to successfully verify the token
         jwt.verify.mockReturnValue({ sub: 'user123' });
+    });
 
-
+    test('lambda_handler - success', async () => {
         // Mock PlaidApi methods
         const mockLinkTokenData = {
             link_token: 'link-token-123',
@@ -57,6 +58,9 @@ describe('Create Link Token Microservice Tests', () => {
         }));
 
         const event = {
+            headers: {
+                Authorization: 'Bearer valid-token',
+            },
             body: JSON.stringify({
                 userId: 'user123'
             })
@@ -83,6 +87,9 @@ describe('Create Link Token Microservice Tests', () => {
 
     test('lambda_handler - missing userId', async () => {
         const event = {
+            headers: {
+                Authorization: 'Bearer valid-token',
+            },
             body: JSON.stringify({
                 // userId is missing
             })
@@ -99,32 +106,15 @@ describe('Create Link Token Microservice Tests', () => {
     });
 
     test('lambda_handler - Plaid API error', async () => {
-        // Mock Cognito JWKS response
-        const mockJwks = {
-            keys: [
-                {
-                    kid: 'test-kid',
-                    kty: 'RSA',
-                    n: 'test-n',
-                    e: 'AQAB'
-                }
-            ]
-        };
-        axios.get.mockResolvedValue({ data: mockJwks });
-
-        // Mock jwt.decode to return a decoded token header
-        jwt.decode.mockReturnValue({ header: { kid: 'test-kid' } });
-
-        // Mock jwt.verify to successfully verify the token
-        jwt.verify.mockReturnValue({ sub: 'user123' });
-
-        
         // Mock PlaidApi to throw an error
         plaid.PlaidApi.mockImplementation(() => ({
             linkTokenCreate: jest.fn().mockRejectedValue(new Error('Plaid API Error'))
         }));
 
         const event = {
+            headers: {
+                Authorization: 'Bearer valid-token',
+            },
             body: JSON.stringify({
                 userId: 'user123'
             })

@@ -1,4 +1,4 @@
-const AWS = require('aws-sdk');
+const plaid = require('plaid');
 const jwt = require('jsonwebtoken');
 const jwkToPem = require('jwk-to-pem');
 const axios = require('axios');
@@ -21,70 +21,6 @@ const validateToken = async (token) => {
 };
 
 exports.lambda_handler = async (event) => {
-    const dynamodb = new AWS.DynamoDB.DocumentClient();
-    const tableName = process.env.TABLE_NAME;
-
-    try {
-        // Validate Authorization header
-        const authHeader = event.headers?.Authorization || '';
-        const token = authHeader.replace('Bearer ', '');
-
-        if (!token) {
-            return {
-                statusCode: 401,
-                body: JSON.stringify({ error: 'Missing Authorization token' }),
-                headers: { 'Content-Type': 'application/json' },
-            };
-        }
-
-        await validateToken(token);
-
-        // Parse the pk (primary key) from the query string parameters or event body
-        const requestBody = event.body ? JSON.parse(event.body) : {};
-        const pk = event.queryStringParameters?.pk || requestBody.pk;
-
-        if (!pk) {
-            return {
-                statusCode: 400,
-                body: JSON.stringify({ error: 'Missing user id (pk)' }),
-                headers: { 'Content-Type': 'application/json' },
-            };
-        }
-
-        const params = {
-            TableName: tableName,
-            Key: { pk },
-        };
-
-        const response = await dynamodb.get(params).promise();
-
-        if (response.Item) {
-            return {
-                statusCode: 200,
-                body: JSON.stringify(response.Item),
-                headers: { 'Content-Type': 'application/json' },
-            };
-        } else {
-            return {
-                statusCode: 404,
-                body: JSON.stringify({ error: 'Profile not found' }),
-                headers: { 'Content-Type': 'application/json' },
-            };
-        }
-    } catch (error) {
-        console.error('Error occurred:', error.message);
-        return {
-            statusCode: error.message === 'Unauthorized' ? 401 : 500,
-            body: JSON.stringify({ error: error.message }),
-            headers: { 'Content-Type': 'application/json' },
-        };
-    }
-};
-
-exports.lambda_handler_setProfile = async (event) => {
-    const dynamodb = new AWS.DynamoDB.DocumentClient();
-    const tableName = process.env.TABLE_NAME;
-
     try {
         // Validate Authorization header
         const authHeader = event.headers?.Authorization || '';
@@ -101,36 +37,53 @@ exports.lambda_handler_setProfile = async (event) => {
         await validateToken(token);
 
         // Parse the request body
-        const requestBody = JSON.parse(event.body);
+        const requestBody = event.body ? JSON.parse(event.body) : {};
+        const userId = requestBody.userId;
 
-        if (!requestBody.pk) {
+        if (!userId) {
             return {
                 statusCode: 400,
-                body: JSON.stringify({ error: 'Missing user id (pk)' }),
+                body: JSON.stringify({ error: 'Missing userId' }),
                 headers: { 'Content-Type': 'application/json' },
             };
         }
 
-        const params = {
-            TableName: tableName,
-            Item: {
-                pk: requestBody.pk,
-                email: requestBody.email,
-                profilePhoto: requestBody.profilePhoto,
+        // Plaid client configuration
+        const configuration = new plaid.Configuration({
+            basePath: plaid.PlaidEnvironments.sandbox,  // Use sandbox environment for testing
+            baseOptions: {
+                headers: {
+                    'PLAID-CLIENT-ID': process.env.PLAID_CLIENT_ID,
+                    'PLAID-SECRET': process.env.PLAID_SECRET,
+                },
             },
+        });
+        const client = new plaid.PlaidApi(configuration);
+
+        const linkTokenCreateRequest = {
+            user: {
+                client_user_id: userId,
+            },
+            client_name: 'Plaid Tutorial',
+            language: 'en',
+            products: ['transactions'],
+            country_codes: ['US'],
+            webhook: 'https://www.example.com/webhook',
         };
 
-        await dynamodb.put(params).promise();
+        const linkTokenResponse = await client.linkTokenCreate(linkTokenCreateRequest);
 
         return {
             statusCode: 200,
-            body: JSON.stringify({ message: 'Profile data saved successfully' }),
+            body: JSON.stringify(linkTokenResponse.data),
             headers: { 'Content-Type': 'application/json' },
         };
+
     } catch (error) {
         console.error('Error occurred:', error.message);
+        const statusCode = error.message === 'Unauthorized' ? 401 : 500;
         return {
-            statusCode: error.message === 'Unauthorized' ? 401 : 500,
+            statusCode: statusCode,
             body: JSON.stringify({ error: error.message }),
             headers: { 'Content-Type': 'application/json' },
         };
