@@ -1,39 +1,7 @@
 const plaid = require('plaid');
-const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
-const { DynamoDBDocumentClient, PutCommand } = require('@aws-sdk/lib-dynamodb');
-const { NodeHttpHandler } = require('@aws-sdk/node-http-handler');
+const AWS = require('aws-sdk');
+// const { PutCommand } = require('@aws-sdk/lib-dynamodb');
 
-// Initialize DynamoDB connection
-const getDBConnection = () => {
-    const config = {
-        apiVersion: '2012-08-10',
-        region: "us-east-2",
-        endpoint: "http://host.docker.internal:8000", // Adjust for local vs. production
-        credentials: {
-            accessKeyId: "Secret",
-            secretAccessKey: "Secret",
-        },
-        maxAttempts: 2,
-        requestHandler: new NodeHttpHandler({
-            socketTimeout: 1000,
-            connectionTimeout: 1000,
-        }),
-    };
-    return DynamoDBDocumentClient.from(new DynamoDBClient(config));
-};
-const dynamodb = getDBConnection();
-
-// Plaid client configuration
-const configuration = new plaid.Configuration({
-    basePath: plaid.PlaidEnvironments.sandbox,
-    baseOptions: {
-        headers: {
-            'PLAID-CLIENT-ID': '67059ac70f3934001bb637ab',  // Fetch from environment variables
-            'PLAID-SECRET': '6480180b111c6e48efe009f6d5d568',        // Fetch from environment variables
-        },
-    },
-});
-const client = new plaid.PlaidApi(configuration);
 
 // Lambda handler for webhook
 exports.webhook_handler = async (event) => {
@@ -52,6 +20,21 @@ exports.webhook_handler = async (event) => {
         };
 
         try {
+            const dynamodb = new AWS.DynamoDB.DocumentClient();
+
+            // Plaid client configuration
+            const configuration = new plaid.Configuration({
+                basePath: plaid.PlaidEnvironments.sandbox,
+                baseOptions: {
+                    headers: {
+                        'PLAID-CLIENT-ID': '67059ac70f3934001bb637ab',  // Fetch from environment variables
+                        'PLAID-SECRET': '6480180b111c6e48efe009f6d5d568',        // Fetch from environment variables
+                    },
+                },
+            });
+            const client = new plaid.PlaidApi(configuration);
+
+
             const transactionsResponse = await client.transactionsSync(transactionsRequest);
             const transactions = transactionsResponse.data.added;
 
@@ -66,7 +49,7 @@ exports.webhook_handler = async (event) => {
                         expenseName: transaction.name || 'Unknown',
                     },
                 };
-                await dynamodb.send(new PutCommand(params));
+                await dynamodb.put(params).promise();
             });
 
             await Promise.all(putPromises);

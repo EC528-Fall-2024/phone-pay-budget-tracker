@@ -1,68 +1,13 @@
 const plaid = require('plaid');
-require('dotenv').config({ path: '../../../../../PhonePayBudgetTracker/.env' });
+require('dotenv').config({ path: '../../../../../Frontend/.env' });
 
 
 // const PLAID_CLIENT_ID = '67059ac70f3934001bb637ab'; // Move this to the .env file before pushing
 // const PLAID_SECRET = '6480180b111c6e48efe009f6d5d568'; // Move this to the .env file before pushing
 //const PLAID_ENV = plaid.PlaidEnvironments.sandbox;  // Use sandbox environment
 
-// Initialize the Plaid client
-const configuration = new plaid.Configuration({
-    basePath: plaid.PlaidEnvironments.sandbox,  // Use sandbox environment for testing
-    baseOptions: {
-      headers: {
-        'PLAID-CLIENT-ID': "67059ac70f3934001bb637ab",
-        'PLAID-SECRET': "6480180b111c6e48efe009f6d5d568",
-      },
-    },
-  });
-  
-  const client = new plaid.PlaidApi(configuration);
-
 
 const AWS = require('aws-sdk');
-const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
-const { DynamoDBDocumentClient, GetCommand, PutCommand } = require('@aws-sdk/lib-dynamodb');
-const { NodeHttpHandler } = require('@aws-sdk/node-http-handler')
-
-const https = require('https');
-
-// Function to create the DynamoDB connection
-const getDBConnection = () => {
-    console.log('DynamoDB creating connection');
-
-    const config = {
-        apiVersion: '2012-08-10',
-        region: "us-east-2",
-        endpoint: "http://host.docker.internal:8000", // Local DynamoDB
-        credentials: {
-            accessKeyId: "Secret",
-            secretAccessKey: "Secret",
-        },
-        maxAttempts: 2,
-        requestHandler: new NodeHttpHandler({
-            socketTimeout: 1000,
-            connectionTimeout: 1000,
-        }),
-    };
-
-    // Adjust the requestHandler if running in AWS by checking if the endpoint is undefined
-    if (!config.endpoint) {
-        return DynamoDBDocumentClient.from(new DynamoDBClient({
-            requestHandler: new AWS.NodeHttpHandler({
-                httpsAgent: new https.Agent({
-                    maxSockets: 30,
-                    keepAlive: true,
-                }),
-            }),
-        }));
-    }
-
-    return DynamoDBDocumentClient.from(new DynamoDBClient(config));
-};
-
-const dynamodb = getDBConnection(); // Initialize the DynamoDB client
-
 
 // Handler to exchange public token for access token and fetch transactions
 exports.lambda_handler = async (event) => {
@@ -72,7 +17,7 @@ exports.lambda_handler = async (event) => {
     const id = body.id
     const pastAccounts = body.accounts
 
-    const tableName = 'profileData';  // Hardcoded table name
+    const tableName = process.env.TABLE_NAME; 
     const pk = body.pk;
     if (!pk) {
       return {
@@ -86,6 +31,21 @@ exports.lambda_handler = async (event) => {
     
 
     try {
+        const dynamodb = new AWS.DynamoDB.DocumentClient();
+
+        // Initialize the Plaid client
+        const configuration = new plaid.Configuration({
+            basePath: plaid.PlaidEnvironments.sandbox,  // Use sandbox environment for testing
+            baseOptions: {
+                headers: {
+                    'PLAID-CLIENT-ID': "67059ac70f3934001bb637ab",
+                    'PLAID-SECRET': "6480180b111c6e48efe009f6d5d568",
+                },
+            },
+        });
+  
+        const client = new plaid.PlaidApi(configuration);
+
         //const exchangeResponse = await client.exchangePublicToken(publicToken);
         const exchangeResponse = await client.itemPublicTokenExchange({
             public_token: publicToken});
@@ -135,7 +95,7 @@ exports.lambda_handler = async (event) => {
         };
         
         // Ensure the command is awaited
-        const response = await dynamodb.send(new PutCommand(params));
+        const response = await dynamodb.put(params).promise();
 
         console.log('DynamoDB response:', response.Item);
     
