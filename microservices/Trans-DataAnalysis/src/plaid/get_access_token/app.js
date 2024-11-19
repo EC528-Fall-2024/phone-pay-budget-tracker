@@ -1,33 +1,61 @@
 const plaid = require('plaid');
 require('dotenv').config({ path: '../../../../../Frontend/.env' });
-
-
-// const PLAID_CLIENT_ID = '67059ac70f3934001bb637ab'; // Move this to the .env file before pushing
-// const PLAID_SECRET = '6480180b111c6e48efe009f6d5d568'; // Move this to the .env file before pushing
-//const PLAID_ENV = plaid.PlaidEnvironments.sandbox;  // Use sandbox environment
-
-
+const jwt = require('jsonwebtoken');
+const jwkToPem = require('jwk-to-pem');
+const axios = require('axios');
 const AWS = require('aws-sdk');
+
+
+// Cognito setup
+const cognitoIssuer = `https://cognito-idp.${process.env.AWS_REGION}.amazonaws.com/${process.env.USER_POOL_ID}`;
+
+// Function to validate the Cognito token
+const validateToken = async (token) => {
+  try {
+    // Fetch Cognito's JWKS
+    const { data: jwks } = await axios.get(`${cognitoIssuer}/.well-known/jwks.json`);
+    const { header } = jwt.decode(token, { complete: true });
+    const jwk = jwks.keys.find((key) => key.kid === header.kid);
+    if (!jwk) throw new Error('Invalid token');
+
+    // Convert JWK to PEM
+    const pem = jwkToPem(jwk);
+
+    // Verify the token
+    return jwt.verify(token, pem, { issuer: cognitoIssuer });
+  } catch (error) {
+    console.error('Token validation failed:', error);
+    throw new Error('Unauthorized');
+  }
+};
 
 // Handler to exchange public token for access token and fetch transactions
 exports.lambda_handler = async (event) => {
+  try {
+    // Extract and validate the token
+    const authHeader = event.headers.Authorization || '';
+    const token = authHeader.replace('Bearer ', '');
+    const decodedToken = await validateToken(token);
+
+    // Parse request body
     const body = JSON.parse(event.body);
     const publicToken = body.public_token;
     const bank = body.bank
     const id = body.id
-    const pastAccounts = body.accounts
+    const pastAccounts = body.accounts || [];
 
     const tableName = process.env.TABLE_NAME; 
+
     const pk = body.pk;
+
     if (!pk) {
       return {
-          statusCode: 400,  // Bad request if no pk is provided
-          body: JSON.stringify({ error: 'Missing user id (pk)' }),
-          headers: {
-              'Content-Type': 'application/json'
-          }
+        statusCode: 400,
+        body: JSON.stringify({ error: 'Missing user id (pk)' }),
+        headers: { 'Content-Type': 'application/json' },
       };
     }
+
     
 
     try {
@@ -114,3 +142,4 @@ exports.lambda_handler = async (event) => {
         };
     }
 };
+
