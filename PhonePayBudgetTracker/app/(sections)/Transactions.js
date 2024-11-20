@@ -11,7 +11,7 @@ export default function Transactions() {
       className="mt-8"
       entering={FadeInDown.duration(500).springify().delay(300)}
     >
-      <Text className="text-3xl dark:text-white mb-4" style={{fontFamily: "SpaceGroteskBold",}}>Recent Activity</Text>
+      <Text className="text-3xl dark:text-amber-200 mb-4" style={{fontFamily: "SpaceGroteskBold",}}>Recent Activity</Text>
       <FlatList
         data={transactions}
         keyExtractor={(item) => item.id}

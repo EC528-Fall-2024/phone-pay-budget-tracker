@@ -1,6 +1,6 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import { StatusBar } from "expo-status-bar";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View, TouchableOpacity} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Card from "../(sections)/Accounts";
 import Transactions from "../(sections)/Transactions";
@@ -12,12 +12,15 @@ import * as SplashScreen from "expo-splash-screen";
 import { cssInterop } from "nativewind";
 import Animated, { FadeInLeft, FadeInRight } from "react-native-reanimated";
 import { colorScheme, useColorScheme } from "nativewind";
+import { onLoadScreen } from '../(utils)/loginUtils';
+import { useUserContext } from "../(context)/UserContext";
 
 cssInterop(SafeAreaView, { className: "style" });
 colorScheme.set("dark");
 
 export default function App() {
   const [sidebarVisible, setSidebarVisible] = React.useState(false);
+  const { userData } = useUserContext();
 
   const [fontsLoaded, fontError] = useFonts({
     SpaceGroteskSemiBold: require("../../assets/fonts/SpaceGrotesk-SemiBold.ttf"),
@@ -34,26 +37,32 @@ export default function App() {
   if (!fontsLoaded) {
     return null;
   }
+
   return (
     <SafeAreaView className="p-6 h-screen dark:bg-neutral-900">
       <StatusBar style={"dark"} />
       <View onLayout={onLayoutRootView}>
-          {sidebarVisible && (
-              <View className="absolute top-0 left-0 h-full w-5/5 z-9 bg-black/30">
-              </View>
-            )}
-          {sidebarVisible && (
-              <Animated.View className="absolute top-0 left-0 h-full w-3/5 z-10 bg-gray-800" entering={FadeInLeft.duration(500).springify().delay(200)}>
-                <Sidebar onClose={() => setSidebarVisible(false)} />
-              </Animated.View>
-            )}
-            
+        {sidebarVisible && (
+          <>
+            <TouchableOpacity
+              className="absolute top-0 left-0 h-full w-full z-9 bg-black-800/30"
+              onPress={() => setSidebarVisible(false)}
+            />
+            <Animated.View
+              className="absolute top-0 left-0 h-full w-64 z-10 bg-neutral-800 shadow-md"
+              style={{
+                width: 256,
+                transform: [
+                  {translateX: sidebarVisible ? 0 : -256,},],}}>
+              <Sidebar onClose={() => setSidebarVisible(false)} />
+            </Animated.View>
+          </>
+        )}
+
           <View className="my-6">
-          <Header toggleSidebar={() => setSidebarVisible(!sidebarVisible)} />
-
-          <Card />
-
-          <Transactions />
+            <Header toggleSidebar={() => setSidebarVisible(!sidebarVisible)} />
+            <Card />
+            <Transactions />
         </View>
       </View>
     </SafeAreaView>

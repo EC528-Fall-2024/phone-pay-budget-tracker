@@ -35,6 +35,17 @@ interface UserData {
   phone: string;
 }
 
+export const onLoadScreen = async (
+  uid: string,
+) => {
+  if (uid = "") {
+    return;
+  }
+  const tranDetails = await fetchTransactions(uid);
+  const accDetails = await fetchAccountBalances(uid);
+}
+
+
 // =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
 export const validateLogin = (
@@ -72,7 +83,8 @@ export const handleLogin = async (
     addTranscations: (data: any) => void,
     addAccounts: (data: any) => void,
     onSuccess: () => void,
-    onError: (message: string) => void
+    onError: (message: string) => void,
+    redirectToMain: () => void
   ) => {
     try {
       const data = await auth().signInWithEmailAndPassword(email, password);
@@ -87,9 +99,19 @@ export const handleLogin = async (
       });
 
       const tranDetails = await fetchTransactions(data.user.uid);
+      if (!tranDetails || tranDetails.length === 0) {
+        //console.warn('No transactions found for user, redirecting to main screen.');
+        redirectToMain(); 
+        return;
+      }
       addTranscations(tranDetails);
 
       const accDetails = await fetchAccountBalances(data.user.uid);
+      if (!accDetails || accDetails.length === 0) {
+        //console.warn('No account balances found for user, redirecting to main screen.');
+        redirectToMain(); 
+        return;
+      }
       addAccounts(accDetails);
 
       onSuccess();
@@ -136,8 +158,6 @@ export const fetchTransactions = async (uid: string)  => {
   return pTransactions;
 
   } catch (error) {
-    console.error('Error fetching transactions:', error);
-    Alert.alert('Error', 'Could not fetch transactions');
   } finally {
   }
 };
@@ -176,7 +196,6 @@ export const fetchAccountBalances = async (uid: string)  => {
     return pAccounts;
 
   } catch (error) {
-    console.error('Error fetching account balances:', error);
     throw error;
   }
 };

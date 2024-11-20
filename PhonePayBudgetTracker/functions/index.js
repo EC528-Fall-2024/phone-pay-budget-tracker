@@ -85,7 +85,7 @@ exports.createLinkToken = functions.https.onRequest(async (req, res) => {
     },    
     language: 'en',
     webhook: 'https://webhook.example.com',
-    redirect_uri: 'https://domainname.com/oauth-page.html',
+    redirect_uri: 'https://google.com',
     country_codes: ['US'],
     account_filters: {
         depository: {
@@ -136,41 +136,39 @@ exports.exchangePublicToken = functions.https.onRequest(async (req, res) => {
 // =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
 exports.fetchTransactions = functions.https.onRequest(async (req, res) => {
-    const userId = req.body.user_id;
-    const endDate = req.body.end_date || new Date().toISOString().split('T')[0];
-    // modfify, startDate, and endDate, to show monthly
-  
-    const defaultStartDate = new Date();
-    const encryptedUID = encryptUID(userId);
-    // 1 year before
-    //defaultStartDate.setFullYear(defaultStartDate.getFullYear() - 1);
+  const userId = req.body.user_id;
+  const month = parseInt(req.body.month || new Date().getMonth() + 1); 
+  const year = parseInt(req.body.year || new Date().getFullYear()); 
 
-    // 1 month before
-    defaultStartDate.setMonth(defaultStartDate.getMonth() - 1);
+  if (month < 1 || month > 12) {
+    return res.status(400).json({ error: 'Invalid month. Must be between 1 and 12.' });
+  }
 
-    const startDate = req.body.start_date || defaultStartDate.toISOString().split('T')[0];
-  
-    try {
-      const userDoc = await db.collection('users').doc(encryptedUID).get();
-      if (!userDoc.exists) return res.status(404).json({ error: 'User not found' });
-  
-      const accessToken = userDoc.data()?.plaid_token;
-      if (!accessToken) return res.status(400).json({ error: 'Access token not available' });
-  
-      const request = {
-        access_token: accessToken,
-        start_date: startDate,
-        end_date: endDate,
-      };
-      const transactionsResponse = await plaidClient.transactionsGet(request);
-      const transactions = transactionsResponse.data.transactions;
-  
-      res.json({ transactions });
-    } catch (error) {
-      console.error('Error fetching transactions:', error);
-      res.status(500).json({ error: 'Failed to fetch transactions' });
-    }
-  });
+  const startDate = new Date(year, month - 1, 1).toISOString().split('T')[0];
+  const endDate = new Date(year, month, 0).toISOString().split('T')[0]; 
+
+  const encryptedUID = encryptUID(userId);
+  try {
+    const userDoc = await db.collection('users').doc(encryptedUID).get();
+    if (!userDoc.exists) return res.status(404).json({ error: 'User not found' });
+
+    const accessToken = userDoc.data()?.plaid_token;
+    if (!accessToken) return res.status(400).json({ error: 'Access token not available' });
+
+    const request = {
+      access_token: accessToken,
+      start_date: startDate,
+      end_date: endDate,
+    };
+    const transactionsResponse = await plaidClient.transactionsGet(request);
+    const transactions = transactionsResponse.data.transactions;
+
+    res.json({ transactions });
+  } catch (error) {
+    console.error('Error fetching transactions:', error);
+    res.status(500).json({ error: 'Failed to fetch transactions' });
+  }
+});
   
 // =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 

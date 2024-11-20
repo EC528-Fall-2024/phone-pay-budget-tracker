@@ -48,31 +48,6 @@ import {
 
 import {create, open} from 'react-native-plaid-link-sdk';
 
-function isValidString(str: string): boolean {
-  if (str && str.trim() !== '') {
-    return true;
-  }
-  return false;
-}
-
-function createLinkTokenConfiguration(
-  token: string,
-  noLoadingState: boolean = false,
-  ): LinkTokenConfiguration {
-  console.log(`token: ${token}`);
-  return {
-    token: token,
-    // Hides native activity indicator if true.
-    noLoadingState: noLoadingState,
-  };
-}
-
-function createSubmissionData(phoneNumber: string): SubmissionData {
-  return {
-    phoneNumber: phoneNumber,
-  };
-}
-
 
 
 export default function PlaidLinkScreen() {
@@ -235,35 +210,6 @@ export default function PlaidLinkScreen() {
 
   return (
     <>
-      <TextInput
-        style={styles.input}
-        onChangeText={onChangeText}
-        value={text}
-        placeholder="link-sandbox-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-        placeholderTextColor={'#D3D3D3'}
-      />
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => {
-          if (isValidString(text)) {
-            const tokenConfiguration = createLinkTokenConfiguration('text');
-            create(tokenConfiguration);
-            setDisabled(false);
-          }
-        }}>
-        <Text style={styles.button}>Fucked up</Text>
-      </TouchableOpacity>
-
-
-      <TouchableOpacity
-        disabled={disabled}
-        style={disabled ? styles.disabledButton : styles.button}
-        onPress={() => {
-          const submissionData = createSubmissionData('415-555-0015');
-          submit(submissionData);
-        }}>
-        <Text style={styles.button}>Dont Press</Text>
-      </TouchableOpacity>
 
       <TouchableOpacity style={styles.button} onPress={fetchLinkToken}>
         <Text style={styles.button}>Generate Link</Text>

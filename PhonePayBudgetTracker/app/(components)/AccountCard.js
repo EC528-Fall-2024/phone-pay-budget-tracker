@@ -16,7 +16,7 @@ export default function CardItem({
         style={{
           width: width * 0.8,
           height: height * 0.2,
-          backgroundColor: "blue",
+          backgroundColor: "#0369A1",
         }}>
 
         <View className="space-y-2">

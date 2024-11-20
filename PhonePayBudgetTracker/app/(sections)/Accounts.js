@@ -2,7 +2,6 @@ import { View, Text, ScrollView } from "react-native";
 import React from "react";
 import CardItem from "../(components)/AccountCard";
 import Animated, { FadeInDown } from "react-native-reanimated";
-import { carousalData } from "../(components)/transactionData";
 import { useAccountContext } from '../(context)/accountContext';
 
 export default function Card() {
@@ -16,7 +15,7 @@ export default function Card() {
         style={{
           fontFamily: "SpaceGroteskBold",
         }}
-        className="text-3xl mb-4 dark:text-white"
+        className="text-3xl mb-4 dark:text-amber-200"
       >
         My Accounts
       </Text>

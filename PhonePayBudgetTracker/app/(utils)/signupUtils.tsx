@@ -2,6 +2,8 @@ import auth from '@react-native-firebase/auth';
 import { getFunctions, httpsCallable } from "@react-native-firebase/functions";
 import { checkEmpty, validatePasswordsMatch} from './validationUtils';
 
+
+// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 export const validateSignup = (
   username: string,
   email: string,
@@ -16,7 +18,7 @@ export const validateSignup = (
 
   return '';
 };
-
+// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 async function createUserProfile(
   email: string, 
   username: string,
@@ -37,7 +39,7 @@ async function createUserProfile(
     console.error(uid, "db failed");
   }
 }
-
+// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 export const handleSignup = async (
   username: string,
   email: string,
@@ -63,3 +65,4 @@ export const handleSignup = async (
     }
   }
 };
+// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=

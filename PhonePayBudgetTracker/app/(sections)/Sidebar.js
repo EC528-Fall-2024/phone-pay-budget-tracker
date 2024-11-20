@@ -1,56 +1,74 @@
 import React from 'react';
 import { View, Text, Image, TouchableOpacity, ScrollView } from 'react-native';
-import { router } from "expo-router";
 import Animated, { FadeInLeft } from 'react-native-reanimated';
+import { useUserContext } from '../(context)/UserContext';
+import { router } from "expo-router";
 
 const Sidebar = ({ onClose }) => {
-  return (
+  const { userData } = useUserContext();
 
-    <Animated.View className="bg-primary w-64 my-6 mx-5 h-screen" entering={FadeInLeft.duration(500).springify().delay(200)}>
-      {/* User Info */}
-      <TouchableOpacity onPress={onClose}>
-        <View className="flex-row items-center space-x-4">
+  return (
+    <Animated.View
+      className="absolute top-0 left-3 bg-neutral-800 h-full w-64 shadow-md"
+      entering={FadeInLeft.duration(500).springify()}
+    >
+      {/* Header Section */}
+      <View className="w-full p-6 border-b border-amber-200">
+        <View className="flex-row items-center" style={{ columnGap: 12 }}>
           <Image
-            source={require("../../assets/images/profile_img.png")}
+            source={require("../../assets/images/profile_img.png")} // Updated here
             style={{
               width: 48,
               height: 48,
               borderRadius: 24,
             }}
           />
-          <Text
-          className="text-2xl dark:text-white mb-4"
-          style={{
-            fontFamily: "SpaceGroteskBold",
-            lineHeight: 48,
-          }}
-          >John Doe</Text>
+          <View>
+            <Text
+              className="text-amber-200 text-xl"
+              style={{ fontFamily: "SpaceGroteskBold" }}
+            >
+              {userData?.name || "Guest"}
+            </Text>
+            <Text
+              className="text-neutral-400 text-sm"
+              style={{ fontFamily: "SpaceGroteskMedium" }}
+            >
+              {userData?.email || "Sign in Now"}
+            </Text>
+          </View>
         </View>
-      </TouchableOpacity>
+        <TouchableOpacity
+          onPress={onClose}
+          className="absolute top-4 right-4"
+        >
+          <Text className="text-neutral-400 text-2xl">✕</Text>
+        </TouchableOpacity>
+      </View>
 
-      {/* Navigation */}
-      <ScrollView className="mt-6 h-full">
-        <TouchableOpacity className="mb-4 p-2 rounded bg-pumpkin" onPress={() => router.replace("/mainScreen")}>
-            <Text className="text-l dark:text-white mb-4" style={{fontFamily: "SpaceGroteskBold",}}> Home</Text>
-        </TouchableOpacity>
-        <TouchableOpacity className="mb-4 p-2 rounded bg-pumpkin" >
-        <   Text className="text-l dark:text-white mb-4" style={{fontFamily: "SpaceGroteskBold",}}> Data Analysis</Text>
-        </TouchableOpacity>
-        <TouchableOpacity className="mb-4 p-2 rounded bg-pumpkin" >
-        <   Text className="text-l dark:text-white mb-4" style={{fontFamily: "SpaceGroteskBold",}}> Financial Tracker</Text>
-        </TouchableOpacity>
-        <TouchableOpacity className="mb-4 p-2 rounded bg-pumpkin" >
-        <   Text className="text-l dark:text-white mb-4" style={{fontFamily: "SpaceGroteskBold",}}> Sync Data</Text>
-        </TouchableOpacity>
-        <TouchableOpacity className="mb-4 p-2 rounded bg-pumpkin" >
-        <   Text className="text-l dark:text-white mb-4" style={{fontFamily: "SpaceGroteskBold",}}> Billing Plan</Text>
-        </TouchableOpacity>
-        <TouchableOpacity className="mb-4 p-2 rounded bg-pumpkin" onPress={() => router.replace("/linkScreen")}>
-        <   Text className="text-l dark:text-white mb-4" style={{fontFamily: "SpaceGroteskBold",}}> Profile</Text>
-        </TouchableOpacity>
-        <TouchableOpacity className="mb-4 p-2 rounded bg-pumpkin" onPress={() => router.replace("/index")}>
-            <Text className="text-l dark:text-white mb-4" style={{fontFamily: "SpaceGroteskBold",}}> Logout</Text>
-        </TouchableOpacity>
+      <ScrollView className="p-6">
+        {[
+          { label: "Dashboard", action: () => {router.replace("/mainScreen"); console.log("Dashboard") }},
+          { label: "Analysis", action: () => {router.replace("/analysisScreen"); console.log("Analysis") } },
+          { label: "Finance", action: () => console.log("Finance") },
+          { label: "Bill Plan", action: () => console.log("Bill Plan") },
+          { label: "Profile", action: () => {router.replace("/profileScreen"); console.log("Profile") }},
+          { label: "Logout", action: () => { router.replace("/loginScreen"); console.log("Logout") }},
+        ].map((item, index) => (
+          <TouchableOpacity
+            key={index}
+            className="flex-row items-center mb-4 space-x-4 p-2 rounded-md bg-neutral-800"
+            onPress={item.action}
+          >
+            <Text className="text-purple-400 text-lg">{item.icon}</Text>
+            <Text
+              className="text-amber-200 text-lg"
+              style={{ fontFamily: "SpaceGroteskMedium" }}
+            >
+              {item.label}
+            </Text>
+          </TouchableOpacity>
+        ))}
       </ScrollView>
     </Animated.View>
   );

@@ -24,10 +24,6 @@ export default function Header({toggleSidebar}) {
             />
           </View>
         </TouchableOpacity>
-
-        <View className="flex-row space-x-4 justify-center items-center">
-          <Switch value={colorScheme === "dark"} onChange={toggleColorScheme} />
-        </View>
       </Animated.View>
     </View>
   );

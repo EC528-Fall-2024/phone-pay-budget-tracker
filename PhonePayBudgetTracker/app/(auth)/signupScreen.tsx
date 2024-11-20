@@ -170,7 +170,7 @@ export default function SignupScreen() {
           >
             Already have an account?{' '}
           </Text>
-          <Pressable onPress={() => router.replace("/loginScreen")}>
+          <Pressable onPress={() => router.replace("/linkScreen")}>
             <Text
               className="text-white text-medium underline"
               style={{ fontFamily: "SpaceGroteskBold" }}

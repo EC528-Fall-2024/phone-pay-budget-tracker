@@ -1,13 +1,17 @@
-import React from 'react';
+import { useRouter } from 'expo-router';
 import { useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
-import { router } from 'expo-router';
 
 export default function IndexPage() {
+  const router = useRouter();
+
   useEffect(() => {
-    // Redirect to the login page when the index page loads
-    router.replace('/loginScreen');
-  }, []);
+    const timeout = setTimeout(() => {
+      // Redirect after ensuring the navigation stack is ready
+      router.replace('/loginScreen');
+    }, 0);
+
+    return () => clearTimeout(timeout); // Clean up timeout
+  }, [router]);
 
   return null; // Return null as the page is just for redirection
 }
