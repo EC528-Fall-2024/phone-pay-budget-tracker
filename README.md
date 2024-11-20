@@ -104,6 +104,7 @@ Stretch Goals:
    - Set up linking from third party payment processing methods and storing user transaction history from those 
 4. Sprint 4 | [Video](https://drive.google.com/file/d/1OVubMdz_gnoPZWPvgfdGLR3YbKL7gQlS/view?usp=sharing) | [Slides](https://docs.google.com/presentation/d/1bUKGUhu--5mr0x2RcuwG7BEYDW1C2iyG2uoDHJuxKHs/edit?usp=sharing)
    - Create CI/CD Job, continue improvements as necessary
+5. Sprint 5 | [Video](https://drive.google.com/file/d/1ssnRE09APachdxAk1qXORDTYaNrPPz6v/view?usp=sharing) | [Slides](https://docs.google.com/presentation/d/1ps0tMNt_lfaHvWWq752TarxN84oRCgcKXDbud6M7yes/edit?usp=sharing)
 5. Sprint 5 | iOS -> [Video](https://drive.google.com/file/d/1cBp3rShjswOlVts0bTeGZFpe4cQ0SraR/view?usp=sharing) | [Slides](https://docs.google.com/presentation/d/1ps0tMNt_lfaHvWWq752TarxN84oRCgcKXDbud6M7yes/edit?usp=sharing)
 | Android -> [Video](https://drive.google.com/file/d/14kB4pkwYCbw6NmTBmcH1e5-PM8ZCjOS7/view?usp=sharing) | [Slides](https://docs.google.com/presentation/d/1LTs_HDMRNyy8TC-LfvsPJq1Z_TUDRjZkrM6maFlkIo4/edit?usp=sharing)
    - Upload to cloud service and finished touches, create ways to monitor and maintain the application
