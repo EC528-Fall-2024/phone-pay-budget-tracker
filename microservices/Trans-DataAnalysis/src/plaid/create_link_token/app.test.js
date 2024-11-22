@@ -1,8 +1,12 @@
 jest.mock('plaid');
+jest.mock('axios');
+jest.mock('jsonwebtoken');
 
 const AWSMock = require('aws-sdk-mock');
 const AWS = require('aws-sdk');
 const plaid = require('plaid');
+const axios = require('axios');
+const jwt = require('jsonwebtoken');
 const { lambda_handler } = require('./app'); 
 
 describe('Create Link Token Microservice Tests', () => {
@@ -10,11 +14,34 @@ describe('Create Link Token Microservice Tests', () => {
         process.env.PLAID_CLIENT_ID = 'test-client-id';
         process.env.PLAID_SECRET = 'test-secret';
         process.env.TABLE_NAME = 'test-profileData'; 
+        process.env.AWS_REGION = 'us-east-2';
+        process.env.USER_POOL_ID = 'us-east-2_example'; 
     });
 
     afterEach(() => {
         //AWSMock.restore('DynamoDB.DocumentClient');
         jest.clearAllMocks();
+    });
+
+    beforeEach(() => {
+        // Mock Cognito JWKS response
+        const mockJwks = {
+            keys: [
+                {
+                    kid: 'test-kid',
+                    kty: 'RSA',
+                    n: 'test-n',
+                    e: 'AQAB'
+                }
+            ]
+        };
+        axios.get.mockResolvedValue({ data: mockJwks });
+
+        // Mock jwt.decode to return a decoded token header
+        jwt.decode.mockReturnValue({ header: { kid: 'test-kid' } });
+
+        // Mock jwt.verify to successfully verify the token
+        jwt.verify.mockReturnValue({ sub: 'user123' });
     });
 
     test('lambda_handler - success', async () => {
@@ -31,6 +58,9 @@ describe('Create Link Token Microservice Tests', () => {
         }));
 
         const event = {
+            headers: {
+                Authorization: 'Bearer valid-token',
+            },
             body: JSON.stringify({
                 userId: 'user123'
             })
@@ -57,6 +87,9 @@ describe('Create Link Token Microservice Tests', () => {
 
     test('lambda_handler - missing userId', async () => {
         const event = {
+            headers: {
+                Authorization: 'Bearer valid-token',
+            },
             body: JSON.stringify({
                 // userId is missing
             })
@@ -79,6 +112,9 @@ describe('Create Link Token Microservice Tests', () => {
         }));
 
         const event = {
+            headers: {
+                Authorization: 'Bearer valid-token',
+            },
             body: JSON.stringify({
                 userId: 'user123'
             })
