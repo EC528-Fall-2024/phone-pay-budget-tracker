@@ -1,3 +1,4 @@
+require('dotenv').config({ path: '../../../../../PhonePayBudgetTracker/.env' });
 const plaid = require('plaid');
 
 // Initialize the Plaid client
@@ -5,8 +6,8 @@ const configuration = new plaid.Configuration({
   basePath: plaid.PlaidEnvironments.sandbox,  // Use sandbox environment for testing
   baseOptions: {
     headers: {
-      'PLAID-CLIENT-ID': '67059ac70f3934001bb637ab',  // Fetch from environment variables
-      'PLAID-SECRET': '6480180b111c6e48efe009f6d5d568',        // Fetch from environment variables
+      'PLAID-CLIENT-ID': "67059ac70f3934001bb637ab",
+      'PLAID-SECRET': "6480180b111c6e48efe009f6d5d568",
     },
   },
 });
@@ -21,7 +22,7 @@ exports.lambda_handler = async (event) => {
 
     // Create the link token configuration
     const linkTokenConfig = {
-      user: { client_user_id: 'custom_mahoney' },  // Use the userId received in the request
+      user: { client_user_id: 'custom_brennan' },  // Use the userId received in the request
       client_name: 'Plaid Tutorial',  // Customize this based on your app
       language: 'en',
       products: ['transactions'],  // Add the products you want to use (auth, transactions, etc.)
@@ -46,4 +47,3 @@ exports.lambda_handler = async (event) => {
     };
   }
 };
-
