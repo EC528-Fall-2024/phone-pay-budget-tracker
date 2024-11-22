@@ -35,6 +35,10 @@ export default function RootLayout() {
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="accounts" options={{ headerShown: false }} />
+        <Stack.Screen name="expenseScreen" options={{ headerShown: false }} />
+        <Stack.Screen name="incomeScreen" options={{ headerShown: false }} />
+        <Stack.Screen name="bothScreen" options={{ headerShown: false }} />
+
       </Stack>
     </ThemeProvider>
     </UserProvider>
