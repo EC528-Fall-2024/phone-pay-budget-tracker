@@ -71,6 +71,8 @@ exports.lambda_handler = async (event) => {
     const bank = body.bank
     const id = body.id
     const pastAccounts = body.accounts
+    const email = body.email
+    const profilePhoto = body.profilePhoto
 
     const tableName = 'profileData';  // Hardcoded table name
     const pk = body.pk;
@@ -129,8 +131,8 @@ exports.lambda_handler = async (event) => {
           Item: {
             pk: pk,  // Use the provided user id (pk) to fetch the data
             accounts: updatedAccounts,//,
-            email: 'bmahoney132@gmail.com',
-            profilePhoto: 'https://www.oakdaleveterinarygroup.com/cdn-cgi/image/q=75,f=auto,metadata=none/sites/default/files/styles/large/public/golden-retriever-dog-breed-info.jpg?itok=NWXHSSii'
+            email: email,
+            profilePhoto: profilePhoto,
           }
         };
         
