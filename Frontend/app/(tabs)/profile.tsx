@@ -535,7 +535,7 @@ import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, SafeAreaVi
 import { launchImageLibrary } from 'react-native-image-picker';
 import { router } from 'expo-router';
 import { create, open, dismissLink, LinkSuccess, LinkExit, LinkIOSPresentationStyle, LinkLogLevel } from 'react-native-plaid-link-sdk';
-import { fetchLinkToken, onSuccess, getProfileData, getTransactions } from '../apiService';  // Adjust your API import as needed
+import { fetchLinkToken, onSuccess, getProfileData, getTransactions } from '../apiService';
 
 export default function ProfileScreen() {
   const [userData, setUserData] = useState({
@@ -546,27 +546,22 @@ export default function ProfileScreen() {
   });
   const [loading, setLoading] = useState(true);
   const [linkToken, setLinkToken] = useState(null);
-  const [access_Token, setAccess_Token] = useState('');
   const [totalBalance, setTotalBalance] = useState(0);
+  const [error, setError] = useState(null);
 
+  // Fetch user profile data
   useEffect(() => {
     const fetchProfileData = async () => {
       try {
         const profileData = await getProfileData();
         setUserData(profileData);
 
-        console.log(profileData.accounts);
-
         // Calculate total balance
-        if (profileData.accounts.length === 0) {
-          setTotalBalance(0);
-        } else {
-          const balanceSum = profileData.accounts.reduce((sum, account) => sum + (account.Balance || 0), 0);
-          setTotalBalance(balanceSum);
-        }
-      } catch (error) {
-        console.error(error);
-        Alert.alert('Error', 'Failed to fetch profile data.');
+        const balanceSum = profileData.accounts.reduce((sum, account) => sum + (account.Balance || 0), 0);
+        setTotalBalance(balanceSum);
+      } catch (err) {
+        console.error('Error fetching profile data:', err);
+        setError('Failed to load profile data.');
       } finally {
         setLoading(false);
       }
@@ -574,23 +569,14 @@ export default function ProfileScreen() {
     fetchProfileData();
   }, []);
 
-  const handleLogout = () => {
-    setUserData({
-      pk: '',
-      accounts: [],
-      profilePhoto: '',
-      username: '',
-    });
-    router.replace('/login');
-  };
-
+  // Fetch link token for Plaid
   const createLinkToken = useCallback(async () => {
     try {
-      const token = await fetchLinkToken('custom_mahoney');
+      const token = await fetchLinkToken(); // No hardcoded userId
       setLinkToken(token);
-    } catch (error) {
-      console.error('Error fetching link token:', error);
-      Alert.alert('Error', 'Failed to fetch link token');
+    } catch (err) {
+      console.error('Error fetching link token:', err);
+      setError('Failed to fetch link token.');
     }
   }, []);
 
@@ -598,65 +584,50 @@ export default function ProfileScreen() {
     createLinkToken();
   }, []);
 
+  // Open Plaid Link
   const handleOpenLink = async () => {
     if (!linkToken) {
       console.error('Link token is not available.');
+      Alert.alert('Error', 'Plaid link token is unavailable.');
       return;
     }
 
     try {
-      const tokenConfig = { token: linkToken };
-      await create(tokenConfig);
+      await create({ token: linkToken });
 
-      const openProps = {
+      open({
         onSuccess: async (success: LinkSuccess) => {
           try {
-            console.log(success.publicToken);
-            console.log(success.metadata.institution?.name);
-            console.log(success.metadata.institution);
-
             const response = await onSuccess(success.publicToken, success.metadata.institution?.name, success.metadata.institution?.id, userData.accounts);
-            console.log(response.accessToken);
-            console.log(response.accounts);
-            setAccess_Token(response.accessToken);
 
-            const transactionData = await getTransactions({ accessToken: response.accessToken });
-            console.log(transactionData);
-
+            // Fetch updated profile data
             const profileData = await getProfileData();
             setUserData(profileData);
 
-            console.log(userData.accounts);
-
-            // Calculate total balance
-            if (profileData.accounts.length === 0) {
-              setTotalBalance(0);
-            } else {
-              const balanceSum = profileData.accounts.reduce((sum, account) => sum + (account.Balance || 0), 0);
-              setTotalBalance(balanceSum);
-            }
+            // Update total balance
+            const balanceSum = profileData.accounts.reduce((sum, account) => sum + (account.Balance || 0), 0);
+            setTotalBalance(balanceSum);
 
             Alert.alert('Success', 'Account linked successfully');
           } catch (err) {
-            console.error('Error exchanging public token:', err);
-            Alert.alert('Error', 'Failed to retrieve transactions');
+            console.error('Error processing Plaid success callback:', err);
+            Alert.alert('Error', 'Failed to retrieve transactions.');
           }
         },
         onExit: (linkExit: LinkExit) => {
-          console.log('Exit: ', linkExit);
+          console.log('User exited Plaid Link:', linkExit);
           dismissLink();
         },
         iOSPresentationStyle: LinkIOSPresentationStyle.MODAL,
         logLevel: LinkLogLevel.ERROR,
-      };
-
-      open(openProps);
-    } catch (error) {
-      console.error('Error during Plaid link creation or opening:', error);
+      });
+    } catch (err) {
+      console.error('Error opening Plaid Link:', err);
       Alert.alert('Error', 'Unable to initiate Plaid Link.');
     }
   };
 
+  // Image picker for profile photo
   const handleChoosePhoto = () => {
     const options = {
       mediaType: 'photo',
@@ -668,8 +639,8 @@ export default function ProfileScreen() {
     launchImageLibrary(options, (response) => {
       if (response.didCancel) {
         console.log('User cancelled image picker');
-      } else if (response.error) {
-        console.error('ImagePicker Error: ', response.error);
+      } else if (response.errorCode) {
+        console.error('ImagePicker Error:', response.errorMessage);
       } else {
         const source = response.assets ? response.assets[0].uri : null;
         if (source) {
@@ -683,12 +654,31 @@ export default function ProfileScreen() {
     });
   };
 
+  // Logout handler
+  const handleLogout = () => {
+    setUserData({
+      pk: '',
+      accounts: [],
+      profilePhoto: '',
+      username: '',
+    });
+    router.replace('/login');
+  };
+
   if (loading) {
     return (
       <View style={styles.loaderContainer}>
         <ActivityIndicator size="large" color="#4caf50" />
         <Text>Loading profile...</Text>
       </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <Text style={styles.errorText}>{error}</Text>
+      </SafeAreaView>
     );
   }
 
@@ -705,23 +695,17 @@ export default function ProfileScreen() {
             </View>
           </TouchableOpacity>
           <View style={styles.nameContainer}>
-            <Text style={styles.profileName}>{userData.pk || 'username'}</Text>
+            <Text style={styles.profileName}>{userData.username || 'Guest'}</Text>
           </View>
-          {/* Display Total Balance */}
           <Text style={styles.balanceText}>Total Balance: ${totalBalance.toFixed(2)}</Text>
         </View>
 
-        {/* Account Options */}
         <View style={styles.optionsContainer}>
           <TouchableOpacity style={[styles.optionItem, styles.optionButton]} onPress={handleOpenLink}>
             <Text style={styles.optionText}>Link your bank account</Text>
           </TouchableOpacity>
 
-          {/* New "View Linked Accounts" Button */}
-          <TouchableOpacity
-            style={[styles.optionItem, styles.optionButton]}
-            onPress={() => router.push('/accounts')}
-          >
+          <TouchableOpacity style={[styles.optionItem, styles.optionButton]} onPress={() => router.push('/accounts')}>
             <Text style={styles.optionText}>View Linked Accounts</Text>
           </TouchableOpacity>
 
@@ -839,5 +823,11 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  errorText: {
+    fontSize: 18,
+    color: 'red',
+    textAlign: 'center',
+    marginTop: 50,
   },
 });

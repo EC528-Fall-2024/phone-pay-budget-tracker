@@ -26,29 +26,17 @@ exports.lambda_handler = async (event) => {
     const tableName = process.env.TABLE_NAME;
 
     try {
-
-        // Parse the pk (primary key) from the query string parameters or event body
-        const requestBody = event.body ? JSON.parse(event.body) : {};
-        const pk = event.queryStringParameters?.pk || requestBody.pk;
-      
-        // Validate Authorization header
+        // Validate Authorization header and extract token
         const authHeader = event.headers.Authorization || '';
         const token = authHeader.replace('Bearer ', '');
-        await validateToken(token);
+        const decodedToken = await validateToken(token);
 
-
-
-        if (!pk) {
-            return {
-                statusCode: 400,
-                body: JSON.stringify({ error: 'Missing user id (pk)' }),
-                headers: { 'Content-Type': 'application/json' },
-            };
-        }
+        // Use the `sub` claim as the partition key
+        const userSub = decodedToken.sub;
 
         const params = {
             TableName: tableName,
-            Key: { pk },
+            Key: { pk: userSub },
         };
 
         const response = await dynamodb.get(params).promise();
@@ -70,37 +58,33 @@ exports.lambda_handler = async (event) => {
         console.error('Error occurred:', error.message);
         return {
             statusCode: error.message === 'Unauthorized' ? 401 : 500,
-            body: JSON.stringify({ error: error.message }),
+            body: JSON.stringify({ error: 'Unable to retrieve profile data.' }),
             headers: { 'Content-Type': 'application/json' },
         };
     }
 };
+
 
 exports.lambda_handler_setProfile = async (event) => {
     const dynamodb = new AWS.DynamoDB.DocumentClient();
     const tableName = process.env.TABLE_NAME;
 
     try {
-        // Validate Authorization header
+        // Validate Authorization header and extract token
         const authHeader = event.headers.Authorization || '';
         const token = authHeader.replace('Bearer ', '');
-        await validateToken(token);
+        const decodedToken = await validateToken(token);
+
+        // Use the `sub` claim as the partition key
+        const userSub = decodedToken.sub;
 
         // Parse the request body
         const requestBody = JSON.parse(event.body);
 
-        if (!requestBody.pk) {
-            return {
-                statusCode: 400,
-                body: JSON.stringify({ error: 'Missing user id (pk)' }),
-                headers: { 'Content-Type': 'application/json' },
-            };
-        }
-
         const params = {
             TableName: tableName,
             Item: {
-                pk: requestBody.pk,
+                pk: userSub, // Securely set `pk` to user's `sub`
                 email: requestBody.email,
                 profilePhoto: requestBody.profilePhoto,
             },
@@ -117,7 +101,7 @@ exports.lambda_handler_setProfile = async (event) => {
         console.error('Error occurred:', error.message);
         return {
             statusCode: error.message === 'Unauthorized' ? 401 : 500,
-            body: JSON.stringify({ error: error.message }),
+            body: JSON.stringify({ error: 'Unable to update profile data.' }),
             headers: { 'Content-Type': 'application/json' },
         };
     }

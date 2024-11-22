@@ -271,8 +271,7 @@ import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View, ScrollView, SafeAreaView } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
 import { Dimensions } from 'react-native';
-import { getTransactionData } from '../apiService';
-import { Auth } from 'aws-amplify';
+import { getTransactionData } from '../apiService'; // API call function
 
 export default function HomeScreen() {
   const [financialData, setFinancialData] = useState({
@@ -283,44 +282,46 @@ export default function HomeScreen() {
   });
 
   const [loading, setLoading] = useState(true);
-  const [name, setName] = useState('Guest');
+  const [error, setError] = useState(null);
 
+  // Fetch transaction data
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const currentUser = await Auth.currentAuthenticatedUser();
-        setName(currentUser.username);
-
         const response = await getTransactionData();
+
+        // Transform response data
         const transactions = response.map((item) => ({
           id: item.sk,
           name: item.expenseName,
-          amount: parseFloat(item.amount),  // Convert the amount to a number
-          date: item.sk.split('#')[0],  // Use sk for date
+          amount: parseFloat(item.amount), // Convert amount to a number
+          date: item.sk.split('#')[0], // Extract date from sk
         }));
 
-        // Calculate total spending across all transactions
+        // Calculate total spending
         const totalSpending = transactions.reduce((sum, transaction) => sum + Math.abs(transaction.amount), 0);
 
-        // Group transactions by month-year for monthly spending calculation
+        // Group transactions by month-year for average monthly spending calculation
         const monthlyTotals = transactions.reduce((acc, transaction) => {
-          const monthYear = transaction.date.slice(0, 7);  // Extract "YYYY-MM" format
+          const monthYear = transaction.date.slice(0, 7); // Extract "YYYY-MM"
           if (!acc[monthYear]) acc[monthYear] = 0;
           acc[monthYear] += Math.abs(transaction.amount);
           return acc;
         }, {});
 
-        // Average monthly spending
+        // Calculate average monthly spending
         const avgMonthlySpending = totalSpending / Object.keys(monthlyTotals).length || 0;
 
+        // Set financial data state
         setFinancialData({
-          balance: 8500.75,
+          balance: 8500.75, // Static balance, replace if fetched from the backend
           totalSpending,
           avgMonthlySpending,
           recentTransactions: transactions,
         });
       } catch (error) {
         console.error('Error fetching transaction data:', error);
+        setError('Failed to load transaction data. Please try again later.');
       } finally {
         setLoading(false);
       }
@@ -329,6 +330,7 @@ export default function HomeScreen() {
     fetchData();
   }, []);
 
+  // Extract data for charting
   const transactionAmounts = financialData.recentTransactions.map((t) => t.amount);
   const transactionDates = financialData.recentTransactions.map((t) => t.date);
 
@@ -340,20 +342,30 @@ export default function HomeScreen() {
     );
   }
 
+  if (error) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <Text style={styles.errorText}>{error}</Text>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.safeArea}>
-      <Text style={styles.welcomeText}>Welcome, {name}</Text>
       <ScrollView style={styles.container}>
+        {/* Display Total Spending */}
         <View style={styles.balanceContainer}>
           <Text style={styles.balanceLabel}>Total Spending</Text>
           <Text style={styles.balanceValue}>${financialData.totalSpending.toFixed(2)}</Text>
         </View>
 
+        {/* Display Average Monthly Spending */}
         <View style={styles.spendingContainer}>
           <Text style={styles.spendingLabel}>Avg Monthly Spending</Text>
           <Text style={styles.spendingValue}>${financialData.avgMonthlySpending.toFixed(2)}</Text>
         </View>
 
+        {/* Display Recent Transactions */}
         <View style={styles.transactionsContainer}>
           <Text style={styles.transactionsTitle}>Recent Transactions</Text>
           {financialData.recentTransactions.map((transaction) => (
@@ -374,6 +386,7 @@ export default function HomeScreen() {
           ))}
         </View>
 
+        {/* Display Transaction Chart */}
         <View style={styles.chartContainer}>
           <Text style={styles.chartTitle}>Transaction Amounts Over Time</Text>
           <LineChart
@@ -413,11 +426,21 @@ export default function HomeScreen() {
   );
 }
 
-
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: '#f5f5f5',
+  },
+  loadingText: {
+    fontSize: 20,
+    textAlign: 'center',
+    marginTop: 50,
+  },
+  errorText: {
+    fontSize: 18,
+    color: 'red',
+    textAlign: 'center',
+    marginTop: 50,
   },
   container: {
     flex: 1,

@@ -1,31 +1,32 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
-// user data structure
+// Define user data structure
 interface User {
   name: string;
   email: string;
-  //profilePicture: string;
-  //phone: string;
-  //role: boolean; //(admin)
-  //bio: string;
-  //county: string;
 }
 
 // Define the shape of the context
 interface UserContextType {
   userData: User | null;
   setUserData: (user: User | null) => void;
+  clearUserData: () => void; // Add a function to clear user data (e.g., on logout)
 }
 
 // Create the context with default values
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
-// Wrapps app and provides user data to all components
+// Wraps the app and provides user data to all components
 export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [userData, setUserData] = useState<User | null>(null); 
+  const [userData, setUserData] = useState<User | null>(null);
+
+  // Function to clear user data (e.g., on logout)
+  const clearUserData = () => {
+    setUserData(null);
+  };
 
   return (
-    <UserContext.Provider value={{ userData, setUserData }}>
+    <UserContext.Provider value={{ userData, setUserData, clearUserData }}>
       {children}
     </UserContext.Provider>
   );

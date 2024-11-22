@@ -9,6 +9,9 @@ Parameters:
   ApiGatewayId:
     Type: String
     Description: ID of the shared API Gateway
+  CognitoUserPoolId:
+    Type: String
+    Description: ID of the Cognito User Pool
 
 Resources:
   UserProfileFunctionRole:
@@ -31,7 +34,11 @@ Resources:
                   - dynamodb:GetItem
                   - dynamodb:Query
                   - dynamodb:PutItem
-                Resource: !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${ProfileDataTableName}"
+                Resource: 
+                  - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${ProfileDataTableName}"
+                Condition:
+                  StringEqualsIfExists:
+                    "dynamodb:LeadingKeys": ["${cognito-identity.amazonaws.com:sub}"] # Restrict to items matching the user's sub
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
 
@@ -52,6 +59,8 @@ Resources:
             RestApiId: !Ref ApiGatewayId
             Path: /user-profile
             Method: GET
+            Auth:
+              Authorizer: CognitoAuthorizer
 
   UserProfileFunctionSet:
     Type: AWS::Serverless::Function
@@ -70,6 +79,18 @@ Resources:
             RestApiId: !Ref ApiGatewayId
             Path: /user-profile
             Method: POST
+            Auth:
+              Authorizer: CognitoAuthorizer
+
+  CognitoAuthorizer:
+    Type: AWS::ApiGateway::Authorizer
+    Properties:
+      Name: UserProfileAuthorizer
+      RestApiId: !Ref ApiGatewayId
+      Type: COGNITO_USER_POOLS
+      IdentitySource: method.request.header.Authorization
+      ProviderARNs:
+        - !Sub "arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/${CognitoUserPoolId}"
 
 Outputs:
   UserProfileApiUrl:
