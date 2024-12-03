@@ -3,7 +3,6 @@ const jwt = require('jsonwebtoken');
 const jwkToPem = require('jwk-to-pem');
 const axios = require('axios');
 const AWS = require('aws-sdk');
-require('dotenv').config({ path: '../../../../../Frontend/.env' });
 
 // Cognito setup
 const cognitoIssuer = `https://cognito-idp.${process.env.AWS_REGION}.amazonaws.com/${process.env.USER_POOL_ID}`;
@@ -23,7 +22,7 @@ const validateToken = async (token) => {
     // Verify the token
     return jwt.verify(token, pem, { issuer: cognitoIssuer });
   } catch (error) {
-    console.error('Token validation failed:', error);
+    console.error('Token validation failed:', error.message);
     throw new Error('Unauthorized');
   }
 };
@@ -48,12 +47,12 @@ exports.lambda_handler = async (event) => {
     const userSub = decodedToken.sub;
 
     const body = JSON.parse(event.body);
-    const { accessToken, userId } = body;
+    const { accessToken } = body;
 
-    if (!userId || !accessToken) {
+    if (!accessToken) {
       return {
         statusCode: 400, // Bad request if missing parameters
-        body: JSON.stringify({ error: 'Missing accessToken or userId' }),
+        body: JSON.stringify({ error: 'Missing accessToken' }),
         headers: { 'Content-Type': 'application/json' },
       };
     }
@@ -66,8 +65,8 @@ exports.lambda_handler = async (event) => {
       basePath: plaid.PlaidEnvironments.sandbox, // Use sandbox environment for testing
       baseOptions: {
         headers: {
-          'PLAID-CLIENT-ID': "67059ac70f3934001bb637ab",
-          'PLAID-SECRET': "6480180b111c6e48efe009f6d5d568",
+          'PLAID-CLIENT-ID': process.env.PLAID_CLIENT_ID,
+          'PLAID-SECRET': process.env.PLAID_SECRET,
         },
       },
     });
@@ -88,7 +87,7 @@ exports.lambda_handler = async (event) => {
       const params = {
         TableName: tableName,
         Item: {
-          pk: userId, // Securely associate with authenticated user
+          pk: userSub, // Securely associate with authenticated user
           sk: `${transaction.date}#t-${index.toString().padStart(3, '0')}`, // Unique sort key per transaction
           amount: transaction.amount,
           expenseName: transaction.name || 'Unknown',
@@ -109,7 +108,7 @@ exports.lambda_handler = async (event) => {
       headers: { 'Content-Type': 'application/json' },
     };
   } catch (error) {
-    console.error('Error occurred:', error);
+    console.error('Error occurred:', error.message);
     const statusCode = error.message === 'Unauthorized' ? 401 : 500;
     return {
       statusCode: statusCode,

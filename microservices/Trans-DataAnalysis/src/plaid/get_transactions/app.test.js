@@ -81,7 +81,6 @@ describe('Get Transactions Microservice Tests', () => {
       },
       body: JSON.stringify({
         accessToken: 'access-token-123',
-        pk: 'user123'
       })
     };
 
@@ -109,7 +108,7 @@ describe('Get Transactions Microservice Tests', () => {
       expect(putMock).toHaveBeenCalledWith({
         TableName: 'test-transactionData', // From process.env.TABLE_NAME
         Item: {
-          pk: 'user123',
+          pk: 'user123', // From decoded token's sub
           sk: `${transaction.date}#t-${index.toString().padStart(3, '0')}`,
           amount: transaction.amount,
           expenseName: transaction.name || 'Unknown',
@@ -118,50 +117,26 @@ describe('Get Transactions Microservice Tests', () => {
     });
   });
 
-  test('lambda_handler - missing accessToken or userId', async () => {
+  test('lambda_handler - missing accessToken', async () => {
     // Set up mocks
     plaid.PlaidApi.mockImplementation(() => ({}));
     const putMock = jest.fn();
     AWSMock.setSDKInstance(AWS);
     AWSMock.mock('DynamoDB.DocumentClient', 'put', putMock);
 
-    const eventMissingAccessToken = {
+    const event = {
       headers: {
         Authorization: 'Bearer valid-token',
       },
       body: JSON.stringify({
         // accessToken is missing
-        pk: 'user123'
       })
     };
 
-    const eventMissingUserId = {
-      headers: {
-        Authorization: 'Bearer valid-token',
-      },
-      body: JSON.stringify({
-        accessToken: 'access-token-123',
-        // pk is missing
-      })
-    };
-
-    // Test missing accessToken
-    const responseMissingAccessToken = await lambda_handler(eventMissingAccessToken);
-    expect(responseMissingAccessToken.statusCode).toBe(400);
-    const responseBodyMissingAccessToken = JSON.parse(responseMissingAccessToken.body);
-    expect(responseBodyMissingAccessToken).toEqual({ error: 'Missing accessToken or userId' });
-
-    // Verify that PlaidApi was not called
-    expect(plaid.PlaidApi).not.toHaveBeenCalled();
-
-    // Verify that DynamoDB put was not called
-    expect(putMock).not.toHaveBeenCalled();
-
-    // Test missing userId
-    const responseMissingUserId = await lambda_handler(eventMissingUserId);
-    expect(responseMissingUserId.statusCode).toBe(400);
-    const responseBodyMissingUserId = JSON.parse(responseMissingUserId.body);
-    expect(responseBodyMissingUserId).toEqual({ error: 'Missing accessToken or userId' });
+    const response = await lambda_handler(event);
+    expect(response.statusCode).toBe(400);
+    const responseBody = JSON.parse(response.body);
+    expect(responseBody).toEqual({ error: 'Missing accessToken' });
 
     // Verify that PlaidApi was not called
     expect(plaid.PlaidApi).not.toHaveBeenCalled();
@@ -208,7 +183,6 @@ describe('Get Transactions Microservice Tests', () => {
       },
       body: JSON.stringify({
         accessToken: 'access-token-123',
-        pk: 'user123'
       })
     };
 
@@ -216,7 +190,7 @@ describe('Get Transactions Microservice Tests', () => {
 
     expect(response.statusCode).toBe(500);
     const responseBody = JSON.parse(response.body);
-    expect(responseBody).toEqual({ error: 'Failed to store transactions', message: 'Plaid API Error' });
+    expect(responseBody).toEqual({ error: 'Plaid API Error' });
 
     // Verify that PlaidApi methods were called correctly
     expect(plaid.PlaidApi).toHaveBeenCalledTimes(1);
@@ -282,7 +256,6 @@ describe('Get Transactions Microservice Tests', () => {
       },
       body: JSON.stringify({
         accessToken: 'access-token-123',
-        pk: 'user123'
       })
     };
 
@@ -290,7 +263,7 @@ describe('Get Transactions Microservice Tests', () => {
 
     expect(response.statusCode).toBe(500);
     const responseBody = JSON.parse(response.body);
-    expect(responseBody).toEqual({ error: 'Failed to store transactions', message: 'DynamoDB Error' });
+    expect(responseBody).toEqual({ error: 'DynamoDB Error' });
 
     // Verify that PlaidApi methods were called correctly
     expect(plaid.PlaidApi).toHaveBeenCalledTimes(1);
@@ -312,5 +285,37 @@ describe('Get Transactions Microservice Tests', () => {
         expenseName: 'Coffee Shop'
       },
     }, expect.any(Function));
+  });
+
+  test('lambda_handler - invalid token', async () => {
+    // Mock Cognito token validation to fail
+    axios.get.mockResolvedValue({ data: { keys: [] } });
+    jwt.decode.mockReturnValue(null);
+    jwt.verify.mockImplementation(() => { throw new Error('Invalid token'); });
+
+    const putMock = jest.fn();
+    AWSMock.setSDKInstance(AWS);
+    AWSMock.mock('DynamoDB.DocumentClient', 'put', putMock);
+
+    const event = {
+      headers: {
+        Authorization: 'Bearer invalid-token',
+      },
+      body: JSON.stringify({
+        accessToken: 'access-token-123',
+      })
+    };
+
+    const response = await lambda_handler(event);
+
+    expect(response.statusCode).toBe(401);
+    const responseBody = JSON.parse(response.body);
+    expect(responseBody).toEqual({ error: 'Unauthorized' });
+
+    // Verify that PlaidApi was not called
+    expect(plaid.PlaidApi).not.toHaveBeenCalled();
+
+    // Verify that DynamoDB put was not called
+    expect(putMock).not.toHaveBeenCalled();
   });
 });
