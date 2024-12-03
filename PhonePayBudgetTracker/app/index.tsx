@@ -9,7 +9,6 @@ import awsconfig from '../constants/config/aws-exports';
 // initialize aws amplify
 Amplify.configure(awsconfig)
 
-
 export default function IndexPage() {
   return (
     <ScrollView contentContainerStyle={styles.container}>
