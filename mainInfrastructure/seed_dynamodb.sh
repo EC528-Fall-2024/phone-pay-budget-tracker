@@ -4,12 +4,12 @@ set -e
 
 REGION="us-east-2"
 
-INFRA_STACK_NAME="main-infra"
+INFRA_STACK_NAME="main-infra2"
 
-PROFILE_DATA_TABLE_NAME=$(aws cloudformation describe-stacks --stack-name $INFRA_STACK_NAME --region $REGION --query "Stacks[0].Outputs[?OutputKey=='ProfileDataTableName'].OutputValue" --output text)
+PROFILE_DATA_TABLE_NAME=$(aws cloudformation describe-stacks --stack-name "$INFRA_STACK_NAME" --region "$REGION" --query "Stacks[0].Outputs[?OutputKey=='ProfileDataTableName'].OutputValue" --output text)
 echo "Seeding Profile Data Table: $PROFILE_DATA_TABLE_NAME"
 
-TRANSACTION_TABLE_NAME=$(aws cloudformation describe-stacks --stack-name $INFRA_STACK_NAME --region $REGION --query "Stacks[0].Outputs[?OutputKey=='TransactionTableName'].OutputValue" --output text)
+TRANSACTION_TABLE_NAME=$(aws cloudformation describe-stacks --stack-name "$INFRA_STACK_NAME" --region "$REGION" --query "Stacks[0].Outputs[?OutputKey=='TransactionDataTableName'].OutputValue" --output text)
 echo "Seeding Transaction Data Table: $TRANSACTION_TABLE_NAME"
 
 # Seed profileData table
