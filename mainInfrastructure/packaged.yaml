@@ -57,7 +57,7 @@ Outputs:
     Description: Name of the profileData DynamoDB table
     Value:
       Ref: UserDataTable
-  TransactionTableName:
+  TransactionDataTableName:
     Description: Name of the transactionData DynamoDB table
     Value:
       Ref: TransDataAnalysisTable
