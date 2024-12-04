@@ -1,6 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Transform: AWS::Serverless-2016-10-31
-Description: Shared Infrastructure DB
+Description: Main Infrastructure Stack - DynamoDB Tables
 Resources:
   TransDataAnalysisTable:
     Type: AWS::DynamoDB::Table
@@ -53,12 +52,6 @@ Resources:
         Value: Production
     Metadata:
       SamResourceId: UserDataTable
-  SharedApiGateway:
-    Type: AWS::ApiGateway::RestApi
-    Properties:
-      Name: SharedApiGateway
-    Metadata:
-      SamResourceId: SharedApiGateway
 Outputs:
   ProfileDataTableName:
     Description: Name of the profileData DynamoDB table
@@ -68,11 +61,3 @@ Outputs:
     Description: Name of the transactionData DynamoDB table
     Value:
       Ref: TransDataAnalysisTable
-  SharedApiGatewayId:
-    Description: ID of the shared API Gateway
-    Value:
-      Ref: SharedApiGateway
-  SharedApiGatewayRootUrl:
-    Description: Root URL of the shared API Gateway
-    Value:
-      Fn::Sub: https://${SharedApiGateway}.execute-api.${AWS::Region}.amazonaws.com/Prod/

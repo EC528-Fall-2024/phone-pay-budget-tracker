@@ -1,9 +1,8 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Transform: AWS::Serverless-2016-10-31
-Description: Shared Infrastructure DB
+Description: Main Infrastructure Stack - DynamoDB Tables
 
 Resources:
-
+  # DynamoDB Table for Transaction Data
   TransDataAnalysisTable:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -21,7 +20,7 @@ Resources:
         - AttributeName: sk
           KeyType: RANGE
       BillingMode: PAY_PER_REQUEST
-      SSESpecification:              # Enable encryption at rest
+      SSESpecification:
         SSEEnabled: true
       GlobalSecondaryIndexes:
         - IndexName: ExpenseNameIndex
@@ -36,6 +35,7 @@ Resources:
         - Key: Environment
           Value: Production
 
+  # DynamoDB Table for User Data
   UserDataTable:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -47,16 +47,11 @@ Resources:
         - AttributeName: pk
           KeyType: HASH
       BillingMode: PAY_PER_REQUEST
-      SSESpecification:              # Enable encryption at rest
+      SSESpecification:
         SSEEnabled: true
       Tags:
         - Key: Environment
           Value: Production
-
-  SharedApiGateway:
-    Type: AWS::ApiGateway::RestApi
-    Properties:
-      Name: SharedApiGateway
 
 Outputs:
   ProfileDataTableName:
@@ -66,11 +61,3 @@ Outputs:
   TransactionTableName:
     Description: "Name of the transactionData DynamoDB table"
     Value: !Ref TransDataAnalysisTable
-  
-  SharedApiGatewayId:
-    Description: "ID of the shared API Gateway"
-    Value: !Ref SharedApiGateway
-
-  SharedApiGatewayRootUrl:
-    Description: "Root URL of the shared API Gateway"
-    Value: !Sub "https://${SharedApiGateway}.execute-api.${AWS::Region}.amazonaws.com/Prod/"

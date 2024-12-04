@@ -6,9 +6,6 @@ Parameters:
   ProfileDataTableName:
     Type: String
     Description: Name of the profileData DynamoDB table
-  ApiGatewayId:
-    Type: String
-    Description: ID of the shared API Gateway
 
 Resources:
   AdminControlFunction:
@@ -16,33 +13,30 @@ Resources:
     Properties:
       CodeUri: ./src/
       Handler: app.lambda_handler
-      Runtime: python3.8
+      Runtime: python3.10
       Environment:
         Variables:
           TABLE_NAME: !Ref ProfileDataTableName
+          #AWS_REGION: !Ref AWS::Region
       Events:
         ListUsersApi:
           Type: Api
           Properties:
-            RestApiId: !Ref ApiGatewayId
             Path: /admin-control/users
             Method: GET
         GetUserApi:
           Type: Api
           Properties:
-            RestApiId: !Ref ApiGatewayId
             Path: /admin-control/users/{user_id}
             Method: GET
         AddUserApi:
           Type: Api
           Properties:
-            RestApiId: !Ref ApiGatewayId
             Path: /admin-control/users
             Method: POST
         DeleteUserApi:
           Type: Api
           Properties:
-            RestApiId: !Ref ApiGatewayId
             Path: /admin-control/users/{user_id}
             Method: DELETE
       Policies:
@@ -52,4 +46,4 @@ Resources:
 Outputs:
   AdminControlApiUrl:
     Description: API Gateway endpoint URL for Admin Control Service
-    Value: !Sub 'https://${ApiGatewayId}.execute-api.${AWS::Region}.amazonaws.com/Prod/admin-control/users'
+    Value: !Sub 'https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/admin-control/users'
