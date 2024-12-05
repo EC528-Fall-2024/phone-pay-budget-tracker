@@ -75,8 +75,8 @@ exports.lambda_handler = async (event) => {
         } else {
             // Handle not found
             return {
-                statusCode: 404,
-                body: JSON.stringify({ error: 'No transactions found' }),
+                statusCode: 200,
+                body: JSON.stringify({ message: 'No transactions found' }),
                 headers: {
                     'Content-Type': 'application/json'
                 }

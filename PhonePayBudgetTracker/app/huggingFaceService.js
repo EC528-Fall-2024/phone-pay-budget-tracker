@@ -10,7 +10,7 @@ export async function categorizeTransaction(description: string): Promise<string
       model: 'facebook/bart-large-mnli',
       inputs: description,
       parameters: {
-        candidate_labels: 'Dining, Rent, Groceries, Entertainment, Utilities, Other',
+        candidate_labels: 'Dining, Rent, Groceries, Entertainment, Job, Investment, Utilities, Other',
       },
     });
 

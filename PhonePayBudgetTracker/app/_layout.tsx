@@ -38,6 +38,11 @@ export default function RootLayout() {
         <Stack.Screen name="expenseScreen" options={{ headerShown: false }} />
         <Stack.Screen name="incomeScreen" options={{ headerShown: false }} />
         <Stack.Screen name="bothScreen" options={{ headerShown: false }} />
+        <Stack.Screen name="faqs" options={{ headerShown: false }} />
+        <Stack.Screen name="contactUs" options={{ headerShown: false }} />
+        <Stack.Screen name="upgradePlan" options={{ headerShown: false }} />
+        <Stack.Screen name="privacyPolicy" options={{ headerShown: false }} />
+
 
       </Stack>
     </ThemeProvider>
