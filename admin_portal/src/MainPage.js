@@ -1,15 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { Auth } from 'aws-amplify';
+import { Container, Typography, Box, Button, Alert, Grid, Paper } from '@mui/material';
 import AWS from 'aws-sdk';
-import { Container, Typography, List, ListItem, ListItemText, Button, Box, Alert } from '@mui/material';
 
 function MainPage() {
   const [users, setUsers] = useState([]);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(true);
 
+  // Fetch users from Cognito User Pool
   const fetchUsers = async () => {
     try {
-      // Get AWS credentials via Identity Pool
+      setLoading(true);
       const credentials = await Auth.currentCredentials();
       AWS.config.update({
         region: 'us-east-2', // Ensure this matches your Cognito region
@@ -21,19 +23,19 @@ function MainPage() {
         UserPoolId: 'us-east-2_wiIIvkrzs',
       };
 
-      // Fetch users
       const data = await cognitoISP.listUsers(params).promise();
-      console.log('Fetched users:', data.Users); // Log the fetched users
-      setUsers(data.Users); // Update state with users
+      setUsers(data.Users);
     } catch (err) {
       setError('Failed to fetch users.');
-      console.error('Error fetching users:', err); // Log error for debugging
+      console.error('Error fetching users:', err);
+    } finally {
+      setLoading(false);
     }
   };
 
+  // Delete user from Cognito User Pool
   const deleteUser = async (username) => {
     try {
-      // Get AWS credentials via Identity Pool
       const credentials = await Auth.currentCredentials();
       AWS.config.update({
         region: 'us-east-2',
@@ -46,11 +48,7 @@ function MainPage() {
         Username: username,
       };
 
-      // Delete user
       await cognitoISP.adminDeleteUser(params).promise();
-      console.log(`User ${username} deleted successfully.`);
-
-      // Refresh the list of users
       setUsers(users.filter((user) => user.Username !== username));
       alert(`User ${username} deleted successfully.`);
     } catch (err) {
@@ -59,35 +57,82 @@ function MainPage() {
     }
   };
 
+  // Delete user from DynamoDB via microservice
+  const deleteUserFromApi = async (username) => {
+    try {
+      const token = (await Auth.currentSession()).getIdToken().getJwtToken();
+
+      const response = await fetch(
+        `https://nhuhi7ky83.execute-api.us-east-2.amazonaws.com/Prod/admin-control/users/${username}`,
+        {
+          method: 'DELETE',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const errorResponse = await response.json();
+        throw new Error(errorResponse.error || 'Failed to delete user from DynamoDB');
+      }
+
+      alert(`User ${username} deleted from DynamoDB successfully.`);
+    } catch (error) {
+      setError(`Failed to delete user ${username} from DynamoDB.`);
+      console.error(`Error deleting user ${username} from DynamoDB:`, error);
+    }
+  };
+
   useEffect(() => {
     fetchUsers();
   }, []);
 
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+        <Typography variant="h4">Loading...</Typography>
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+        <Alert severity="error">{error}</Alert>
+      </Box>
+    );
+  }
+
   return (
-    <Container maxWidth="sm">
-      <Box my={4}>
-        <Typography variant="h4" component="h1" gutterBottom>
-          Admin Dashboard
-        </Typography>
-        {error && <Alert severity="error" style={{ marginBottom: '20px' }}>{error}</Alert>}
-        <List>
-          {users.map((user) => (
-            <ListItem
-              key={user.Username}
-              sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
-            >
-              <ListItemText primary={user.Username} secondary={`Status: ${user.UserStatus}`} />
+    <Container maxWidth="md">
+      <Typography variant="h3" align="center" gutterBottom>
+        Admin Dashboard
+      </Typography>
+      <Grid container spacing={3}>
+        {users.map((user) => (
+          <Grid item xs={12} md={6} key={user.Username}>
+            <Paper sx={{ padding: 2, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <Typography variant="h6">{user.Username}</Typography>
+              <Typography variant="body2" color="textSecondary">
+                Status: {user.UserStatus}
+              </Typography>
               <Button
                 variant="contained"
                 color="error"
-                onClick={() => deleteUser(user.Username)}
+                sx={{ marginTop: 2 }}
+                onClick={async () => {
+                  await deleteUser(user.Username);
+                  await deleteUserFromApi(user.Username);
+                }}
               >
                 Delete
               </Button>
-            </ListItem>
-          ))}
-        </List>
-      </Box>
+            </Paper>
+          </Grid>
+        ))}
+      </Grid>
     </Container>
   );
 }

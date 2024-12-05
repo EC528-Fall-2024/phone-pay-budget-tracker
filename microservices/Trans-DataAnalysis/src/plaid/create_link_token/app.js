@@ -53,8 +53,8 @@ exports.lambda_handler = async (event) => {
             basePath: plaid.PlaidEnvironments.sandbox,  // Use sandbox environment for testing
             baseOptions: {
                 headers: {
-                    'PLAID-CLIENT-ID': "67059ac70f3934001bb637ab",
-                    'PLAID-SECRET': "6480180b111c6e48efe009f6d5d568",
+                    'PLAID-CLIENT-ID': process.env.PLAID_CLIENT_ID,
+                    'PLAID-SECRET': process.env.PLAID_SECRET,
                 },
             },
         });
