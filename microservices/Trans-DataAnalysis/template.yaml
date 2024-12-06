@@ -42,6 +42,10 @@ Resources:
           Properties:
             Path: /plaid/create-link-token
             Method: POST
+            Cors:
+              AllowOrigins: "'*'"  # Adjust as needed for security
+              AllowMethods: "'POST,OPTIONS'"
+              AllowHeaders: "'Content-Type,Authorization'"
       Policies:
         - Version: "2012-10-17"
           Statement:
@@ -69,6 +73,10 @@ Resources:
           Properties:
             Path: /plaid/get-access-token
             Method: POST
+            Cors:
+              AllowOrigins: "'*'"  # Adjust as needed for security
+              AllowMethods: "'POST,OPTIONS'"
+              AllowHeaders: "'Content-Type,Authorization'"
       Policies:
         - Version: "2012-10-17"
           Statement:
@@ -96,6 +104,10 @@ Resources:
           Properties:
             Path: /plaid/get-transactions
             Method: POST
+            Cors:
+              AllowOrigins: "'*'"  # Adjust as needed for security
+              AllowMethods: "'POST,OPTIONS'"
+              AllowHeaders: "'Content-Type,Authorization'"
       Policies:
         - Version: "2012-10-17"
           Statement:
@@ -103,6 +115,63 @@ Resources:
               Action:
                 - dynamodb:Query
                 - dynamodb:GetItem
+                - dynamodb:PutItem
+              Resource: !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${TransactionDataTableName}"
+
+  # **New: Get All Transactions Function**
+  GetAllTransactionsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./src/transactions/get_all/
+      Handler: app.lambda_handler
+      Runtime: nodejs20.x
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref TransactionDataTableName
+      Events:
+        GetAllTransactionsApi:
+          Type: Api
+          Properties:
+            Path: /transactions/get-all
+            Method: GET
+            Cors:
+              AllowOrigins: "'*'"  # Adjust as needed for security
+              AllowMethods: "'GET,OPTIONS'"
+              AllowHeaders: "'Content-Type,Authorization'"
+      Policies:
+        - Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:Query
+                - dynamodb:GetItem
+              Resource: !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${TransactionDataTableName}"
+
+  # **New: Store Transactions Function**
+  StoreTransactionsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./src/transactions/store/
+      Handler: app.store_transactions_handler
+      Runtime: nodejs20.x
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref TransactionDataTableName
+      Events:
+        StoreTransactionsApi:
+          Type: Api
+          Properties:
+            Path: /transactions/store
+            Method: POST
+            Cors:
+              AllowOrigins: "'*'"  # Adjust as needed for security
+              AllowMethods: "'POST,OPTIONS'"
+              AllowHeaders: "'Content-Type,Authorization'"
+      Policies:
+        - Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action:
                 - dynamodb:PutItem
               Resource: !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${TransactionDataTableName}"
 
@@ -118,3 +187,11 @@ Outputs:
   GetTransactionsApiUrl:
     Description: "API Gateway endpoint URL for Get Transactions Service"
     Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/plaid/get-transactions"
+
+  GetAllTransactionsApiUrl:
+    Description: "API Gateway endpoint URL for Get All Transactions Service"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/transactions/get-all"
+
+  StoreTransactionsApiUrl:
+    Description: "API Gateway endpoint URL for Store Transactions Service"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/transactions/store"

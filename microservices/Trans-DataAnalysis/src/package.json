@@ -1,0 +1,10 @@
+{
+  "name": "trans-data_database_main",
+  "version": "1.0.0",
+  "description": "Transaction-Analysis microservice, main",
+  "main": "app.js",
+
+  "dependencies": {
+    "aws-sdk": "^2.1691.0"
+  }
+}
