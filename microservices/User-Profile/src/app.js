@@ -6,6 +6,7 @@ const axios = require('axios');
 
 // Cognito configuration
 const cognitoIssuer = `https://cognito-idp.${process.env.AWS_REGION}.amazonaws.com/${process.env.USER_POOL_ID}`;
+const EXPECTED_AUDIENCE = process.env.EXPECTED_AUDIENCE;
 
 const validateToken = async (token) => {
     try {
@@ -14,7 +15,10 @@ const validateToken = async (token) => {
         const jwk = jwks.keys.find((key) => key.kid === header.kid);
         if (!jwk) throw new Error('Invalid token');
         const pem = jwkToPem(jwk);
-        return jwt.verify(token, pem, { issuer: cognitoIssuer });
+        return jwt.verify(token, pem, { 
+            issuer: cognitoIssuer,
+            audience: process.env.EXPECTED_AUDIENCE,
+         });
     } catch (error) {
         console.error('Token validation failed:', error.message);
         throw new Error('Unauthorized');
