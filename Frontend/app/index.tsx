@@ -1,72 +1,156 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
-import { UserProvider } from './(context)/UserContext';
-import { router } from 'expo-router';
+
 import { Amplify } from 'aws-amplify';
 import awsconfig from '../constants/config/aws-exports';
 
+import React, { useState } from 'react';
+import { View, Text, TextInput, Button, TouchableOpacity, StyleSheet } from 'react-native';
+import { router } from "expo-router";
+import { useUser } from './(context)/UserContext';
+import { Auth } from 'aws-amplify';
 
-// initialize aws amplify
 Amplify.configure(awsconfig)
 
+export default function LoginScreen() {
+  const { setUserData } = useUser();
+  // const { userData } = useUser();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
 
-export default function IndexPage() {
+
+  const handleLogin = async () => {
+    //router.replace("/home")
+    console.log('email:', email, 'pass:', password);
+
+    if (!email || !password) {
+      setError('Email and password cannot be empty');
+      return;
+    }
+
+    // login with cognito
+    try {
+      const user = await Auth.signIn(email, password);
+      console.log('User signed in:', user)
+      
+      console.log('User data set. Navigating to home...');
+      router.replace("/home")
+    } catch (error) {
+        console.log("couldnt log in")
+        if (error instanceof Error) {
+          setError(error.message || 'Failed to log in');
+        } else {
+          setError('An unknown error occurred');
+        }
+      }
+
+    
+  };
+
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <View style={styles.container}>
       {/* App Title */}
-      <Text style={styles.appTitle}>Welcome to BudgetTracker</Text>
+      <Text style={styles.appTitle}>BudgetTracker</Text>
+      
+      {/* Login Section */}
+      <View style={styles.loginContainer}>
+        <Text style={styles.title}>Login</Text>
 
-      {/* Description */}
-      <Text style={styles.description}>
-        Start managing your budget now. Log in or sign up to get started.
-      </Text>
+        {/* Email Input */}
+        <TextInput 
+          value={email}
+          onChangeText={setEmail}
+          placeholder="Email"
+          style={styles.input}
+          keyboardType='email-address'
+          autoCapitalize='none'
+        />
 
-      {/* Navigate to Auth Button */}
-      <TouchableOpacity style={styles.authButton} onPress={() => router.push('/login')}>
-        <Text style={styles.authButtonText}>Go to Login</Text>
-      </TouchableOpacity>
+        {/* Password Input */}
+        <TextInput
+          value={password}
+          onChangeText={setPassword}
+          placeholder="Password"
+          secureTextEntry 
+          style={styles.input} 
+        />
 
-      <TouchableOpacity style={styles.authButton} onPress={() => router.push('/signup')}>
-        <Text style={styles.authButtonText}>Go to Signup</Text>
-      </TouchableOpacity>
-    </ScrollView>
+        {error ? <Text style={styles.error}>{error}</Text> : null}    
+
+        {/* Login Button */}
+        <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
+          <Text style={styles.loginButtonText}>Login</Text>
+        </TouchableOpacity>
+
+        {/* Signup Link */}
+        <TouchableOpacity onPress={() => router.replace("/signup")}>
+          <Text style={styles.link}>Don't have an account? Sign Up</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flexGrow: 1,
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
-    backgroundColor: '#f7f7f7',
+    backgroundColor: '#f7f7f7', // Light background color for a clean look
   },
   appTitle: {
-    fontSize: 28,
+    fontSize: 32,
     fontWeight: 'bold',
-    color: '#4CAF50',
+    color: '#4CAF50', // Greenish color for the app title
+    marginBottom: 50, // Spacing from the top
+    textAlign: 'center',
+  },
+  loginContainer: {
+    width: '85%',
+    backgroundColor: '#ffffff',
+    padding: 20,
+    borderRadius: 10,
+    shadowColor: '#000', // Add shadow for depth
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 5 },
+    shadowRadius: 10,
+    elevation: 5, // Elevation for Android shadow
+  },
+  title: {
+    fontSize: 24,
     marginBottom: 20,
     textAlign: 'center',
+    color: '#333', // Darker text color
   },
-  description: {
-    fontSize: 16,
-    color: '#333',
-    textAlign: 'center',
-    marginBottom: 30,
-    lineHeight: 24,
+  input: {
+    height: 50,
+    borderColor: '#ddd',
+    borderWidth: 1,
+    borderRadius: 5,
+    marginBottom: 20,
+    paddingHorizontal: 15,
+    backgroundColor: '#fafafa', // Light background for input fields
   },
-  authButton: {
-    backgroundColor: '#4CAF50',
+  loginButton: {
+    backgroundColor: '#4CAF50', // Greenish button color
     paddingVertical: 15,
-    paddingHorizontal: 30,
     borderRadius: 5,
     alignItems: 'center',
-    marginBottom: 15,
-    width: '100%',
+    marginBottom: 20,
   },
-  authButtonText: {
-    color: '#fff',
+  loginButtonText: {
+    color: '#fff', // White text on the login button
     fontSize: 18,
     fontWeight: 'bold',
   },
+  link: {
+    marginTop: 10,
+    color: '#4CAF50', // Matching color with the app title and button
+    textAlign: 'center',
+    fontSize: 16,
+    textDecorationLine: 'underline', // Underline for the link
+  },
 });
+
+
+// initialize aws amplify
+Amplify.configure(awsconfig)

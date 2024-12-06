@@ -17,8 +17,10 @@
   "dependencies": {
     "@aws-amplify/cli": "^12.13.0",
     "@expo/vector-icons": "^14.0.2",
+    "@huggingface/inference": "^2.8.1",
     "@react-native-async-storage/async-storage": "^1.23.1",
     "@react-native-community/netinfo": "^11.4.1",
+    "@react-native-picker/picker": "^2.9.0",
     "@react-navigation/native": "^6.0.2",
     "amazon-cognito-identity-js": "^6.3.14",
     "aws-amplify": "^5.3.24",

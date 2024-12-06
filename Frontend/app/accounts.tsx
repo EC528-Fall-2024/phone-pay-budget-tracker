@@ -1,7 +1,7 @@
 // import React, { useState, useEffect } from 'react';
 // import { View, Text, StyleSheet, ScrollView, SafeAreaView, Image, TouchableOpacity, Alert } from 'react-native';
 // import { useNavigation } from '@react-navigation/native';
-// import { getProfileData } from './apiService';  // Adjust your API import as needed
+// import { getProfileData } from './apiService';
 
 // export default function AccountsScreen() {
 //   const navigation = useNavigation();
@@ -19,6 +19,7 @@
 //       try {
 //         const profileData = await getProfileData();
 //         setUserData(profileData);
+//         console.log(profileData.accounts)
 //       } catch (error) {
 //         console.error(error);
 //         Alert.alert('Error', 'Failed to fetch profile data.');
@@ -44,7 +45,7 @@
 //           <View key={index} style={styles.accountCard}>
 //             <View style={styles.accountHeader}>
 //               <Image
-//                 source={{ uri: userData.profilePhoto || 'https://via.placeholder.com/40' }}
+//                 source={{ uri: account.Logo ? `data:image/png;base64,${account.Logo}` : 'https://via.placeholder.com/40' }}
 //                 style={styles.accountImage}
 //               />
 //               <View>
@@ -140,7 +141,6 @@
 //   },
 // });
 
-
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, SafeAreaView, Image, TouchableOpacity, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
@@ -156,13 +156,22 @@ export default function AccountsScreen() {
     email: '',
   });
   const [loading, setLoading] = useState(true);
+  const [hasAccounts, setHasAccounts] = useState(true); // New state to track if accounts exist
 
   useEffect(() => {
     const fetchProfileData = async () => {
       try {
         const profileData = await getProfileData();
+
+        // Check if the user has linked accounts
+        if (!profileData.accounts || profileData.accounts.length === 0) {
+          setHasAccounts(false);
+        } else {
+          setHasAccounts(true);
+        }
+
         setUserData(profileData);
-        console.log(profileData.accounts)
+        console.log(profileData.accounts);
       } catch (error) {
         console.error(error);
         Alert.alert('Error', 'Failed to fetch profile data.');
@@ -170,8 +179,17 @@ export default function AccountsScreen() {
         setLoading(false);
       }
     };
+
     fetchProfileData();
   }, []);
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <Text style={styles.loadingText}>Loading...</Text>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -183,26 +201,33 @@ export default function AccountsScreen() {
 
         <Text style={styles.header}>Linked Accounts</Text>
 
-        {/* Display each account */}
-        {userData.accounts.map((account, index) => (
-          <View key={index} style={styles.accountCard}>
-            <View style={styles.accountHeader}>
-              <Image
-                source={{ uri: account.Logo ? `data:image/png;base64,${account.Logo}` : 'https://via.placeholder.com/40' }}
-                style={styles.accountImage}
-              />
-              <View>
-                <Text style={styles.accountName}>{account.Name}</Text>
-                <Text style={styles.bankName}>{account.Bank}</Text>
+        {hasAccounts ? (
+          userData.accounts.map((account, index) => (
+            <View key={index} style={styles.accountCard}>
+              <View style={styles.accountHeader}>
+                <Image
+                  source={{ uri: account.Logo ? `data:image/png;base64,${account.Logo}` : 'https://via.placeholder.com/40' }}
+                  style={styles.accountImage}
+                />
+                <View>
+                  <Text style={styles.accountName}>{account.Name}</Text>
+                  <Text style={styles.bankName}>{account.Bank}</Text>
+                </View>
+              </View>
+              <View style={styles.accountDetails}>
+                <Text style={styles.detailText}>Type: {account.Name}</Text>
+                <Text style={styles.detailText}>Account Ending: {account.Mask}</Text>
+                <Text style={styles.balanceText}>Balance: ${account.Balance.toFixed(2)}</Text>
               </View>
             </View>
-            <View style={styles.accountDetails}>
-              <Text style={styles.detailText}>Type: {account.Name}</Text>
-              <Text style={styles.detailText}>Account Ending: {account.Mask}</Text>
-              <Text style={styles.balanceText}>Balance: ${account.Balance.toFixed(2)}</Text>
-            </View>
+          ))
+        ) : (
+          <View style={styles.noAccountsContainer}>
+            <Text style={styles.noAccountsText}>
+              No accounts linked. Please link an account to view details!
+            </Text>
           </View>
-        ))}
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -281,6 +306,23 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#4caf50',
     marginTop: 10,
+  },
+  noAccountsContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  noAccountsText: {
+    fontSize: 18,
+    color: '#555',
+    textAlign: 'center',
+  },
+  loadingText: {
+    fontSize: 20,
+    textAlign: 'center',
+    marginTop: 50,
+    color: '#333',
   },
 });
 
