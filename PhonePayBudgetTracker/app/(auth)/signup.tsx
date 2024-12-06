@@ -1,33 +1,34 @@
-import React from 'react';
+import React, {useState} from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { router } from "expo-router";
 import SignupForm from "../../components/SignupForm";
+import { Auth } from 'aws-amplify';
+import { setProfileData } from '../apiService';
+
 
 export function checkEmpty(toCheck: string) {
-  if(typeof toCheck!='undefined' && toCheck){
-    return false;
-  }
-  return true;
+  return !toCheck
 }
 
 export default function SignupScreen() {
-  const [username, setUsername] = React.useState('');
-  const [email, setEmail] = React.useState('');
-  const [password, setPassword] = React.useState('');
-  const [cpassword, setcPassword] = React.useState('');
-  const [errorMsg, setErrorMsg] = React.useState('');
-  const [isEmpty, setIsEmpty] = React.useState({
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [cpassword, setcPassword] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
+  const [isEmpty, setIsEmpty] = useState({
     username: false,
     email: false,
     password: false,
     cpassword: false,
   });
 
-  const passwordSame = (): boolean => {
-    return password == cpassword;
-  };
+  const passwordSame = () => password === cpassword
+  // const passwordSame = (): boolean => {
+  //   return password == cpassword;
+  // };
 
-  const onSignupPress = () => {
+  const onSignupPress = async () => {
     const emptyCheck = {
       username: !username,
       email: !email,
@@ -36,7 +37,7 @@ export default function SignupScreen() {
     };
     setIsEmpty(emptyCheck)
     if (checkEmpty(username)) {
-      setErrorMsg('Full name cannot be empty!');
+      setErrorMsg('username cannot be empty!');
       return;
     };
     if (checkEmpty(email)) {
@@ -57,14 +58,42 @@ export default function SignupScreen() {
       return;
     };
     setErrorMsg('');
-    const userData = {
-      username,
-      email,
-      password,
-    };
-    SignupForm(userData);
-    console.log('User signuping');
-    router.replace("/login");
+
+    // sign up with cognito
+    try {
+      const { user } = await Auth.signUp({
+        username,
+        password,
+        attributes: {
+          email,
+        }
+      });
+
+      console.log('User signed up:', user);
+
+      router.push({
+        pathname: "/(auth)/confirm",
+        params: { username, email },  // username is passed as a query param
+      });
+      
+      //router.replace("/login");
+    } catch (error) {
+      if (error instanceof Error) {
+        console.log('Error signing up:', error.message);
+        setErrorMsg(error.message);
+      } else {
+        console.log('An unknown error occurred');
+        setErrorMsg('An unknown error occurred');
+      }
+    }
+    // const userData = {
+    //   username,
+    //   email,
+    //   password,
+    // };
+    // SignupForm(userData);
+    // console.log('User signuping');
+    // router.replace("/login");
   };
 
   return (
@@ -76,13 +105,14 @@ export default function SignupScreen() {
         <Text style={styles.title}>Create Your Account</Text>
 
         {/* Name Input */}
-        <TextInput value={username} onChangeText={setUsername} placeholder='Full name' style={[styles.input, isEmpty.username && styles.emptyInput]} />
+        <TextInput value={username} onChangeText={setUsername} placeholder='Username' style={[styles.input, isEmpty.username && styles.emptyInput]} />
 
         {/* Email Input */}
         <TextInput value={email} onChangeText={setEmail} placeholder='Email' style={[styles.input, isEmpty.email && styles.emptyInput]} />
 
         {/* Password Input */}
-        <TextInput value={password} onChangeText={setPassword} placeholder='Password' secureTextEntry style={[styles.input, isEmpty.password && styles.emptyInput]} />
+        {/* <TextInput value={password} onChangeText={setPassword} placeholder='Password' secureTextEntry style={[styles.input, isEmpty.password && styles.emptyInput]} /> */}
+        <TextInput value={password} onChangeText={setPassword} placeholder='Password' style={[styles.input, isEmpty.password && styles.emptyInput]} />
 
         {/* Confirm Password Input */}
         <TextInput value={cpassword} onChangeText={setcPassword} placeholder="Confirm Password" secureTextEntry style={[styles.input, isEmpty.cpassword && styles.emptyInput]} />

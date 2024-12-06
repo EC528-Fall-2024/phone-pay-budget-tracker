@@ -1,115 +1,425 @@
-import React from 'react';
-import { StyleSheet, Text, View, ScrollView, SafeAreaView } from 'react-native';
-import { LineChart } from 'react-native-chart-kit';
-import { Dimensions } from 'react-native';
-import { useUser } from '../(context)/UserContext';
+// import React, { useEffect, useState } from "react";
+// import {
+//   StyleSheet,
+//   Text,
+//   View,
+//   ScrollView,
+//   SafeAreaView,
+//   TouchableOpacity,
+//   RefreshControl,
+//   Alert,
+// } from "react-native";
+// import { router } from "expo-router";
+// import { getProfileData, getTransactionData } from "../apiService";
+
+// export default function HomeScreen() {
+//   const [financialData, setFinancialData] = useState({
+//     balance: 0,
+//     accounts: [],
+//   });
+
+//   const [loading, setLoading] = useState(true);
+//   const [refreshing, setRefreshing] = useState(false);
+//   const [name, setName] = useState("Guest");
+
+//   const fetchData = async () => {
+//     try {
+//       const profileData = await getProfileData();
+//       const transactions = await getTransactionData();
+//       setName(profileData.pk);
+
+//       console.log("Profile data", profileData);
+//       console.log("Transaction data", transactions.message);
+
+//       const totalBalance = profileData.accounts.reduce(
+//         (sum, account) => sum + account.Balance,
+//         0
+//       );
+
+//       // Get the current date and calculate the date 7 days ago
+//       const currentDate = new Date();
+//       const sevenDaysAgo = new Date();
+//       sevenDaysAgo.setDate(currentDate.getDate() - 7);
+
+//       // Process accounts to count recent transactions for each account
+//       const processedAccounts = profileData.accounts.map((account) => {
+//         const recentTransactions = transactions.filter((transaction) => {
+//           const transactionDate = new Date(transaction.sk.split("#")[0]); // Extract date from `sk`
+//           return (
+//             transaction.accountId === account.accountID && // Match account ID
+//             transactionDate >= sevenDaysAgo // Check if the transaction is within the past 7 days
+//           );
+//         });
+
+//         return {
+//           ...account,
+//           recentTransactionCount: recentTransactions.length,
+//         };
+//       });
+
+//       setFinancialData({
+//         balance: totalBalance,
+//         accounts: processedAccounts,
+//       });
+//     } catch (error) {
+//       console.error("Error fetching user data:", error);
+//       Alert.alert("Error", "Failed to load data. Please try again later.");
+//     } finally {
+//       setLoading(false);
+//       setRefreshing(false);
+//     }
+//   };
+
+//   useEffect(() => {
+//     fetchData();
+//   }, []);
+
+//   const onRefresh = async () => {
+//     setRefreshing(true);
+//     await fetchData();
+//   };
+
+//   if (loading) {
+//     return (
+//       <SafeAreaView style={styles.safeArea}>
+//         <Text style={styles.loadingText}>Loading...</Text>
+//       </SafeAreaView>
+//     );
+//   }
+
+//   return (
+//     <SafeAreaView style={styles.safeArea}>
+//       <Text style={styles.welcomeText}>Welcome, {name}</Text>
+//       <ScrollView
+//         style={styles.container}
+//         contentContainerStyle={styles.scrollViewContent}
+//         refreshControl={
+//           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+//         }
+//       >
+//         <View style={styles.balanceContainer}>
+//           <Text style={styles.balanceLabel}>Available Balance</Text>
+//           <Text style={styles.balanceValue}>
+//             ${financialData.balance.toFixed(2)}
+//           </Text>
+//         </View>
+
+//         <Text style={styles.overviewTitle}>Overview:</Text>
+
+//         <View style={styles.accountsContainer}>
+//           {financialData.accounts.map((account, index) => (
+//             <View key={index} style={styles.accountItem}>
+//               <View>
+//                 <Text style={styles.accountName}>{account.Bank}</Text>
+//                 <Text style={styles.accountType}>{account.Name}</Text>
+//               </View>
+//               <View>
+//                 <Text style={styles.accountBalance}>
+//                   ${account.Balance.toFixed(2)}
+//                 </Text>
+//                 <Text style={styles.transactionCount}>
+//                   {account.recentTransactionCount} transactions in the last 7
+//                   days
+//                 </Text>
+//               </View>
+//             </View>
+//           ))}
+//         </View>
+
+//         <View style={styles.buttonContainer}>
+//           <TouchableOpacity
+//             style={styles.button}
+//             onPress={() => router.push("../expenseScreen")}
+//           >
+//             <Text style={styles.buttonText}>View Expenses</Text>
+//           </TouchableOpacity>
+
+//           <TouchableOpacity
+//             style={styles.button}
+//             onPress={() => router.push("../incomeScreen")}
+//           >
+//             <Text style={styles.buttonText}>View Income</Text>
+//           </TouchableOpacity>
+
+//           <TouchableOpacity
+//             style={styles.button}
+//             onPress={() => router.push("../bothScreen")}
+//           >
+//             <Text style={styles.buttonText}>View Expenses and Income</Text>
+//           </TouchableOpacity>
+//         </View>
+//       </ScrollView>
+//     </SafeAreaView>
+//   );
+// }
+
+// const styles = StyleSheet.create({
+//   safeArea: {
+//     flex: 1,
+//     backgroundColor: "#f5f5f5",
+//   },
+//   container: {
+//     flex: 1,
+//   },
+//   scrollViewContent: {
+//     padding: 20,
+//     paddingBottom: 40, // Add padding to the bottom to ensure the last button is not cut off
+//   },
+//   welcomeText: {
+//     fontSize: 44,
+//     fontWeight: "bold",
+//     marginBottom: 20,
+//     marginTop: 10,
+//     textAlign: "center",
+//   },
+//   balanceContainer: {
+//     backgroundColor: "#4caf50",
+//     padding: 20,
+//     borderRadius: 10,
+//     marginBottom: 20,
+//     alignItems: "center",
+//   },
+//   balanceLabel: {
+//     fontSize: 16,
+//     color: "#fff",
+//   },
+//   balanceValue: {
+//     fontSize: 32,
+//     fontWeight: "bold",
+//     color: "#fff",
+//     marginTop: 5,
+//   },
+//   overviewTitle: {
+//     fontSize: 22,
+//     fontWeight: "bold",
+//     marginBottom: 10,
+//     marginTop: 10,
+//     textAlign: "left",
+//     color: "#333",
+//   },
+//   accountsContainer: {
+//     backgroundColor: "#ffffff",
+//     padding: 15,
+//     borderRadius: 10,
+//     marginBottom: 20,
+//   },
+//   accountItem: {
+//     flexDirection: "row",
+//     justifyContent: "space-between",
+//     paddingVertical: 10,
+//     borderBottomWidth: 1,
+//     borderBottomColor: "#ddd",
+//   },
+//   accountName: {
+//     fontSize: 16,
+//     fontWeight: "bold",
+//     color: "#333",
+//   },
+//   accountType: {
+//     fontSize: 14,
+//     color: "#666",
+//   },
+//   accountBalance: {
+//     fontSize: 16,
+//     fontWeight: "bold",
+//     color: "#4caf50",
+//     textAlign: "right",
+//   },
+//   transactionCount: {
+//     fontSize: 14,
+//     color: "#999",
+//     textAlign: "right",
+//   },
+//   buttonContainer: {
+//     marginTop: 0,
+//   },
+//   button: {
+//     backgroundColor: "#ff9800",
+//     paddingVertical: 15,
+//     paddingHorizontal: 20,
+//     borderRadius: 10,
+//     alignItems: "center",
+//     marginVertical: 10,
+//   },
+//   buttonText: {
+//     fontSize: 16,
+//     fontWeight: "bold",
+//     color: "#fff",
+//   },
+//   loadingText: {
+//     fontSize: 20,
+//     textAlign: "center",
+//     marginTop: 50,
+//   },
+// });
+
+import React, { useEffect, useState } from "react";
+import {
+  StyleSheet,
+  Text,
+  View,
+  ScrollView,
+  SafeAreaView,
+  TouchableOpacity,
+  RefreshControl,
+  Alert,
+} from "react-native";
+import { router } from "expo-router";
+import { getProfileData, getTransactionData } from "../apiService";
 
 export default function HomeScreen() {
-  // Extended financial data with more transactions
-  const { userData } = useUser();
-  const financialData = {
-    balance: 8500.75,
-    monthlySpending: 1200.50,
-    recentTransactions: [
-      //Sorted dates for expenses
-      { id: 2, name: 'Rent', amount: -850.0, date: '09/01/24' },
-      { id: 4, name: 'Electricity Bill', amount: -100.0, date: '09/05/24' },
-      { id: 3, name: 'Salary', amount: 3000.0, date: '09/10/24' },
-      { id: 5, name: 'Gym Membership', amount: -60.0, date: '09/12/24' },
-      { id: 1, name: 'Groceries', amount: -150.0, date: '09/15/24' },
-      { id: 6, name: 'Freelance Payment', amount: 500.0, date: '09/18/24' },
-      { id: 7, name: 'Car Insurance', amount: -200.0, date: '09/20/24' },
-      { id: 8, name: 'Dining Out', amount: -120.0, date: '09/22/24' },
-      { id: 9, name: 'Rent', amount: -850.0, date: '10/01/24' },
-      { id: 10, name: 'Groceries', amount: -175.0, date: '10/05/24' },
-    ],
+  const [financialData, setFinancialData] = useState({
+    balance: 0,
+    accounts: [],
+  });
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [name, setName] = useState("Guest");
+  const [hasTransactions, setHasTransactions] = useState(true); // New state
+
+  const fetchData = async () => {
+    try {
+      const profileData = await getProfileData();
+      const transactions = await getTransactionData();
+      setName(profileData.pk);
+
+      console.log("Profile data", profileData);
+      console.log("Transaction data", transactions.message);
+
+      // Check if there are transactions
+      if (transactions.message === "No transactions found") {
+        setHasTransactions(false);
+        setFinancialData({ balance: 0, accounts: [] });
+        return;
+      } else {
+        setHasTransactions(true);
+      }
+
+      const totalBalance = profileData.accounts.reduce(
+        (sum, account) => sum + account.Balance,
+        0
+      );
+
+      // Get the current date and calculate the date 7 days ago
+      const currentDate = new Date();
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(currentDate.getDate() - 7);
+
+      // Process accounts to count recent transactions for each account
+      const processedAccounts = profileData.accounts.map((account) => {
+        const recentTransactions = transactions.filter((transaction) => {
+          const transactionDate = new Date(transaction.sk.split("#")[0]); // Extract date from `sk`
+          return (
+            transaction.accountId === account.accountID && // Match account ID
+            transactionDate >= sevenDaysAgo // Check if the transaction is within the past 7 days
+          );
+        });
+
+        return {
+          ...account,
+          recentTransactionCount: recentTransactions.length,
+        };
+      });
+
+      setFinancialData({
+        balance: totalBalance,
+        accounts: processedAccounts,
+      });
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+      Alert.alert("Error", "Failed to load data. Please try again later.");
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
   };
 
-  // Sort transactions from oldest to newest based on the date
-  const sortedTransactions = financialData.recentTransactions.sort(
-    (a, b) => new Date(a.date) - new Date(b.date)
-  );
+  useEffect(() => {
+    fetchData();
+  }, []);
 
-  // Prepare data for the graph
-  const transactionAmounts = sortedTransactions.map((t) => t.amount);
-  const transactionDates = sortedTransactions.map((t) => t.date);
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchData();
+  };
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <Text style={styles.loadingText}>Loading...</Text>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <Text style={styles.welcomeText}>
-        Welcome, {userData ? userData.name : 'Guest'}
-      </Text>
-      <ScrollView style={styles.container}>
-        {/* Current Balance */}
-        <View style={styles.balanceContainer}>
-          <Text style={styles.balanceLabel}>Current Balance</Text>
-          <Text style={styles.balanceValue}>${financialData.balance.toFixed(2)}</Text>
-        </View>
-
-        {/* Monthly Spending */}
-        <View style={styles.spendingContainer}>
-          <Text style={styles.spendingLabel}>Monthly Spending</Text>
-          <Text style={styles.spendingValue}>${financialData.monthlySpending.toFixed(2)}</Text>
-        </View>
-
-        {/* Recent Transactions */}
-        <View style={styles.transactionsContainer}>
-          <Text style={styles.transactionsTitle}>Recent Transactions</Text>
-          {sortedTransactions.map((transaction) => (
-            <View key={transaction.id} style={styles.transactionItem}>
-              <View style={styles.transactionDetails}>
-                <Text style={styles.transactionName}>{transaction.name}</Text>
-                <Text style={styles.transactionDate}>{transaction.date}</Text>
-              </View>
-              <Text
-                style={[
-                  styles.transactionAmount,
-                  transaction.amount < 0 ? styles.negative : styles.positive,
-                ]}
-              >
-                {transaction.amount < 0 ? '-' : '+'}${Math.abs(transaction.amount).toFixed(2)}
+      <Text style={styles.welcomeText}>Welcome, {name}</Text>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.scrollViewContent}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
+        {hasTransactions ? (
+          <>
+            <View style={styles.balanceContainer}>
+              <Text style={styles.balanceLabel}>Available Balance</Text>
+              <Text style={styles.balanceValue}>
+                ${financialData.balance.toFixed(2)}
               </Text>
             </View>
-          ))}
-        </View>
 
-        {/* Graph showing the recent transactions */}
-        <View style={styles.chartContainer}>
-          <Text style={styles.chartTitle}>Transaction Amounts Over Time</Text>
-          <LineChart
-            data={{
-              labels: transactionDates.slice(0, 6), // Show first 6 dates
-              datasets: [
-                {
-                  data: transactionAmounts.slice(0, 6), // Show first 6 amounts
-                },
-              ],
-            }}
-            width={Dimensions.get('window').width - 40} // Adjusted width
-            height={250}
-            yAxisLabel="$"
-            yAxisSuffix=""
-            yAxisInterval={1} // optional, defaults to 1
-            chartConfig={{
-              backgroundColor: '#e26a00',
-              backgroundGradientFrom: '#fb8c00',
-              backgroundGradientTo: '#ffa726',
-              decimalPlaces: 2, // optional, defaults to 2dp
-              color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-              labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-              style: {
-                borderRadius: 16,
-              },
-              propsForDots: {
-                r: '6',
-                strokeWidth: '2',
-                stroke: '#ffa726',
-              },
-            }}
-            bezier
-            style={styles.chartStyle}
-          />
-        </View>
+            <Text style={styles.overviewTitle}>Overview:</Text>
+
+            <View style={styles.accountsContainer}>
+              {financialData.accounts.map((account, index) => (
+                <View key={index} style={styles.accountItem}>
+                  <View>
+                    <Text style={styles.accountName}>{account.Bank}</Text>
+                    <Text style={styles.accountType}>{account.Name}</Text>
+                  </View>
+                  <View>
+                    <Text style={styles.accountBalance}>
+                      ${account.Balance.toFixed(2)}
+                    </Text>
+                    <Text style={styles.transactionCount}>
+                      {account.recentTransactionCount} transactions in the last
+                      7 days
+                    </Text>
+                  </View>
+                </View>
+              ))}
+            </View>
+
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity
+                style={styles.button}
+                onPress={() => router.push("../expenseScreen")}
+              >
+                <Text style={styles.buttonText}>View Expenses</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.button}
+                onPress={() => router.push("../incomeScreen")}
+              >
+                <Text style={styles.buttonText}>View Income</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.button}
+                onPress={() => router.push("../bothScreen")}
+              >
+                <Text style={styles.buttonText}>View Expenses and Income</Text>
+              </TouchableOpacity>
+            </View>
+          </>
+        ) : (
+          <View style={styles.noDataContainer}>
+            <Text style={styles.noDataText}>Link an account to see data!</Text>
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -118,108 +428,110 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: "#f5f5f5",
   },
   container: {
     flex: 1,
+  },
+  scrollViewContent: {
     padding: 20,
-    backgroundColor: '#f5f5f5',
+    paddingBottom: 40, // Add padding to the bottom to ensure the last button is not cut off
   },
   welcomeText: {
-    fontSize: 20,
-    fontWeight: 'bold',
+    fontSize: 44,
+    fontWeight: "bold",
     marginBottom: 20,
-    textAlign: 'center', 
+    marginTop: 10,
+    textAlign: "center",
   },
   balanceContainer: {
-    backgroundColor: '#4caf50',
+    backgroundColor: "#4caf50",
     padding: 20,
     borderRadius: 10,
     marginBottom: 20,
+    alignItems: "center",
   },
   balanceLabel: {
-    color: '#fff',
     fontSize: 16,
+    color: "#fff",
   },
   balanceValue: {
-    color: '#fff',
     fontSize: 32,
-    fontWeight: 'bold',
+    fontWeight: "bold",
+    color: "#fff",
     marginTop: 5,
   },
-  spendingContainer: {
-    backgroundColor: '#ff9800',
-    padding: 20,
+  overviewTitle: {
+    fontSize: 22,
+    fontWeight: "bold",
+    marginBottom: 10,
+    marginTop: 10,
+    textAlign: "left",
+    color: "#333",
+  },
+  accountsContainer: {
+    backgroundColor: "#ffffff",
+    padding: 15,
     borderRadius: 10,
     marginBottom: 20,
   },
-  spendingLabel: {
-    color: '#fff',
-    fontSize: 16,
-  },
-  spendingValue: {
-    color: '#fff',
-    fontSize: 28,
-    fontWeight: 'bold',
-    marginTop: 5,
-  },
-  transactionsContainer: {
-    backgroundColor: '#fff',
-    padding: 20,
-    borderRadius: 10,
-  },
-  transactionsTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 10,
-  },
-  transactionItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  accountItem: {
+    flexDirection: "row",
+    justifyContent: "space-between",
     paddingVertical: 10,
     borderBottomWidth: 1,
-    borderBottomColor: '#ddd',
+    borderBottomColor: "#ddd",
   },
-  transactionDetails: {
-    flexDirection: 'row',
-    flex: 1,
-  },
-  transactionName: {
-    flex: 1,
+  accountName: {
     fontSize: 16,
-    color: '#333',
-    textAlign: 'left',
+    fontWeight: "bold",
+    color: "#333",
   },
-  transactionDate: {
-    flex: 1,
+  accountType: {
     fontSize: 14,
-    color: '#999',
-    textAlign: 'left',
+    color: "#666",
   },
-  transactionAmount: {
+  accountBalance: {
     fontSize: 16,
-    textAlign: 'right',
-    flex: 0.5,
+    fontWeight: "bold",
+    color: "#4caf50",
+    textAlign: "right",
   },
-  positive: {
-    color: '#4caf50',
+  transactionCount: {
+    fontSize: 14,
+    color: "#999",
+    textAlign: "right",
   },
-  negative: {
-    color: '#f44336',
+  buttonContainer: {
+    marginTop: 0,
   },
-  chartContainer: {
-    marginTop: 20,
-    alignItems: 'center', // Center the chart horizontally
+  button: {
+    backgroundColor: "#ff9800",
+    paddingVertical: 15,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    alignItems: "center",
+    marginVertical: 10,
   },
-  chartTitle: {
+  buttonText: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#fff",
+  },
+  loadingText: {
+    fontSize: 20,
+    textAlign: "center",
+    marginTop: 50,
+  },
+  noDataContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+  },
+  noDataText: {
     fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    textAlign: 'center',
-  },
-  chartStyle: {
-    marginVertical: 8,
-    borderRadius: 16,
-    alignItems: 'center', // Center the chart content
+    color: "#333",
+    textAlign: "center",
   },
 });
