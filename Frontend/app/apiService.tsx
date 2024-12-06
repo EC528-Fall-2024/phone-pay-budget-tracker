@@ -2,7 +2,7 @@ import axios from 'axios';
 import { Auth } from 'aws-amplify';
 
 // Dynamically set API base URL (replace with your environment variable setup)
-// const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:3000';
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:3000';
 
 // Utility function to fetch ID token from Cognito
 const getIdToken = async () => {
@@ -101,42 +101,83 @@ export const getTransactions = async (accessToken) => {
  */
 export const getProfileData = async () => {
   try {
-    const idToken = await getIdToken();
+    // Get the current authenticated user
+    const currentUser = await Auth.currentAuthenticatedUser();
+
+    // Extract the username or sub from the user details
+    const { username } = currentUser;
+
+    // Make the API call with the username (you can pass it as a query param or request body)
     const response = await axios.get(`https://g7t2wcleej.execute-api.us-east-2.amazonaws.com/Prod/user-profile`, {
+      params: { pk: username }, // Pass the username as a query parameter (pk)
       headers: {
-        Authorization: `Bearer ${idToken}`,
-        'Content-Type': 'application/json',
+        //'x-api-key': 'your-api-key',  // Add if API Gateway requires an API key
+        "Content-Type": "application/json",
       },
     });
 
-    return response.data;
+    return response.data; // Return the fetched profile data
   } catch (error) {
-    console.error('Error fetching profile data:', error);
-    throw new Error('Failed to fetch profile data. Please try again.');
+    console.error("Error fetching profile data:", error);
+    throw error;
   }
 };
+// export const getProfileData = async () => {
+//   try {
+//     const idToken = await getIdToken();
+//     const response = await axios.get(`https://g7t2wcleej.execute-api.us-east-2.amazonaws.com/Prod/user-profile`, {
+//       headers: {
+//         Authorization: `Bearer ${idToken}`,
+//         'Content-Type': 'application/json',
+//       },
+//     });
+
+//     return response.data;
+//   } catch (error) {
+//     console.error('Error fetching profile data:', error);
+//     throw new Error('Failed to fetch profile data. Please try again.');
+//   }
+// };
 
 /**
  * Updates the authenticated user's profile data.
  * @param {object} data - The profile data to update.
  * @returns {Promise<object>} - Returns the updated profile data.
  */
+
 export const setProfileData = async (data) => {
   try {
-    const idToken = await getIdToken();
     const response = await axios.post(`https://g7t2wcleej.execute-api.us-east-2.amazonaws.com/Prod/user-profile`, data, {
       headers: {
-        Authorization: `Bearer ${idToken}`,
-        'Content-Type': 'application/json',
+        //'x-api-key': 'your-api-key',  // Include if API Gateway requires an API key
+        "Content-Type": "application/json",
       },
     });
 
-    return response.data;
+    return response.data; // Return response data on success
   } catch (error) {
-    console.error('Error updating profile data:', error);
-    throw new Error('Failed to update profile data. Please try again.');
+    console.error("Error posting profile data:", error);
+    throw error; // Re-throw the error for further handling
   }
 };
+
+
+// export const setProfileData = async (data) => {
+//   try {
+//     const idToken = await getIdToken();
+//     const response = await axios.post(`https://g7t2wcleej.execute-api.us-east-2.amazonaws.com/Prod/user-profile`, data, {
+//       headers: {
+//         Authorization: `Bearer ${idToken}`,
+//         'Content-Type': 'application/json',
+//       },
+//     });
+
+//     return response.data;
+//   } catch (error) {
+//     console.error('Error updating profile data:', error);
+//     throw new Error('Failed to update profile data. Please try again.');
+//   }
+// };
 
 /**
  * Fetches transaction data stored in the database.
