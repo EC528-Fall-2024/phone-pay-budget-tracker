@@ -1,11 +1,36 @@
 const AWS = require('aws-sdk');
+const jwt = require('jsonwebtoken');
+const jwkToPem = require('jwk-to-pem');
+const axios = require('axios');
 
+// Cognito configuration
+const cognitoIssuer = `https://cognito-idp.${process.env.AWS_REGION}.amazonaws.com/${process.env.USER_POOL_ID}`;
+const EXPECTED_AUDIENCE = process.env.EXPECTED_AUDIENCE;
+
+const validateToken = async (token) => {
+    try {
+        const { data: jwks } = await axios.get(`${cognitoIssuer}/.well-known/jwks.json`);
+        const { header } = jwt.decode(token, { complete: true });
+        const jwk = jwks.keys.find((key) => key.kid === header.kid);
+        if (!jwk) throw new Error('Invalid token');
+        const pem = jwkToPem(jwk);
+        return jwt.verify(token, pem, {
+            issuer: cognitoIssuer,
+            audience: EXPECTED_AUDIENCE,
+        });
+    } catch (error) {
+        console.error('Token validation failed:', error.message);
+        throw new Error('Unauthorized');
+    }
+};
 
 // Lambda handler function to get all transactions for a user
 exports.lambda_handler = async (event) => {
     let body;
     try {
-        body = JSON.parse(event.body);
+        if (event.body) {
+            body = JSON.parse(event.body);
+        }
     } catch (parseError) {
         console.error('Error parsing event body:', parseError);
         return {
@@ -17,16 +42,22 @@ exports.lambda_handler = async (event) => {
 
     const tableName = process.env.TABLE_NAME;
 
-    // Parse the primary key (pk) from query string parameters or request body
-    const pk = event.queryStringParameters?.pk || body?.pk;
-
-    if (!pk) {
+    // Validate Authorization header and extract token
+    const authHeader = event.headers.Authorization || '';
+    const token = authHeader.replace('Bearer ', '');
+    let decodedToken;
+    try {
+        decodedToken = await validateToken(token);
+    } catch (err) {
         return {
-            statusCode: 400,
-            body: JSON.stringify({ error: 'Missing primary key (pk) in request' }),
+            statusCode: 401,
+            body: JSON.stringify({ error: 'Unauthorized' }),
             headers: { 'Content-Type': 'application/json' },
         };
     }
+
+    // Use the sub claim from the token as the pk
+    const pk = decodedToken.sub;
 
     const params = {
         TableName: tableName,
@@ -34,7 +65,7 @@ exports.lambda_handler = async (event) => {
         ExpressionAttributeValues: {
             ':pk': pk,
         },
-        ScanIndexForward: true, // Sort ascending by sort key (`sk`)
+        ScanIndexForward: true,
     };
 
     try {
@@ -49,18 +80,14 @@ exports.lambda_handler = async (event) => {
             return {
                 statusCode: 200,
                 body: JSON.stringify(response.Items),
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
             };
         } else {
-            // Handle not found
+            // Handle no items found
             return {
                 statusCode: 200,
                 body: JSON.stringify({ message: 'No transactions found' }),
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
             };
         }
     } catch (error) {
@@ -71,9 +98,7 @@ exports.lambda_handler = async (event) => {
         return {
             statusCode: 500,
             body: JSON.stringify({ error: 'Failed to retrieve transactions', message: error.message }),
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json' },
         };
     }
 };
@@ -93,18 +118,26 @@ exports.store_transactions_handler = async (event) => {
     }
 
     const tableName = process.env.TABLE_NAME;
-    const transactions = body.transactions; // Assume transactions are passed in the event body
-    const pk = body.pk; // Extract pk from the request body
+    const transactions = body.transactions; // Expect transactions to be passed in request body
 
-    // Validate input
-    if (!pk) {
+    // Validate Authorization header and extract token
+    const authHeader = event.headers.Authorization || '';
+    const token = authHeader.replace('Bearer ', '');
+    let decodedToken;
+    try {
+        decodedToken = await validateToken(token);
+    } catch (err) {
         return {
-            statusCode: 400,
-            body: JSON.stringify({ error: 'Missing primary key (pk) in request body' }),
+            statusCode: 401,
+            body: JSON.stringify({ error: 'Unauthorized' }),
             headers: { 'Content-Type': 'application/json' },
         };
     }
 
+    // Use the sub claim from the token as the pk
+    const pk = decodedToken.sub;
+
+    // Validate input
     if (!Array.isArray(transactions) || transactions.length === 0) {
         return {
             statusCode: 400,
@@ -124,7 +157,7 @@ exports.store_transactions_handler = async (event) => {
             const params = {
                 TableName: tableName,
                 Item: {
-                    pk: pk, // Primary key, e.g., user ID
+                    pk: pk, // Use user's sub as pk
                     sk: `TRANSACTION#${transaction.transaction_id}`, // Sort key with unique transaction ID
                     ...transaction,
                 },
@@ -138,9 +171,7 @@ exports.store_transactions_handler = async (event) => {
         return {
             statusCode: 200,
             body: JSON.stringify({ message: 'Transactions stored successfully' }),
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json' },
         };
     } catch (error) {
         console.error('Error occurred while storing transactions:', error.message);
@@ -149,9 +180,7 @@ exports.store_transactions_handler = async (event) => {
         return {
             statusCode: 500,
             body: JSON.stringify({ error: 'Failed to store transactions', message: error.message }),
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json' },
         };
     }
 };
