@@ -1,12 +1,6 @@
 import axios from "axios";
 import { Auth } from "aws-amplify"; // Import Amplify Auth
 
-// Replace with your actual API Gateway URL and API keys if needed
-const API_URL = "http://localhost:3000";
-
-const API_BASE_URL = "http://localhost:3000";
-
-import axios from 'axios';
 
 axios.interceptors.request.use((config) => {
   console.log("Axios is about to send a request:", {
