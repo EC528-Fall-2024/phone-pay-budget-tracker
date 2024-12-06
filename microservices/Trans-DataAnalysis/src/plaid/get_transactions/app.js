@@ -6,6 +6,7 @@ const AWS = require('aws-sdk');
 
 // Cognito setup
 const cognitoIssuer = `https://cognito-idp.${process.env.AWS_REGION}.amazonaws.com/${process.env.USER_POOL_ID}`;
+const EXPECTED_AUDIENCE = process.env.EXPECTED_AUDIENCE;
 
 // Function to validate the Cognito token
 const validateToken = async (token) => {
@@ -20,7 +21,10 @@ const validateToken = async (token) => {
     const pem = jwkToPem(jwk);
 
     // Verify the token
-    return jwt.verify(token, pem, { issuer: cognitoIssuer });
+    return jwt.verify(token, pem, { 
+      issuer: cognitoIssuer,
+      audience: process.env.EXPECTED_AUDIENCE,
+    });
   } catch (error) {
     console.error('Token validation failed:', error.message);
     throw new Error('Unauthorized');
