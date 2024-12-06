@@ -2,7 +2,7 @@ import axios from 'axios';
 import { Auth } from 'aws-amplify';
 
 // Dynamically set API base URL (replace with your environment variable setup)
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:3000';
+// const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:3000';
 
 // Utility function to fetch ID token from Cognito
 const getIdToken = async () => {
