@@ -14,9 +14,9 @@ export default function Header({toggleSidebar}) {
         entering={FadeInDown.duration(500).springify().delay(100)}
       >
         <TouchableOpacity onPress={toggleSidebar}>
-          <View className="border-2 border-white rounded-full overflow-hidden">
+          <View className="overflow-hidden">
             <Image
-              source={require("../../assets/images/profile_img.png")}
+              source={require("../../assets/images/menu_icon.png")}
               style={{
                 width: 45,
                 height: 45,

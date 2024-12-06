@@ -14,6 +14,7 @@ interface Account {
 interface AccountContextType {
   accounts: Account[];
   addAccounts: (accounts: Account[]) => void;
+  clearAccounts: () => void;
 }
 
 const AccountContext = createContext<AccountContextType | undefined>(undefined);
@@ -33,8 +34,12 @@ export const AccountProvider: React.FC<{ children: ReactNode }> = ({ children })
     ]);
 };
 
+  const clearAccounts = () => {
+    setAccounts([]); // Clears all accounts
+  };
+
   return (
-    <AccountContext.Provider value={{ accounts, addAccounts }}>
+    <AccountContext.Provider value={{ accounts, addAccounts, clearAccounts }}>
       {children}
     </AccountContext.Provider>
   );

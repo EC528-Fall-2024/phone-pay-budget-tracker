@@ -35,11 +35,6 @@ export default function LoginScreen() {
   
 
   const onLoginPress = () => {
-
-    const redirectToMainScreen = () => {
-      router.replace('/mainScreen'); // Redirect to main screen
-    };
-    
     const validationError = validateLogin(email, password);
     console.log('validation complete');
     if (validationError) {
@@ -64,7 +59,11 @@ export default function LoginScreen() {
       },
       () => {
         setIsLoading(false);
-        router.replace('/mainScreen'); // Redirect for new users
+        router.replace('/onBoardingScreen'); // Redirect for new users
+      },
+      () => {
+        setIsLoading(false);
+        router.replace('/onBoardingScreen'); // Redirect for new users
       }
     );
   };

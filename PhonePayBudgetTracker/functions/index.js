@@ -153,7 +153,12 @@ exports.fetchTransactions = functions.https.onRequest(async (req, res) => {
     if (!userDoc.exists) return res.status(404).json({ error: 'User not found' });
 
     const accessToken = userDoc.data()?.plaid_token;
-    if (!accessToken) return res.status(400).json({ error: 'Access token not available' });
+    if (!accessToken) {
+      return res.status(200).json({
+        success: false,
+        message: 'Access token is empty. Prompt for Plaid Link.',
+      });
+    }
 
     const request = {
       access_token: accessToken,
@@ -198,3 +203,46 @@ exports.getAccountBalances = functions.https.onRequest(async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
+// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+exports.checkAccessToken = functions.https.onCall(async (data, context) => {
+  const { uid } = data;
+
+  if (!uid || typeof uid !== 'string') {
+    console.error('Invalid or missing User ID:', uid);
+    throw new functions.https.HttpsError('invalid-argument', 'A valid User ID is required.');
+  }
+
+  const encryptedUID = encryptUID(uid);
+  try {
+    const userDoc = await admin.firestore().collection('users').doc(encryptedUID).get();
+    if (!userDoc.exists) throw new functions.https.HttpsError('not-found', 'User data not found.');
+
+    const accessToken = userDoc.data()?.plaid_token;
+    if (!accessToken) {
+      return {
+        success: false,
+        message: 'Access token is empty. Prompt for Plaid Link.',
+      };
+    }
+
+    if (accessToken === '') {
+      return {
+        success: false,
+        message: 'Access token is empty. Prompt for Plaid Link.',
+      };
+    }
+
+    return {
+      success: true,
+      message: 'Access token exists.',
+    };
+  } catch (error) {
+    console.error('Error checking access token:', error);
+    throw new functions.https.HttpsError(
+      'internal',
+      'An internal error occurred while checking the access token.'
+    );
+  }
+});
+

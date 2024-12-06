@@ -84,7 +84,8 @@ export const handleLogin = async (
     addAccounts: (data: any) => void,
     onSuccess: () => void,
     onError: (message: string) => void,
-    redirectToMain: () => void
+    redirectToMain: () => void,
+    redirectToOnBoard: () => void
   ) => {
     try {
       const data = await auth().signInWithEmailAndPassword(email, password);

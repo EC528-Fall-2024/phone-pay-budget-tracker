@@ -13,6 +13,7 @@ interface Transaction {
 interface TransactionContextType {
   transactions: Transaction[];
   addTransactions: (transactions: Transaction[]) => void;
+  clearTransactions: () => void; // New function to clear transactions
 }
 
 const TransactionContext = createContext<TransactionContextType | undefined>(undefined);
@@ -24,16 +25,20 @@ export const TransactionProvider: React.FC<{ children: ReactNode }> = ({ childre
 
   const addTransactions = (newTransactions: Transaction[]) => {
     setTransactions((prevTransactions) => [
-        ...prevTransactions,
-        ...newTransactions.map((transaction) => ({
-            ...transaction,
-            id: (transactionIdCounter++).toString(),
-        })),
+      ...prevTransactions,
+      ...newTransactions.map((transaction) => ({
+        ...transaction,
+        id: (transactionIdCounter++).toString(),
+      })),
     ]);
-};
+  };
+
+  const clearTransactions = () => {
+    setTransactions([]);
+  };
 
   return (
-    <TransactionContext.Provider value={{ transactions, addTransactions }}>
+    <TransactionContext.Provider value={{ transactions, addTransactions, clearTransactions }}>
       {children}
     </TransactionContext.Provider>
   );
@@ -42,9 +47,7 @@ export const TransactionProvider: React.FC<{ children: ReactNode }> = ({ childre
 export const useTransactionContext = () => {
   const context = useContext(TransactionContext);
   if (!context) {
-      throw new Error('useTransactionContext must be used within a TransactionProvider');
+    throw new Error('useTransactionContext must be used within a TransactionProvider');
   }
   return context;
 };
-
-// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=

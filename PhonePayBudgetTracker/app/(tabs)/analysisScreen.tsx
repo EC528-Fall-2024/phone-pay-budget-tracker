@@ -93,9 +93,15 @@ export const DonutChartContainer = () => {
     return <View />;
   }
 
+  const backgroundColor = "#121212"; // Neutral-900
+  const cardColor = "#1E1E1E"; // Neutral-800
+  const textColor = "#FBBF24"; // Amber-200
+  const headerTextColor = "#FFFFFF"; // White
+  const subTextColor = "#9CA3AF"; // Neutral-400
+
   return (
-    <SafeAreaView className="p-6 h-screen dark:bg-neutral-900">
-        <StatusBar style={"dark"} />
+    <SafeAreaView style={{ flex: 1, padding: 24, backgroundColor }}>
+        <StatusBar style="light" />
         <View onLayout={onLayoutRootView}>
         {sidebarVisible && (
         <>

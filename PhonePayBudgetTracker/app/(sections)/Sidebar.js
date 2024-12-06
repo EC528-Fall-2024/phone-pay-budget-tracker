@@ -2,10 +2,21 @@ import React from 'react';
 import { View, Text, Image, TouchableOpacity, ScrollView } from 'react-native';
 import Animated, { FadeInLeft } from 'react-native-reanimated';
 import { useUserContext } from '../(context)/UserContext';
+import { useTransactionContext } from '../(context)/transactionContext';
+import { useAccountContext } from '../(context)/accountContext';
 import { router } from "expo-router";
 
 const Sidebar = ({ onClose }) => {
-  const { userData } = useUserContext();
+  const { userData, setUserData } = useUserContext();
+  const { clearAccounts } = useAccountContext();
+  const { clearTransactions } = useTransactionContext();
+
+  const onLogoutPress = () => {
+    setUserData(null);
+    clearAccounts();
+    clearTransactions();
+    router.replace('/loginScreen');
+  };
 
   return (
     <Animated.View
@@ -15,14 +26,6 @@ const Sidebar = ({ onClose }) => {
       {/* Header Section */}
       <View className="w-full p-6 border-b border-amber-200">
         <View className="flex-row items-center" style={{ columnGap: 12 }}>
-          <Image
-            source={require("../../assets/images/profile_img.png")} // Updated here
-            style={{
-              width: 48,
-              height: 48,
-              borderRadius: 24,
-            }}
-          />
           <View>
             <Text
               className="text-amber-200 text-xl"
@@ -53,7 +56,7 @@ const Sidebar = ({ onClose }) => {
           { label: "Finance", action: () => console.log("Finance") },
           { label: "Bill Plan", action: () => console.log("Bill Plan") },
           { label: "Profile", action: () => {router.replace("/profileScreen"); console.log("Profile") }},
-          { label: "Logout", action: () => { router.replace("/loginScreen"); console.log("Logout") }},
+          { label: "Logout", action: () => { onLogoutPress(); console.log("Logout") }},
         ].map((item, index) => (
           <TouchableOpacity
             key={index}
