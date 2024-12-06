@@ -18,7 +18,7 @@ export const fetchLinkToken = async () => {
   try {
     const idToken = await getIdToken();
     const response = await axios.post(
-      `${API_BASE_URL}/trans-dataanalysis/plaid/create_link_token`,
+      `https://cw0w4njfuj.execute-api.us-east-2.amazonaws.com/Prod/plaid/create-link-token`,
       {}, // No need to pass userId from the client
       {
         headers: {
@@ -47,7 +47,7 @@ export const onSuccess = async (publicToken, bank, id, accounts) => {
   try {
     const idToken = await getIdToken();
     const response = await axios.post(
-      `${API_BASE_URL}/trans-dataanalysis/plaid/get_access_token`,
+      `https://cw0w4njfuj.execute-api.us-east-2.amazonaws.com/Prod/plaid/get-access-token`,
       {
         public_token: publicToken,
         bank,
@@ -78,7 +78,7 @@ export const getTransactions = async (accessToken) => {
   try {
     const idToken = await getIdToken();
     const response = await axios.post(
-      `${API_BASE_URL}/trans-dataanalysis/plaid/get_transactions`,
+      `https://cw0w4njfuj.execute-api.us-east-2.amazonaws.com/Prod/plaid/get-transactions`,
       { accessToken },
       {
         headers: {
@@ -102,7 +102,7 @@ export const getTransactions = async (accessToken) => {
 export const getProfileData = async () => {
   try {
     const idToken = await getIdToken();
-    const response = await axios.get(`${API_BASE_URL}/user-profile`, {
+    const response = await axios.get(`https://g7t2wcleej.execute-api.us-east-2.amazonaws.com/Prod/user-profile`, {
       headers: {
         Authorization: `Bearer ${idToken}`,
         'Content-Type': 'application/json',
@@ -124,7 +124,7 @@ export const getProfileData = async () => {
 export const setProfileData = async (data) => {
   try {
     const idToken = await getIdToken();
-    const response = await axios.post(`${API_BASE_URL}/user-profile`, data, {
+    const response = await axios.post(`https://g7t2wcleej.execute-api.us-east-2.amazonaws.com/Prod/user-profile`, data, {
       headers: {
         Authorization: `Bearer ${idToken}`,
         'Content-Type': 'application/json',
@@ -145,7 +145,7 @@ export const setProfileData = async (data) => {
 export const getTransactionData = async () => {
   try {
     const idToken = await getIdToken();
-    const response = await axios.get(`${API_BASE_URL}/trans-dataanalysis`, {
+    const response = await axios.get(`https://cw0w4njfuj.execute-api.us-east-2.amazonaws.com/Prod/transactions/store`, {
       headers: {
         Authorization: `Bearer ${idToken}`,
         'Content-Type': 'application/json',
