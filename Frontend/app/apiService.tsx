@@ -6,6 +6,19 @@ const API_URL = "http://localhost:3000";
 
 const API_BASE_URL = "http://localhost:3000";
 
+import axios from 'axios';
+
+axios.interceptors.request.use((config) => {
+  console.log("Axios is about to send a request:", {
+    method: config.method,
+    url: config.url,
+    headers: config.headers,
+    data: config.data,
+    params: config.params,
+  });
+  return config;
+});
+
 /**
  * Fetches the Plaid link token from the backend Lambda function.
  *
