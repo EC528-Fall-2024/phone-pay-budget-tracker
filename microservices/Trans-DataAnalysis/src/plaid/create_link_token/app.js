@@ -14,7 +14,7 @@ const validateToken = async (token) => {
         const jwk = jwks.keys.find((key) => key.kid === header.kid);
         if (!jwk) throw new Error('Invalid token');
         const pem = jwkToPem(jwk);
-        return jwt.verify(token, pem, { 
+        return jwt.verify(token, pem, {
             issuer: cognitoIssuer,
             audience: process.env.EXPECTED_AUDIENCE,
         });
@@ -22,6 +22,13 @@ const validateToken = async (token) => {
         console.error('Token validation failed:', error.message);
         throw new Error('Unauthorized');
     }
+};
+
+// Common CORS headers
+const CORS_HEADERS = {
+    'Access-Control-Allow-Origin': '*', // Allow all origins (adjust for security if needed)
+    'Access-Control-Allow-Methods': 'POST, GET, OPTIONS', // Allowed methods
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization', // Allowed headers
 };
 
 exports.lambda_handler = async (event) => {
@@ -33,8 +40,8 @@ exports.lambda_handler = async (event) => {
         if (!token) {
             return {
                 statusCode: 401,
+                headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
                 body: JSON.stringify({ error: 'Missing Authorization token' }),
-                headers: { 'Content-Type': 'application/json' },
             };
         }
 
@@ -47,14 +54,14 @@ exports.lambda_handler = async (event) => {
         if (!userId) {
             return {
                 statusCode: 400,
+                headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
                 body: JSON.stringify({ error: 'Missing userId' }),
-                headers: { 'Content-Type': 'application/json' },
             };
         }
 
         // Plaid client configuration
         const configuration = new plaid.Configuration({
-            basePath: plaid.PlaidEnvironments.sandbox,  // Use sandbox environment for testing
+            basePath: plaid.PlaidEnvironments.sandbox, // Use sandbox environment for testing
             baseOptions: {
                 headers: {
                     'PLAID-CLIENT-ID': process.env.PLAID_CLIENT_ID,
@@ -79,17 +86,16 @@ exports.lambda_handler = async (event) => {
 
         return {
             statusCode: 200,
+            headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
             body: JSON.stringify(linkTokenResponse.data),
-            headers: { 'Content-Type': 'application/json' },
         };
-
     } catch (error) {
         console.error('Error occurred:', error.message);
         const statusCode = error.message === 'Unauthorized' ? 401 : 500;
         return {
             statusCode: statusCode,
+            headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
             body: JSON.stringify({ error: error.message }),
-            headers: { 'Content-Type': 'application/json' },
         };
     }
 };

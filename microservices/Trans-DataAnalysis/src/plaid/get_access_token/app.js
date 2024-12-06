@@ -9,6 +9,13 @@ const AWS = require('aws-sdk');
 const cognitoIssuer = `https://cognito-idp.${process.env.AWS_REGION}.amazonaws.com/${process.env.USER_POOL_ID}`;
 const EXPECTED_AUDIENCE = process.env.EXPECTED_AUDIENCE;
 
+// Common CORS headers
+const CORS_HEADERS = {
+  'Access-Control-Allow-Origin': '*', // Allow all origins; adjust for security as needed
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+};
+
 // Function to validate the Cognito token
 const validateToken = async (token) => {
   try {
@@ -38,7 +45,6 @@ const validateToken = async (token) => {
   }
 };
 
-
 exports.lambda_handler = async (event) => {
   try {
     // Extract and validate the token
@@ -47,9 +53,9 @@ exports.lambda_handler = async (event) => {
 
     if (!token) {
       return {
-        statusCode: 401, // Unauthorized if no token is provided
+        statusCode: 401,
+        headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
         body: JSON.stringify({ error: 'Missing Authorization token' }),
-        headers: { 'Content-Type': 'application/json' },
       };
     }
 
@@ -69,9 +75,9 @@ exports.lambda_handler = async (event) => {
 
     if (!pk) {
       return {
-        statusCode: 400, // Bad request if no pk is provided
+        statusCode: 400,
+        headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
         body: JSON.stringify({ error: 'Missing user id (pk)' }),
-        headers: { 'Content-Type': 'application/json' },
       };
     }
 
@@ -83,8 +89,8 @@ exports.lambda_handler = async (event) => {
       basePath: plaid.PlaidEnvironments.sandbox, // Use sandbox environment for testing
       baseOptions: {
         headers: {
-          'PLAID-CLIENT-ID': "67059ac70f3934001bb637ab",
-          'PLAID-SECRET': "6480180b111c6e48efe009f6d5d568",
+          'PLAID-CLIENT-ID': process.env.PLAID_CLIENT_ID,
+          'PLAID-SECRET': process.env.PLAID_SECRET,
         },
       },
     });
@@ -147,11 +153,11 @@ exports.lambda_handler = async (event) => {
     // Return success response
     return {
       statusCode: 200,
+      headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         accessToken: accessToken,
         accounts: account.account_id,
       }),
-      headers: { 'Content-Type': 'application/json' },
     };
   } catch (error) {
     console.error('Error occurred:', error.message);
@@ -159,8 +165,8 @@ exports.lambda_handler = async (event) => {
     const statusCode = error.message === 'Unauthorized' ? 401 : 500;
     return {
       statusCode: statusCode,
+      headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
       body: JSON.stringify({ error: error.message }),
-      headers: { 'Content-Type': 'application/json' },
     };
   }
 };

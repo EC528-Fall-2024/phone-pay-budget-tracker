@@ -8,6 +8,13 @@ const AWS = require('aws-sdk');
 const cognitoIssuer = `https://cognito-idp.${process.env.AWS_REGION}.amazonaws.com/${process.env.USER_POOL_ID}`;
 const EXPECTED_AUDIENCE = process.env.EXPECTED_AUDIENCE;
 
+// Common CORS headers
+const CORS_HEADERS = {
+  'Access-Control-Allow-Origin': '*', // Allow all origins; adjust for security if needed
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS', // Allowed HTTP methods
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization', // Allowed headers
+};
+
 // Function to validate the Cognito token
 const validateToken = async (token) => {
   try {
@@ -40,8 +47,8 @@ exports.lambda_handler = async (event) => {
     if (!token) {
       return {
         statusCode: 401,
+        headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
         body: JSON.stringify({ error: 'Missing Authorization token' }),
-        headers: { 'Content-Type': 'application/json' },
       };
     }
 
@@ -56,8 +63,8 @@ exports.lambda_handler = async (event) => {
     if (!accessToken) {
       return {
         statusCode: 400, // Bad request if missing parameters
+        headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
         body: JSON.stringify({ error: 'Missing accessToken' }),
-        headers: { 'Content-Type': 'application/json' },
       };
     }
 
@@ -105,19 +112,20 @@ exports.lambda_handler = async (event) => {
 
     return {
       statusCode: 200,
+      headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         message: 'Transactions stored successfully',
         data: transactions,
       }),
-      headers: { 'Content-Type': 'application/json' },
     };
   } catch (error) {
     console.error('Error occurred:', error.message);
     const statusCode = error.message === 'Unauthorized' ? 401 : 500;
     return {
       statusCode: statusCode,
+      headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
       body: JSON.stringify({ error: error.message }),
-      headers: { 'Content-Type': 'application/json' },
     };
   }
 };
+

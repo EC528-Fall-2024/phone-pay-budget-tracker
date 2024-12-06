@@ -24,6 +24,13 @@ const validateToken = async (token) => {
     }
 };
 
+// Common CORS headers
+const CORS_HEADERS = {
+    'Access-Control-Allow-Origin': '*', // Allow all origins (adjust as needed)
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS', // Allowed methods
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization', // Allowed headers
+};
+
 // Lambda handler function to get all transactions for a user
 exports.lambda_handler = async (event) => {
     let body;
@@ -35,8 +42,8 @@ exports.lambda_handler = async (event) => {
         console.error('Error parsing event body:', parseError);
         return {
             statusCode: 400,
+            headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
             body: JSON.stringify({ error: 'Invalid JSON in request body' }),
-            headers: { 'Content-Type': 'application/json' },
         };
     }
 
@@ -51,8 +58,8 @@ exports.lambda_handler = async (event) => {
     } catch (err) {
         return {
             statusCode: 401,
+            headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
             body: JSON.stringify({ error: 'Unauthorized' }),
-            headers: { 'Content-Type': 'application/json' },
         };
     }
 
@@ -79,15 +86,15 @@ exports.lambda_handler = async (event) => {
             // Return the found items (transactions)
             return {
                 statusCode: 200,
+                headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
                 body: JSON.stringify(response.Items),
-                headers: { 'Content-Type': 'application/json' },
             };
         } else {
             // Handle no items found
             return {
                 statusCode: 200,
+                headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
                 body: JSON.stringify({ message: 'No transactions found' }),
-                headers: { 'Content-Type': 'application/json' },
             };
         }
     } catch (error) {
@@ -97,8 +104,8 @@ exports.lambda_handler = async (event) => {
         // Return an error response
         return {
             statusCode: 500,
+            headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
             body: JSON.stringify({ error: 'Failed to retrieve transactions', message: error.message }),
-            headers: { 'Content-Type': 'application/json' },
         };
     }
 };
@@ -112,8 +119,8 @@ exports.store_transactions_handler = async (event) => {
         console.error('Error parsing event body:', parseError);
         return {
             statusCode: 400,
+            headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
             body: JSON.stringify({ error: 'Invalid JSON in request body' }),
-            headers: { 'Content-Type': 'application/json' },
         };
     }
 
@@ -129,8 +136,8 @@ exports.store_transactions_handler = async (event) => {
     } catch (err) {
         return {
             statusCode: 401,
+            headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
             body: JSON.stringify({ error: 'Unauthorized' }),
-            headers: { 'Content-Type': 'application/json' },
         };
     }
 
@@ -141,8 +148,8 @@ exports.store_transactions_handler = async (event) => {
     if (!Array.isArray(transactions) || transactions.length === 0) {
         return {
             statusCode: 400,
+            headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
             body: JSON.stringify({ error: 'Transactions must be a non-empty array' }),
-            headers: { 'Content-Type': 'application/json' },
         };
     }
 
@@ -170,8 +177,8 @@ exports.store_transactions_handler = async (event) => {
 
         return {
             statusCode: 200,
+            headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
             body: JSON.stringify({ message: 'Transactions stored successfully' }),
-            headers: { 'Content-Type': 'application/json' },
         };
     } catch (error) {
         console.error('Error occurred while storing transactions:', error.message);
@@ -179,8 +186,8 @@ exports.store_transactions_handler = async (event) => {
 
         return {
             statusCode: 500,
+            headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
             body: JSON.stringify({ error: 'Failed to store transactions', message: error.message }),
-            headers: { 'Content-Type': 'application/json' },
         };
     }
 };
