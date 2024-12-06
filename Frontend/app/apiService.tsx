@@ -1,104 +1,91 @@
-import axios from 'axios';
-import { Auth } from 'aws-amplify';
+import axios from "axios";
+import { Auth } from "aws-amplify"; // Import Amplify Auth
 
-// Dynamically set API base URL (replace with your environment variable setup)
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:3000';
+// Replace with your actual API Gateway URL and API keys if needed
+const API_URL = "http://localhost:3000";
 
-// Utility function to fetch ID token from Cognito
-const getIdToken = async () => {
-  const session = await Auth.currentSession();
-  return session.getIdToken().getJwtToken();
-};
+const API_BASE_URL = "http://localhost:3000";
 
 /**
  * Fetches the Plaid link token from the backend Lambda function.
+ *
+ * @param {string} userId - Unique identifier for the user.
  * @returns {Promise<string>} - Returns the link token from Plaid.
  */
-export const fetchLinkToken = async () => {
+export const fetchLinkToken = async (userId) => {
   try {
-    const idToken = await getIdToken();
     const response = await axios.post(
       `https://cw0w4njfuj.execute-api.us-east-2.amazonaws.com/Prod/plaid/create-link-token`,
-      {}, // No need to pass userId from the client
       {
-        headers: {
-          Authorization: `Bearer ${idToken}`,
-          'Content-Type': 'application/json',
-        },
+        userId,
       }
     );
-
     return response.data.link_token;
   } catch (error) {
-    console.error('Error fetching Plaid link token:', error);
-    throw new Error('Failed to fetch Plaid link token. Please try again.');
+    console.error("Error fetching link token:", error);
+    throw new Error("Unable to fetch link token");
   }
 };
 
 /**
- * Exchanges the public token for an access token.
+ * Exchanges the public token for an access token
+ *
  * @param {string} publicToken - The public token received from Plaid Link.
- * @param {string} bank - The bank name.
- * @param {string} id - The bank ID.
- * @param {Array} accounts - The user's accounts.
- * @returns {Promise<object>} - Returns the access token and transaction data.
+ * @returns {Promise<object>} - Returns the transaction data from Plaid.
  */
-export const onSuccess = async (publicToken, bank, id, accounts) => {
+export const onSuccess = async (publicToken, bank, id, accounts, email, profilePhoto) => {
   try {
-    const idToken = await getIdToken();
+    const currentUser = await Auth.currentAuthenticatedUser();
+    console.log(currentUser.username);
     const response = await axios.post(
       `https://cw0w4njfuj.execute-api.us-east-2.amazonaws.com/Prod/plaid/get-access-token`,
       {
+        // Post because we are sending confidential info, we will still receive the transactions
         public_token: publicToken,
-        bank,
-        id,
-        accounts,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${idToken}`,
-          'Content-Type': 'application/json',
-        },
+        pk: currentUser.username.toString(),
+        bank: bank,
+        id: id,
+        accounts: accounts,
+        profilePhoto: profilePhoto,
+        email: email,
       }
     );
-
+    // console.log(response.data.totalTransactions)
     return response.data;
   } catch (error) {
-    console.error('Error exchanging public token for access token:', error);
-    throw new Error('Failed to fetch access token. Please try again.');
+    console.error("Error fetching transactions:", error);
+    throw new Error("Unable to fetch transactions");
   }
 };
 
 /**
- * Fetches transactions from the backend Lambda function.
- * @param {string} accessToken - The access token for Plaid.
- * @returns {Promise<object>} - Returns the transaction data.
+ * fetches transactions from Plaid.
+ *
+ * @param {string} accessToken - The public token received from Plaid Link.
+ * @returns {Promise<object>} - Returns the transaction data from Plaid.
  */
 export const getTransactions = async (accessToken) => {
+  // This gets transaction data from Plaid
   try {
-    const idToken = await getIdToken();
+    const currentUser = await Auth.currentAuthenticatedUser();
     const response = await axios.post(
       `https://cw0w4njfuj.execute-api.us-east-2.amazonaws.com/Prod/plaid/get-transactions`,
-      { accessToken },
       {
-        headers: {
-          Authorization: `Bearer ${idToken}`,
-          'Content-Type': 'application/json',
-        },
+        // Post because we are sending confidential info, we will still receive the transactions
+        accessToken: accessToken.accessToken,
+        pk: currentUser.username.toString(),
       }
     );
-
+    // console.log(response.data.totalTransactions)
     return response.data;
   } catch (error) {
-    console.error('Error fetching transactions:', error);
-    throw new Error('Failed to fetch transactions. Please try again.');
+    console.error("Error fetching transactions:", error);
+    throw new Error("Unable to fetch transactions");
   }
 };
 
-/**
- * Fetches the authenticated user's profile data.
- * @returns {Promise<object>} - Returns the user's profile data.
- */
+// Example function to handle GET request
+
 export const getProfileData = async () => {
   try {
     // Get the current authenticated user
@@ -122,28 +109,6 @@ export const getProfileData = async () => {
     throw error;
   }
 };
-// export const getProfileData = async () => {
-//   try {
-//     const idToken = await getIdToken();
-//     const response = await axios.get(`https://g7t2wcleej.execute-api.us-east-2.amazonaws.com/Prod/user-profile`, {
-//       headers: {
-//         Authorization: `Bearer ${idToken}`,
-//         'Content-Type': 'application/json',
-//       },
-//     });
-
-//     return response.data;
-//   } catch (error) {
-//     console.error('Error fetching profile data:', error);
-//     throw new Error('Failed to fetch profile data. Please try again.');
-//   }
-// };
-
-/**
- * Updates the authenticated user's profile data.
- * @param {object} data - The profile data to update.
- * @returns {Promise<object>} - Returns the updated profile data.
- */
 
 export const setProfileData = async (data) => {
   try {
@@ -161,41 +126,21 @@ export const setProfileData = async (data) => {
   }
 };
 
-
-// export const setProfileData = async (data) => {
-//   try {
-//     const idToken = await getIdToken();
-//     const response = await axios.post(`https://g7t2wcleej.execute-api.us-east-2.amazonaws.com/Prod/user-profile`, data, {
-//       headers: {
-//         Authorization: `Bearer ${idToken}`,
-//         'Content-Type': 'application/json',
-//       },
-//     });
-
-//     return response.data;
-//   } catch (error) {
-//     console.error('Error updating profile data:', error);
-//     throw new Error('Failed to update profile data. Please try again.');
-//   }
-// };
-
-/**
- * Fetches transaction data stored in the database.
- * @returns {Promise<object>} - Returns the user's transaction data.
- */
 export const getTransactionData = async () => {
+  // This gets transaction data from the database
+  const currentUser = await Auth.currentAuthenticatedUser();
   try {
-    const idToken = await getIdToken();
     const response = await axios.get(`https://cw0w4njfuj.execute-api.us-east-2.amazonaws.com/Prod/transactions/store`, {
+      params: { pk: currentUser.username.toString() },
       headers: {
-        Authorization: `Bearer ${idToken}`,
-        'Content-Type': 'application/json',
+        //'x-api-key': 'your-api-key',  // Add if you require an API key
+        "Content-Type": "application/json",
       },
     });
 
     return response.data;
   } catch (error) {
-    console.error('Error fetching transaction data:', error);
-    throw new Error('Failed to fetch transaction data. Please try again.');
+    console.error("Error fetching data:", error);
+    throw error;
   }
 };
