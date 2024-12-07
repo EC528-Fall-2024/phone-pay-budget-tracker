@@ -5,6 +5,14 @@ import jwt
 import requests
 from jwt.exceptions import InvalidTokenError
 
+class BadRequestException(Exception):
+    """Exception raised for client-side errors (HTTP 400)."""
+    pass
+
+class UnauthorizedException(Exception):
+    """Exception raised for authentication errors (HTTP 401)."""
+    pass
+
 # Cognito configuration
 COGNITO_ISSUER = f"https://cognito-idp.{os.environ['AWS_REGION']}.amazonaws.com/{os.environ['USER_POOL_ID']}"
 EXPECTED_AUDIENCE = os.environ['EXPECTED_AUDIENCE']
@@ -25,9 +33,12 @@ def validate_token(token):
         pem = jwt.algorithms.RSAAlgorithm.from_jwk(json.dumps(jwk))
         decoded_token = jwt.decode(token, pem, issuer=COGNITO_ISSUER, audience=EXPECTED_AUDIENCE, algorithms=['RS256'])
         return decoded_token
+    except InvalidTokenError as e:
+        print(f"Token validation failed: {e}")
+        raise UnauthorizedException("Unauthorized")
     except Exception as e:
         print(f"Token validation failed: {e}")
-        raise Exception("Unauthorized")
+        raise UnauthorizedException("Unauthorized")
 
 def lambda_handler(event, context):
     try:
@@ -43,20 +54,20 @@ def lambda_handler(event, context):
         # Validate Authorization token
         auth_header = event['headers'].get('Authorization', '')
         if not auth_header or not auth_header.startswith("Bearer "):
-            raise Exception("Unauthorized: Missing or invalid token")
+            raise UnauthorizedException("Unauthorized: Missing or invalid token")
         token = auth_header.replace("Bearer ", "")
         decoded_token = validate_token(token)
 
         # Ensure the requester is authenticated
         user_sub = decoded_token.get('sub')
         if not user_sub:
-            raise Exception("Invalid token: Missing sub claim")
+            raise BadRequestException("Invalid token: Missing sub claim")
 
         # Handle DELETE request to delete a user by their `pk`
         if path.startswith('/admin-control/users/') and http_method == 'DELETE':
             pk = path_parameters.get('pk')  # Assuming pk is passed as a parameter in the path
             if not pk:
-                raise Exception("Invalid request: Missing pk")
+                raise BadRequestException("Invalid request: Missing pk")
             return delete_user(dynamodb, pk)
 
         # Handle invalid paths or methods
@@ -66,10 +77,24 @@ def lambda_handler(event, context):
             'body': json.dumps({'error': 'Invalid request'})
         }
 
+    except UnauthorizedException as e:
+        print(f"Error: {str(e)}")
+        return {
+            'statusCode': 401,  # Unauthorized
+            'headers': cors_headers(),
+            'body': json.dumps({'error': str(e)})
+        }
+    except BadRequestException as e:
+        print(f"Error: {str(e)}")
+        return {
+            'statusCode': 400,  # Bad Request
+            'headers': cors_headers(),
+            'body': json.dumps({'error': str(e)})
+        }
     except Exception as e:
         print(f"Error: {str(e)}")
         return {
-            'statusCode': 500,
+            'statusCode': 500,  # Internal Server Error
             'headers': cors_headers(),
             'body': json.dumps({'error': str(e)})
         }
@@ -91,11 +116,7 @@ def delete_user(dynamodb, pk):
         }
     except Exception as e:
         print(f"Error deleting user: {e}")
-        return {
-            'statusCode': 500,
-            'headers': cors_headers(),
-            'body': json.dumps({'error': str(e)})
-        }
+        raise  # Re-raise exception to be caught by the outer handler
 
 def cors_headers():
     return {
@@ -104,111 +125,5 @@ def cors_headers():
         'Access-Control-Allow-Methods': 'DELETE, GET, POST, OPTIONS'
     }
 
-
-
-# def list_all_users(dynamodb):
-#     profile_table = dynamodb.Table('profileData')
-#     response = profile_table.scan()
-#     users = response.get('Items', [])
-#     return {
-#         'statusCode': 200,
-#         'headers': {
-#             'Access-Control-Allow-Origin': '*',
-#             'Access-Control-Allow-Headers': 'Authorization, Content-Type',
-#             'Access-Control-Allow-Methods': 'DELETE, GET, POST, OPTIONS'
-#         },
-#         'body': json.dumps(users)
-#     }
-
-# def get_user(dynamodb, user_id):
-#     if not user_id:
-#         return {
-#             'statusCode': 400,
-#             'headers': {
-#                 'Access-Control-Allow-Origin': '*',
-#                 'Access-Control-Allow-Headers': 'Authorization, Content-Type',
-#                 'Access-Control-Allow-Methods': 'DELETE, GET, POST, OPTIONS'
-#             },
-#             'body': json.dumps({'error': 'User ID is required'})
-#         }
-#     profile_table = dynamodb.Table('profileData')
-#     response = profile_table.get_item(Key={'pk': user_id})
-#     user = response.get('Item')
-#     if not user:
-#         return {
-#             'statusCode': 404,
-#             'headers': {
-#                 'Access-Control-Allow-Origin': '*',
-#                 'Access-Control-Allow-Headers': 'Authorization, Content-Type',
-#                 'Access-Control-Allow-Methods': 'DELETE, GET, POST, OPTIONS'
-#             },
-#             'body': json.dumps({'error': 'User not found'})
-#         }
-#     return {
-#         'statusCode': 200,
-#         'headers': {
-#             'Access-Control-Allow-Origin': '*',
-#             'Access-Control-Allow-Headers': 'Authorization, Content-Type',
-#             'Access-Control-Allow-Methods': 'DELETE, GET, POST, OPTIONS'
-#         },
-#         'body': json.dumps(user)
-#     }
-
-# def add_user(dynamodb, body):
-#     profile_table = dynamodb.Table('profileData')
-#     if not body:
-#         return {
-#             'statusCode': 400,
-#             'headers': {
-#                 'Access-Control-Allow-Origin': '*',
-#                 'Access-Control-Allow-Headers': 'Authorization, Content-Type',
-#                 'Access-Control-Allow-Methods': 'DELETE, GET, POST, OPTIONS'
-#             },
-#             'body': json.dumps({'error': 'Missing request body'})
-#         }
-#     user_data = json.loads(body)
-#     if 'pk' not in user_data:
-#         return {
-#             'statusCode': 400,
-#             'headers': {
-#                 'Access-Control-Allow-Origin': '*',
-#                 'Access-Control-Allow-Headers': 'Authorization, Content-Type',
-#                 'Access-Control-Allow-Methods': 'DELETE, GET, POST, OPTIONS'
-#             },
-#             'body': json.dumps({'error': 'Missing user id (pk)'})
-#         }
-#     profile_table.put_item(Item=user_data)
-#     return {
-#         'statusCode': 200,
-#         'headers': {
-#             'Access-Control-Allow-Origin': '*',
-#             'Access-Control-Allow-Headers': 'Authorization, Content-Type',
-#             'Access-Control-Allow-Methods': 'DELETE, GET, POST, OPTIONS'
-#         },
-#         'body': json.dumps({'message': 'User added successfully'})
-#     }
-
-# def delete_user(dynamodb, user_id):
-#     if not user_id:
-#         return {
-#             'statusCode': 400,
-#             'headers': {
-#                 'Access-Control-Allow-Origin': '*',
-#                 'Access-Control-Allow-Headers': 'Authorization, Content-Type',
-#                 'Access-Control-Allow-Methods': 'DELETE, GET, POST, OPTIONS'
-#             },
-#             'body': json.dumps({'error': 'User ID is required'})
-#         }
-#     profile_table = dynamodb.Table('profileData')
-#     profile_table.delete_item(Key={'pk': user_id})
-#     return {
-#         'statusCode': 200,
-#         'headers': {
-#             'Access-Control-Allow-Origin': '*',
-#             'Access-Control-Allow-Headers': 'Authorization, Content-Type',
-#             'Access-Control-Allow-Methods': 'DELETE, GET, POST, OPTIONS'
-#         },
-#         'body': json.dumps({'message': 'User deleted successfully'})
-#     }
 
 
