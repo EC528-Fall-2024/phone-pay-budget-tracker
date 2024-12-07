@@ -37,7 +37,9 @@ git clone https://github.com/EC528-Fall-2024/phone-pay-budget-tracker.git
 ```
 #### 2. Install Dependencies:
 ```bash
-cd Android/PhonePayBudgetTracker/android
+cd Android/PhonePayBudgetTracker
+npm install
+cd android
 touch local.properties
 sdk.dir=/Users/<your-username>/Library/Android/sdk
 ./gradlew --refresh-dependencies
