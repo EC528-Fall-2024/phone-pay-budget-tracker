@@ -59,7 +59,7 @@ export default function ProfileScreen() {
         setUserData(profileData);
 
         // Calculate total balance
-        const balanceSum = profileData.accounts.reduce((sum, account) => sum + (account.Balance || 0), 0);
+        const balanceSum = (profileData.accounts || []).reduce((sum, account) => sum + (account.Balance || 0), 0);
         setTotalBalance(balanceSum);
       } catch (error) {
         console.error(error);
