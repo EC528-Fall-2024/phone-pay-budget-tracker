@@ -7,6 +7,10 @@ Parameters:
     Type: String
     Description: Name of the transactionData DynamoDB table
 
+  ProfileDataTableName:
+    Type: String
+    Description: Name of the profileData DynamoDB table
+
   PlaidClientId:
     Type: String
     Description: PLAID_CLIENT_ID for Plaid API
@@ -42,10 +46,10 @@ Resources:
           Properties:
             Path: /plaid/create-link-token
             Method: POST
-            Cors:
-              AllowOrigins: "'*'"  # Adjust as needed for security
-              AllowMethods: "'POST,OPTIONS'"
-              AllowHeaders: "'Content-Type,Authorization'"
+            # Cors:
+            #   AllowOrigins: "'*'"  
+            #   AllowMethods: "'POST,OPTIONS'"
+            #   AllowHeaders: "'Content-Type,Authorization'"
       Policies:
         - Version: "2012-10-17"
           Statement:
@@ -65,7 +69,7 @@ Resources:
         Variables:
           PLAID_CLIENT_ID: !Ref PlaidClientId
           PLAID_SECRET: !Ref PlaidSecret
-          TABLE_NAME: !Ref TransactionDataTableName
+          TABLE_NAME: !Ref ProfileDataTableName
           USER_POOL_ID: !Ref CognitoUserPoolId
       Events:
         GetAccessTokenApi:
@@ -73,17 +77,14 @@ Resources:
           Properties:
             Path: /plaid/get-access-token
             Method: POST
-            Cors:
-              AllowOrigins: "'*'"  # Adjust as needed for security
-              AllowMethods: "'POST,OPTIONS'"
-              AllowHeaders: "'Content-Type,Authorization'"
       Policies:
         - Version: "2012-10-17"
           Statement:
             - Effect: Allow
               Action:
                 - dynamodb:PutItem
-              Resource: !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${TransactionDataTableName}"
+                - dynamodb:UpdateItem
+              Resource: !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${ProfileDataTableName}"
 
   # Get Transactions Function
   GetTransactionsFunction:
@@ -97,32 +98,29 @@ Resources:
           PLAID_CLIENT_ID: !Ref PlaidClientId
           PLAID_SECRET: !Ref PlaidSecret
           TABLE_NAME: !Ref TransactionDataTableName
-          USER_POOL_ID: !Ref CognitoUserPoolId
       Events:
         GetTransactionsApi:
           Type: Api
           Properties:
             Path: /plaid/get-transactions
             Method: POST
-            Cors:
-              AllowOrigins: "'*'"  # Adjust as needed for security
-              AllowMethods: "'POST,OPTIONS'"
-              AllowHeaders: "'Content-Type,Authorization'"
       Policies:
         - Version: "2012-10-17"
           Statement:
             - Effect: Allow
               Action:
+                - dynamodb:BatchWriteItem
                 - dynamodb:Query
                 - dynamodb:GetItem
                 - dynamodb:PutItem
+                - dynamodb:UpdateItem
               Resource: !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${TransactionDataTableName}"
 
   # **New: Get All Transactions Function**
   GetAllTransactionsFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: ./src/transactions/get_all/
+      CodeUri: ./src/
       Handler: app.lambda_handler
       Runtime: nodejs20.x
       Environment:
@@ -134,10 +132,6 @@ Resources:
           Properties:
             Path: /transactions/get-all
             Method: GET
-            Cors:
-              AllowOrigins: "'*'"  # Adjust as needed for security
-              AllowMethods: "'GET,OPTIONS'"
-              AllowHeaders: "'Content-Type,Authorization'"
       Policies:
         - Version: "2012-10-17"
           Statement:
@@ -151,7 +145,7 @@ Resources:
   StoreTransactionsFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: ./src/transactions/store/
+      CodeUri: ./src/
       Handler: app.store_transactions_handler
       Runtime: nodejs20.x
       Environment:
@@ -163,10 +157,10 @@ Resources:
           Properties:
             Path: /transactions/store
             Method: POST
-            Cors:
-              AllowOrigins: "'*'"  # Adjust as needed for security
-              AllowMethods: "'POST,OPTIONS'"
-              AllowHeaders: "'Content-Type,Authorization'"
+            # Cors:
+            #   AllowOrigins: "'*'"  # Adjust as needed for security
+            #   AllowMethods: "'POST,OPTIONS'"
+            #   AllowHeaders: "'Content-Type,Authorization'"
       Policies:
         - Version: "2012-10-17"
           Statement:
@@ -195,3 +189,4 @@ Outputs:
   StoreTransactionsApiUrl:
     Description: "API Gateway endpoint URL for Store Transactions Service"
     Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/transactions/store"
+
