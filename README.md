@@ -43,6 +43,9 @@ cd android
 touch local.properties
 sdk.dir=/Users/<your-username>/Library/Android/sdk
 ./gradlew --refresh-dependencies
+cd ..
+npm install -g expo-cli
+npx expo install nativewind tailwindcss react-native-reanimated react-native-safe-area-context
 ```
 #### 3. Open in Android Studio:
 ```bash
