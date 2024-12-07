@@ -16,11 +16,6 @@ Resources:
     Properties:
       Name: UserProfileApi
       StageName: Prod
-      Auth:
-        DefaultAuthorizer: CognitoAuthorizer
-        Authorizers:
-          CognitoAuthorizer:
-            UserPoolArn: !Sub "arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/${CognitoUserPoolId}"
 
   UserProfileFunctionRole:
     Type: AWS::IAM::Role
@@ -42,11 +37,9 @@ Resources:
                   - dynamodb:GetItem
                   - dynamodb:Query
                   - dynamodb:PutItem
+                  - dynamodb:UpdateItem
                 Resource: 
                   - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${ProfileDataTableName}"
-                Condition:
-                  StringEqualsIfExists:
-                    "dynamodb:LeadingKeys": ["${cognito-identity.amazonaws.com:sub}"] # Restrict to items matching the user's sub
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
 
@@ -90,3 +83,4 @@ Outputs:
   UserProfileApiUrl:
     Description: API Gateway endpoint URL for User Profile Service
     Value: !Sub 'https://${UserProfileApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/user-profile'
+
