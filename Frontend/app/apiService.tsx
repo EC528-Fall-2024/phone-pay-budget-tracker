@@ -134,13 +134,12 @@ export const setProfileData = async (data) => {
 };
 
 export const getTransactionData = async () => {
-  // This gets transaction data from the database
+  //This gets transaction data from the database
   const currentUser = await Auth.currentAuthenticatedUser();
   try {
-    const response = await axios.get(`https://cw0w4njfuj.execute-api.us-east-2.amazonaws.com/Prod/transactions/store`, {
+    const response = await axios.get(`https://cw0w4njfuj.execute-api.us-east-2.amazonaws.com/Prod/transactions/get-all`, {
       params: { pk: currentUser.username.toString() },
       headers: {
-        //'x-api-key': 'your-api-key',  // Add if you require an API key
         "Content-Type": "application/json",
       },
     });
