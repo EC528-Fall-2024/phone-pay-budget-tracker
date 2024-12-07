@@ -20,7 +20,7 @@
 
 ## Android Installation
 
-### Option 1: Install APK
+### Option 1 (Recommended): Install APK 
 1. **Download the APK**: [Google Drive Link](https://drive.google.com/file/d/1bd3j3kstaWTQMVPkcld4BV7CrTpCAhNB/view?usp=sharing)
 2. **Install on Device or Emulator**:
    - **For physical devices**: Transfer the APK file to your device and install it.
