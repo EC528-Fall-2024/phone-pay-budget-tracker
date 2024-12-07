@@ -51,11 +51,6 @@ import {create, open} from 'react-native-plaid-link-sdk';
 
 
 export default function PlaidLinkScreen() {
-  // Render using the link_token integration. Refer to the docs
-  // https://plaid.com/docs/#create-link-token on how to create
-  // a new link_token.
-
-  // Use event emitter to get real time events during a Link Session.
   usePlaidEmitter((event: LinkEvent) => {
     console.log(event);
   });

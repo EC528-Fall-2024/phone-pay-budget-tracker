@@ -8,12 +8,14 @@ interface Transaction {
   logo_url: string;
   name: string;
   payment_channel: string;
+  category: string;
+  id?: string;
 }
 
 interface TransactionContextType {
   transactions: Transaction[];
   addTransactions: (transactions: Transaction[]) => void;
-  clearTransactions: () => void; // New function to clear transactions
+  clearTransactions: () => void; 
 }
 
 const TransactionContext = createContext<TransactionContextType | undefined>(undefined);
@@ -24,13 +26,24 @@ export const TransactionProvider: React.FC<{ children: ReactNode }> = ({ childre
   const [transactions, setTransactions] = useState<Transaction[]>([]);
 
   const addTransactions = (newTransactions: Transaction[]) => {
-    setTransactions((prevTransactions) => [
-      ...prevTransactions,
-      ...newTransactions.map((transaction) => ({
-        ...transaction,
-        id: (transactionIdCounter++).toString(),
-      })),
-    ]);
+    setTransactions((prevTransactions) => {
+      const combinedTransactions = [
+        ...prevTransactions,
+        ...newTransactions.map((transaction) => ({
+          ...transaction,
+          id: transaction.id || `txn_${transactionIdCounter++}`,
+        })),
+      ];
+      const uniqueTransactions = Array.from(
+        new Map(
+          combinedTransactions.map((t) => [`${t.account_id}-${t.authorized_date}`, t])
+        ).values()
+      );
+      uniqueTransactions.sort(
+        (a, b) => new Date(a.authorized_date).getTime() - new Date(b.authorized_date).getTime()
+      );
+      return uniqueTransactions;
+    });
   };
 
   const clearTransactions = () => {

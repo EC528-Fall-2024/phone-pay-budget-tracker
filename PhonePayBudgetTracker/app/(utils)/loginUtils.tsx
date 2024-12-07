@@ -10,10 +10,16 @@ interface Transaction {
   authorized_date: string;
   iso_currency_code: string;
   logo_url: string;
-  merchant_name: string;
+  merchant_name?: string;
   name: string;
   payment_channel: string;
+  category?: string; 
+  personal_finance_category?: {
+    primary: string;
+    detailed: string;
+  };
 }
+
 
 interface Account {
   account_id: string;
@@ -89,7 +95,6 @@ export const handleLogin = async (
   ) => {
     try {
       const data = await auth().signInWithEmailAndPassword(email, password);
-
       const response = await fetchUserData(data.user.uid);
       setUserData({
         uid: data.user.uid,
@@ -101,7 +106,6 @@ export const handleLogin = async (
 
       const tranDetails = await fetchTransactions(data.user.uid);
       if (!tranDetails || tranDetails.length === 0) {
-        //console.warn('No transactions found for user, redirecting to main screen.');
         redirectToMain(); 
         return;
       }
@@ -109,7 +113,6 @@ export const handleLogin = async (
 
       const accDetails = await fetchAccountBalances(data.user.uid);
       if (!accDetails || accDetails.length === 0) {
-        //console.warn('No account balances found for user, redirecting to main screen.');
         redirectToMain(); 
         return;
       }
@@ -128,40 +131,66 @@ export const handleLogin = async (
 
 // =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
-export const fetchTransactions = async (uid: string)  => {
+export const fetchTransactions = async (uid: string) => {
   try {
     const userId = uid;
-    const response = await fetch('https://us-central1-phonepaybudgettracker.cloudfunctions.net/fetchTransactions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ user_id: userId }),
-    });
+    const currentDate = new Date();
+    const currentMonth = currentDate.getMonth() + 1; // Months are zero-based
+    const currentYear = currentDate.getFullYear();
 
-    if (!response.ok) {
-      throw new Error('Failed to fetch transactions');
-    }
-    const data = await response.json();
-    console.log('transactions fetched successfully')
+    const previousMonthDate = new Date(currentDate.setMonth(currentDate.getMonth() - 1));
+    const previousMonth = previousMonthDate.getMonth() + 1;
+    const previousYear = previousMonthDate.getFullYear();
 
-    const pTransactions = data.transactions.map((transaction :Transaction) => ({
-      account_id: transaction.account_id,
-      amount: Math.abs(transaction.amount),
-      authorized_date: transaction.authorized_date,
-      iso_currency_code: transaction.iso_currency_code,
-      logo_url: transaction.logo_url,
-      name: transaction.name,
-      payment_channel: transaction.payment_channel
-  }));
-  
-  console.log("parsed:", pTransactions);
-  return pTransactions;
+    const formatCategory = (rawCategory: string | null | undefined): string => {
+      if (!rawCategory) return "Unknown";
+      const formatted = rawCategory.replace(/_/g, " "); 
+      return formatted.charAt(0).toUpperCase() + formatted.slice(1).toLowerCase();
+    };
 
+    const fetchForMonth = async (month: number, year: number) => {
+      const response = await fetch(
+        "https://us-central1-phonepaybudgettracker.cloudfunctions.net/fetchTransactions",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ user_id: userId, month, year }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch transactions for ${month}/${year}`);
+      }
+
+      const data = await response.json();
+      // console.log(data)
+      return data.transactions.map((transaction: Transaction) => ({
+        account_id: transaction.account_id,
+        amount: Math.abs(transaction.amount),
+        authorized_date: transaction.authorized_date,
+        iso_currency_code: transaction.iso_currency_code,
+        logo_url: transaction.logo_url,
+        name: transaction.merchant_name || transaction.name,
+        payment_channel: transaction.payment_channel,
+        category: formatCategory(transaction.personal_finance_category?.primary),
+      }));
+    };
+
+    const currentMonthTransactions = await fetchForMonth(currentMonth, currentYear);
+    const previousMonthTransactions = await fetchForMonth(previousMonth, previousYear);
+
+    const allTransactions = [...currentMonthTransactions, ...previousMonthTransactions].sort(
+      (a, b) => new Date(a.authorized_date).getTime() - new Date(b.authorized_date).getTime()
+    );
+    console.log("All transactions fetched and sorted successfully");
+    return allTransactions;
   } catch (error) {
-  } finally {
+    return null;
   }
 };
+
 
 // =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 

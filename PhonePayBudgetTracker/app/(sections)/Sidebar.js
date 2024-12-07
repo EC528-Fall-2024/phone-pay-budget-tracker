@@ -23,7 +23,6 @@ const Sidebar = ({ onClose }) => {
       className="absolute top-0 left-3 bg-neutral-800 h-full w-64 shadow-md"
       entering={FadeInLeft.duration(500).springify()}
     >
-      {/* Header Section */}
       <View className="w-full p-6 border-b border-amber-200">
         <View className="flex-row items-center" style={{ columnGap: 12 }}>
           <View>

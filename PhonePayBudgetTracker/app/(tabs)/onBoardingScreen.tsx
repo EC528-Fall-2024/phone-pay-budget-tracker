@@ -55,10 +55,19 @@ interface Account {
 const { height } = Dimensions.get('window'); 
 
 export default function OnboardingScreen({ navigation }: { navigation: any }) {
+  const [showButtons, setShowButtons] = useState(false);
   const [page, setPage] = useState(1);
   usePlaidEmitter((event: LinkEvent) => {
     console.log(event);
   });
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setShowButtons(true);
+    }, 1000);
+
+    return () => clearTimeout(timeout);
+  }, [page]);
 
   const [fontsLoaded, fontError] = useFonts({
     SpaceGroteskSemiBold: require("../../assets/fonts/SpaceGrotesk-SemiBold.ttf"),
@@ -271,15 +280,12 @@ export default function OnboardingScreen({ navigation }: { navigation: any }) {
           },
         });
       });
-  
-      // Execute after open completes successfully
       await exchangePublicToken(publicToken);
       await fetchTransactions();
       await fetchAccountBalances();
       router.replace('/mainScreen')
     } catch (error) {
       console.error("Error during sync:", error);
-      // Handle error (e.g., show an alert or log it)
     } finally {
       setLoading(false);
     }
@@ -313,7 +319,6 @@ export default function OnboardingScreen({ navigation }: { navigation: any }) {
           }}
         />
 
-        {/* Title and Description */}
         <View style={{ marginTop: 24, alignItems: 'center', paddingHorizontal: 16 }}>
           <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#333', textAlign: 'center' }}>
             {content[page - 1].title}
@@ -330,40 +335,44 @@ export default function OnboardingScreen({ navigation }: { navigation: any }) {
           </Text>
         </View>
       </View>
-
-      {/* Pagination and Navigation */}
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-        {/* Pagination Indicators */}
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          {[1, 2, 3].map((indicator, index) => (
-            <View
-              key={index}
-              style={{
-                width: 8,
-                height: 8,
-                borderRadius: 4,
-                marginHorizontal: 4,
-                backgroundColor: page === indicator ? '#333' : '#ccc',
-              }}
-            />
-          ))}
-        </View>
-
-        {/* Next/Finish Button */}
-        <TouchableOpacity
-          onPress={handleNext}
+      {showButtons && ( 
+        <View
           style={{
-            backgroundColor: '#007aff',
-            paddingVertical: 12,
-            paddingHorizontal: 24,
-            borderRadius: 24,
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: 16,
           }}
         >
-          <Text style={{ fontSize: 16, color: 'white', fontWeight: 'bold' }}>
-            {page < 3 ? 'NEXT' : 'Link Plaid'}
-          </Text>
-        </TouchableOpacity>
-      </View>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            {[1, 2, 3].map((indicator, index) => (
+              <View
+                key={index}
+                style={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: 4,
+                  marginHorizontal: 4,
+                  backgroundColor: page === indicator ? '#333' : '#ccc',
+                }}
+              />
+            ))}
+          </View>
+          <TouchableOpacity
+            onPress={handleNext}
+            style={{
+              backgroundColor: '#007aff',
+              paddingVertical: 12,
+              paddingHorizontal: 24,
+              borderRadius: 24,
+            }}
+          >
+            <Text style={{ fontSize: 16, color: 'white', fontWeight: 'bold' }}>
+              {page < 3 ? 'NEXT' : 'Link Plaid'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </SafeAreaView>
   );
 }

@@ -8,7 +8,6 @@ export default function AuthLayout() {
         animation: 'fade',  // Optional: smooth animation between auth screens
       }}
     >
-      {/* Login and Signup screens are routed here */}
       <Stack.Screen name="loginScreen" />
       <Stack.Screen name="signupScreen" />
     </Stack>
