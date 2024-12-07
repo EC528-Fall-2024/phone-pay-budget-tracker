@@ -34,12 +34,12 @@
 #### 1. Clone the Repository:
 ```bash
 git clone https://github.com/EC528-Fall-2024/phone-pay-budget-tracker.git
-cd Android/PhonePayBudgetTracker/
 ```
 #### 2. Install Dependencies:
 ```bash
-npm install
-cd android
+cd Android/PhonePayBudgetTracker/android
+touch local.properties
+sdk.dir=/Users/<your-username>/Library/Android/sdk
 ./gradlew --refresh-dependencies
 ```
 #### 3. Open in Android Studio:
