@@ -28,6 +28,7 @@ export default function Transactions() {
   }, [selectedMonth, selectedYear, transactions]);
 
   const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const textColor = "#fde68a"; // Amber-200
 
   const handleMonthSelect = async (month) => {
     setSelectedMonth(month);
@@ -64,8 +65,8 @@ export default function Transactions() {
     >
       <View style={styles.headerRow}>
         <Text
-          className="text-3xl dark:text-amber-200"
-          style={{ fontFamily: "SpaceGroteskBold" }}
+          className="text-3xl"
+          style={{color: textColor, fontFamily: "SpaceGroteskBold" }}
         >
           Recent Activity
         </Text>
@@ -74,8 +75,8 @@ export default function Transactions() {
           style={styles.monthSelector}
         >
           <Text
-            className="text-3xl dark:text-amber-200"
-            style={{ fontFamily: "SpaceGroteskBold" }}
+            className="text-3xl"
+            style={{color: textColor, fontFamily: "SpaceGroteskBold" }}
           >
             {months[selectedMonth - 1]} ▼
           </Text>
@@ -101,8 +102,8 @@ export default function Transactions() {
                 onPress={() => handleMonthSelect(index + 1)}
               >
                 <Text
-                  className="text-xl dark:text-amber-200"
-                  style={{ fontFamily: "SpaceGroteskBold" }}
+                  className="text-xl"
+                  style={{color: textColor, fontFamily: "SpaceGroteskBold" }}
                 >
                   {month}
                 </Text>
@@ -116,7 +117,7 @@ export default function Transactions() {
         data={filteredTransactions}
         keyExtractor={(item) => item.id}
         initialNumToRender={20}
-        contentContainerStyle={{ paddingBottom: 100, flexGrow: 1 }}
+        contentContainerStyle={{ paddingBottom: 150, flexGrow: 1 }}
         removeClippedSubviews={false}
         height={500}
         renderItem={({ item }) => <TransactionCard {...item} />}

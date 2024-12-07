@@ -18,8 +18,8 @@ export default function Header({toggleSidebar}) {
             <Image
               source={require("../../assets/images/menu_icon.png")}
               style={{
-                width: 45,
-                height: 45,
+                width: 30,
+                height: 30,
               }}
             />
           </View>

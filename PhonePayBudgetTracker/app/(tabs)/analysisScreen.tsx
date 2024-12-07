@@ -315,8 +315,8 @@ const analysisScreen = () => {
               style={{alignItems: "center"}}
             >
               <Text
-                className="text-3xl dark:text-amber-200"
-                style={{ fontFamily: "SpaceGroteskBold" }}
+                className="text-3xl"
+                style={{ color: textColor, fontFamily: "SpaceGroteskBold" }}
               >
                 {months[selectedMonth - 1]} ▼
               </Text>
@@ -342,8 +342,8 @@ const analysisScreen = () => {
                 onPress={() => handleMonthSelect(index + 1)}
               >
                 <Text
-                  className="text-xl dark:text-amber-200"
-                  style={{ fontFamily: "SpaceGroteskBold" }}
+                  className="text-xl "
+                  style={{ color:textColor, fontFamily: "SpaceGroteskBold" }}
                 >
                   {month}
                 </Text>

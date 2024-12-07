@@ -59,12 +59,13 @@ import {
 
 import {create, open} from 'react-native-plaid-link-sdk';
 
+const backgroundColor = "#121212"; // Neutral-900
+const textColor = "#fde68a"; // Amber-200
+const cardColor = "#1E1E1E"; // Neutral-800
 
 
 export default function profileScreen() {
-  const backgroundColor = "#121212"; // Neutral-900
   const cardColor = "#1E1E1E"; // Neutral-800
-  const textColor = "#FBBF24"; // Amber-200
   const subTextColor = "#9CA3AF"; // Neutral-400
   const buttonBackgroundColor = "#FDE68A"; // Amber-100
   const buttonTextColor = "#111827"; // Neutral-900
@@ -150,6 +151,7 @@ export default function profileScreen() {
                 {userData?.email || "guest@example.com"}
               </Text>
               <TouchableOpacity
+                onPress={() => router.replace('/billPlanScreen')}
                 style={{
                   marginTop: 24,
                   paddingVertical: 12,
@@ -176,12 +178,11 @@ export default function profileScreen() {
             >
               {[
                 { label: "Your Profile", icon: "👤" },
-                { label: "Settings", icon: "⚙️" },
-                { label: "Payment Method", icon: "🛒" },
                 {
                   label: "Help Center",
                   icon: "❓",
                   action: () => {
+                    router.replace('/helpCenterScreen');
                     console.log("help center pressed");
                   },
                 },
@@ -189,7 +190,16 @@ export default function profileScreen() {
                   label: "Privacy Policy",
                   icon: "🔒",
                   action: () => {
+                    router.replace('/privacyPolicyScreen');
                     console.log("privacy policy pressed");
+                  },
+                },
+                {
+                  label: "About Us",
+                  icon: "ℹ️",
+                  action: () => {
+                    router.replace('/aboutUsScreen');
+                    console.log("About Us pressed");
                   },
                 },
                 {

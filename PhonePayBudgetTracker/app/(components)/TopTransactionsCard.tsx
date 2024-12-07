@@ -44,7 +44,7 @@ const TopSpendingTransactionsCard: React.FC<TopSpendingTransactionsCardProps> = 
 
   return (
     <View style={styles.card}>
-      <Text style={styles.title}>Top Spending Transactions</Text>
+      <Text style={styles.title}>List of Transactions</Text>
       {visibleTransactions.map((transaction, index) => (
         <View key={index} style={styles.transactionRow}>
           <Image

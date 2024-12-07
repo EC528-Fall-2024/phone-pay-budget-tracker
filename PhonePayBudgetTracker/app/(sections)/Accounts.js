@@ -4,6 +4,8 @@ import CardItem from "../(components)/AccountCard";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { useAccountContext } from '../(context)/accountContext';
 
+const textColor = "#fde68a"; // Amber-200
+
 export default function Card() {
   const { accounts, addAccounts } = useAccountContext();
   return (
@@ -13,9 +15,10 @@ export default function Card() {
     >
       <Text
         style={{
+          color: textColor,
           fontFamily: "SpaceGroteskBold",
         }}
-        className="text-3xl mb-4 dark:text-amber-200"
+        className="text-3xl mb-4"
       >
         My Accounts
       </Text>

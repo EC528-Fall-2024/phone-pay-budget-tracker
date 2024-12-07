@@ -51,9 +51,8 @@ const Sidebar = ({ onClose }) => {
       <ScrollView className="p-6">
         {[
           { label: "Dashboard", action: () => {router.replace("/mainScreen"); console.log("Dashboard") }},
-          { label: "Analysis", action: () => {router.replace("/analysisScreen"); console.log("Analysis") } },
-          { label: "Finance", action: () => console.log("Finance") },
-          { label: "Bill Plan", action: () => console.log("Bill Plan") },
+          { label: "Analysis", action: () => {router.replace("/analysisScreen"); console.log("Analysis") }},
+          { label: "Bill Plan", action: () => {router.replace('/billPlanScreen'); console.log("Bill Plan") }},
           { label: "Profile", action: () => {router.replace("/profileScreen"); console.log("Profile") }},
           { label: "Logout", action: () => { onLogoutPress(); console.log("Logout") }},
         ].map((item, index) => (
