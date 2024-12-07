@@ -1,65 +1,11 @@
 const plaid = require('plaid');
 const AWS = require('aws-sdk');
-const jwt = require('jsonwebtoken');
-const jwkToPem = require('jwk-to-pem');
-const axios = require('axios');
-
-const cognitoIssuer = `https://cognito-idp.${process.env.AWS_REGION}.amazonaws.com/${process.env.USER_POOL_ID}`;
-const EXPECTED_AUDIENCE = process.env.EXPECTED_AUDIENCE;
-
-// Function to validate the Cognito token
-const validateToken = async (token) => {
-    try {
-      // Fetch Cognito's JWKS
-      const { data: jwks } = await axios.get(`${cognitoIssuer}/.well-known/jwks.json`);
-      const decoded = jwt.decode(token, { complete: true });
-  
-      if (!decoded || !decoded.header) {
-        throw new Error('Invalid token structure');
-      }
-  
-      const { header } = decoded;
-      const jwk = jwks.keys.find((key) => key.kid === header.kid);
-      if (!jwk) throw new Error('Invalid token');
-  
-      // Convert JWK to PEM
-      const pem = jwkToPem(jwk);
-  
-      // Verify the token
-      return jwt.verify(token, pem, { issuer: cognitoIssuer, audience: EXPECTED_AUDIENCE });
-    } catch (error) {
-      console.error('Token validation failed:', error.message);
-      throw new Error('Unauthorized');
-    }
-  };
 
 exports.lambda_handler = async (event) => {
     const tableName = process.env.TABLE_NAME; 
 
     try {
         const dynamodb = new AWS.DynamoDB.DocumentClient();
-
-        // Extract and validate the token
-        const authHeader = event.headers.Authorization || '';
-        const token = authHeader.replace('Bearer ', '');
-
-        if (!token) {
-            return {
-              statusCode: 401, // Unauthorized if no token is provided
-              body: JSON.stringify({ error: 'Missing Authorization token' }),
-              headers: { 'Content-Type': 'application/json' },
-            };
-        }
-
-        const decodedToken = await validateToken(token);
-
-        // Use the `sub` from the decoded token as the primary key
-        const userSub = decodedToken.sub;
-
-        // Parse the request body
-        const body = JSON.parse(event.body);
-        const publicToken = body.public_token;
-        const bank = body.bank;
 
         // Exchange public token for access token
         const configuration = new plaid.Configuration({
@@ -74,6 +20,7 @@ exports.lambda_handler = async (event) => {
 
         const client = new plaid.PlaidApi(configuration);
 
+        const pk = event.queryStringParameters?.pk || event.body?.pk;
         // Validate the presence of 'pk'
         if (!pk) {
             return {
