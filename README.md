@@ -1,5 +1,118 @@
 # Mobile Payment Budget Tracker App
 
+## Team Members
+
+| Name       | Email           |
+| ---------- | --------------- |
+| Andrew Nguyen | aynguyen@bu.edu  |
+| Brennan Mahoney| bmm1@bu.edu |
+| Naomi Gonzalez  | ngonzalz@bu.edu     |
+| Hin Lui Shum   | jshl@bu.edu  |
+
+## Mentors
+
+| Name           | Email              |
+| -------------- | ------------------ |
+| James Colley | colleyloyejames@gmail.com |
+| Yashaswi Upmon  | yashaswiupmon2407@gmail.com      |
+| Supriya Nanjundaswamy      | supriya.jog29@gmail.com     |
+
+
+## Android Installation
+
+### Option 1: Install APK
+1. **Download the APK**: [Google Drive Link](https://drive.google.com/file/d/1bd3j3kstaWTQMVPkcld4BV7CrTpCAhNB/view?usp=sharing)
+2. **Install on Device or Emulator**:
+   - **For physical devices**: Transfer the APK file to your device and install it.
+   - **For an emulator**: Drag and drop the APK file into the running emulator.
+3. **Run the Application**.
+
+---
+
+### Option 2: Clone and Run Locally
+
+#### 1. Clone the Repository:
+```bash
+git clone https://github.com/EC528-Fall-2024/phone-pay-budget-tracker.git
+cd Android/PhonePayBudgetTracker/
+```
+#### 2. Install Dependencies:
+```bash
+npm install
+cd android
+./gradlew --refresh-dependencies
+```
+#### 3. Open in Android Studio:
+```bash
+open -a "/Applications/Android Studio.app" ./android
+```
+#### 4. Run the App on Emulator or Device:
+```bash
+npx expo run:android
+```
+
+## iOS Installation
+To be Implemented
+
+## Android System Architecture and User Flow Diagram
+![User Flow Diagram](/images/android_architecture.png)
+
+## Android Structure:
+Here is an overview of the project structure:
+```plaintext
+PhonePayBudgetTracker/
+ ├── functions/
+     └── index.js                         # Cloud functions integration
+ 
+ └── app/
+     └── (auth)/
+         ├── _layout.tsx                  # Layout for authentication-related screens
+         ├── loginScreen.tsx              # User login screen
+         └── signupScreen.tsx             # User signup screen
+     └── (components)/
+         ├── AccountCard.js               # Displays account details
+         ├── DonutChart.tsx               # Visualizes spending by category as a donut chart
+         ├── inputForm.tsx                # Reusable input form component
+         ├── LineChart.tsx                # Displays monthly spending trends as a line chart
+         ├── TopCategoriesCard.tsx        # Shows top spending categories
+         ├── TopTransactionsCard.tsx      # Shows top transactions by spending
+         └── TransactionCard.js           # Displays individual transaction details
+     └── (context)/
+         ├── accountContext.tsx           # Context for managing account data
+         ├── transactionContext.tsx       # Context for managing transaction data
+         └── UserContext.tsx              # Context for managing user information
+     └── (sections)/
+         ├── Accounts.js                  # Displays accounts overview on dashboard
+         ├── Header.js                    # Header component with navigation toggle
+         ├── Sidebar.js                   # Sidebar navigation menu
+         └── Transaction.js               # Displays transaction list on dashboard
+     └── (tabs)/
+         ├── _layout.tsx                  # Layout for post-login navigation
+         ├── aboutUsScreen.tsx            # About Us screen with app details
+         ├── analysisScreen.tsx           # Spending analysis and trends
+         ├── billPlanScreen.tsx           # Billing plan selection screen
+         ├── helpCenterScreen.tsx         # Help center screen with FAQs
+         ├── mainScreen.tsx               # Main dashboard after login
+         ├── manageScreen.tsx             # Edit user profile and settings
+         ├── onBoardingScreen.tsx         # New users onboarding and link Plaid
+         ├── privacyPolicyScreen.tsx      # Privacy policy details
+         └── profileScreen.tsx            # Application settings and details
+     └── (utils)/
+         ├── fetchUtils.tsx               # Utility functions for data fetching
+         ├── linkPlaidUtils.tsx           # Utility functions for Plaid integration
+         ├── loginUtils.tsx               # Helper functions for login
+         ├── signupUtils.tsx              # Helper functions for signup
+         └── validationUtils.jsx          # Validation for login/signup form inputs
+     └── _layout.jsx                      # Main layout entry point for the app
+
+```
+## Android UI
+![mainScreen](/images/mainScreen.png)
+![analysisScreen1](/images/analysisScreen1.png)
+![analysisScreen2](/images/analysisScreen2.png)
+![onBoard gif](/images/onBoardScreen.gif)
+![Animated gif](/images/animatedScreen.gif)
+
 ## 1. Vision and Goal
 The goal of the project is to create a scalable, cloud-native, budget-tracking mobile app that integrates with popular mobile payment systems, providing users with enhanced visuals and analysis of their spending habits. 
 
