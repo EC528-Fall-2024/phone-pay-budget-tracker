@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "451630555261",
+    "project_id": "phonepaybudgettracker",
+    "storage_bucket": "phonepaybudgettracker.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:451630555261:android:6d39fa2a0dfe68c9081114",
+        "android_client_info": {
+          "package_name": "com.jshumhl.PhonePayBudgetTracker"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDML2nnuC80RV3iXmHLpjK95skDIQVj9pc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
