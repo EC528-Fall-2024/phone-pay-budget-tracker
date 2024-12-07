@@ -177,7 +177,13 @@ export default function profileScreen() {
               contentContainerStyle={{ alignItems: "center" }}
             >
               {[
-                { label: "Your Profile", icon: "👤" },
+                { label: "Your Profile", 
+                  icon: "👤",
+                  action: () => {
+                    router.replace('/manageScreen');
+                    console.log("manage profile pressed");
+                  },
+                 },
                 {
                   label: "Help Center",
                   icon: "❓",

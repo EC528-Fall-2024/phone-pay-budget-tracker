@@ -89,7 +89,7 @@ const aboutUsScreen = () => {
               marginTop: 16,
             }}
           >
-            Version 1.0.0
+            Version 1.5.2
           </Text>
         </View>
         <View

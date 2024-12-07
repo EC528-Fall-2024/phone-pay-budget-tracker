@@ -205,44 +205,25 @@ exports.getAccountBalances = functions.https.onRequest(async (req, res) => {
 });
 
 // =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-exports.checkAccessToken = functions.https.onCall(async (data, context) => {
-  const { uid } = data;
-
-  if (!uid || typeof uid !== 'string') {
-    console.error('Invalid or missing User ID:', uid);
-    throw new functions.https.HttpsError('invalid-argument', 'A valid User ID is required.');
-  }
-
-  const encryptedUID = encryptUID(uid);
-  try {
-    const userDoc = await admin.firestore().collection('users').doc(encryptedUID).get();
-    if (!userDoc.exists) throw new functions.https.HttpsError('not-found', 'User data not found.');
-
-    const accessToken = userDoc.data()?.plaid_token;
-    if (!accessToken) {
-      return {
-        success: false,
-        message: 'Access token is empty. Prompt for Plaid Link.',
-      };
-    }
-
-    if (accessToken === '') {
-      return {
-        success: false,
-        message: 'Access token is empty. Prompt for Plaid Link.',
-      };
-    }
-
-    return {
-      success: true,
-      message: 'Access token exists.',
-    };
-  } catch (error) {
-    console.error('Error checking access token:', error);
+exports.modifyUserDocument = functions.https.onCall(async (data, context) => {
+  const { uid, updates } = data; 
+  if (!uid || !updates) {
     throw new functions.https.HttpsError(
-      'internal',
-      'An internal error occurred while checking the access token.'
+      "invalid-argument",
+      "The function must be called with 'uid' and 'updates'."
     );
   }
+  const encryptedUID = encryptUID(uid);
+  try {
+    const userDocRef = db.collection("users").doc(encryptedUID);
+    const userDoc = await userDocRef.get();
+    if (!userDoc.exists) {
+      throw new functions.https.HttpsError("not-found", "User document not found.");
+    }
+    await userDocRef.update(updates);
+    return { success: true, message: "User document updated successfully." };
+  } catch (error) {
+    console.error("Error modifying user document:", error);
+    throw new functions.https.HttpsError("internal", "Failed to modify user document.");
+  }
 });
-
