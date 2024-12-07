@@ -1,5 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Main Infrastructure Stack - DynamoDB Tables
+Transform: AWS::Serverless-2016-10-31
+Description: Example SAM Template with DynamoDB and Lambda
 
 Resources:
   # DynamoDB Table for Transaction Data
@@ -12,8 +13,6 @@ Resources:
           AttributeType: S
         - AttributeName: sk
           AttributeType: S
-        - AttributeName: expenseName
-          AttributeType: S
       KeySchema:
         - AttributeName: pk
           KeyType: HASH
@@ -22,15 +21,6 @@ Resources:
       BillingMode: PAY_PER_REQUEST
       SSESpecification:
         SSEEnabled: true
-      GlobalSecondaryIndexes:
-        - IndexName: ExpenseNameIndex
-          KeySchema:
-            - AttributeName: pk
-              KeyType: HASH
-            - AttributeName: expenseName
-              KeyType: RANGE
-          Projection:
-            ProjectionType: ALL
       Tags:
         - Key: Environment
           Value: Production
@@ -61,3 +51,5 @@ Outputs:
   TransactionDataTableName:
     Description: "Name of the transactionData DynamoDB table"
     Value: !Ref TransDataAnalysisTable
+
+
