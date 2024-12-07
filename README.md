@@ -1,5 +1,24 @@
 # Mobile Payment Budget Tracker App
 
+## Team Members
+
+| Name       | Email           |
+| ---------- | --------------- |
+| Andrew Nguyen | aynguyen@bu.edu  |
+| Brennan Mahoney| bmm1@bu.edu |
+| Naomi Gonzalez  | ngonzalz@bu.edu     |
+| Hin Lui Shum   | jshl@bu.edu  |
+
+## Mentors
+
+| Name           | Email              |
+| -------------- | ------------------ |
+| James Colley | colleyloyejames@gmail.com |
+| Yashaswi Upmon  | yashaswiupmon2407@gmail.com      |
+| Supriya Nanjundaswamy      | supriya.jog29@gmail.com     |
+
+
+
 ## 1. Vision and Goal
 The goal of the project is to create a scalable, cloud-native, budget-tracking mobile app that integrates with popular mobile payment systems, providing users with enhanced visuals and analysis of their spending habits. 
 
