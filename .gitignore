@@ -1,0 +1,20 @@
+node_modules/
+
+
+.DS_Store
+
+logs
+*.log
+npm-debug.log*
+
+# Ignore build and cache directories
+dist/
+build/
+.cache/
+
+.env
+.env.local
+.env.*.local
+
+.vscode/
+.idea/

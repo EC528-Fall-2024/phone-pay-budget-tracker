@@ -1,0 +1,150 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`IndexPage renders correctly 1`] = `
+<RCTScrollView
+  contentContainerStyle={
+    {
+      "alignItems": "center",
+      "backgroundColor": "#f7f7f7",
+      "flexGrow": 1,
+      "justifyContent": "center",
+      "padding": 20,
+    }
+  }
+>
+  <View>
+    <Text
+      style={
+        {
+          "color": "#4CAF50",
+          "fontSize": 28,
+          "fontWeight": "bold",
+          "marginBottom": 20,
+          "textAlign": "center",
+        }
+      }
+    >
+      Welcome to BudgetTracker
+    </Text>
+    <Text
+      style={
+        {
+          "color": "#333",
+          "fontSize": 16,
+          "lineHeight": 24,
+          "marginBottom": 30,
+          "textAlign": "center",
+        }
+      }
+    >
+      Start managing your budget now. Log in or sign up to get started.
+    </Text>
+    <View
+      accessibilityState={
+        {
+          "busy": undefined,
+          "checked": undefined,
+          "disabled": undefined,
+          "expanded": undefined,
+          "selected": undefined,
+        }
+      }
+      accessibilityValue={
+        {
+          "max": undefined,
+          "min": undefined,
+          "now": undefined,
+          "text": undefined,
+        }
+      }
+      accessible={true}
+      collapsable={false}
+      focusable={true}
+      onClick={[Function]}
+      onResponderGrant={[Function]}
+      onResponderMove={[Function]}
+      onResponderRelease={[Function]}
+      onResponderTerminate={[Function]}
+      onResponderTerminationRequest={[Function]}
+      onStartShouldSetResponder={[Function]}
+      style={
+        {
+          "alignItems": "center",
+          "backgroundColor": "#4CAF50",
+          "borderRadius": 5,
+          "marginBottom": 15,
+          "opacity": 1,
+          "paddingHorizontal": 30,
+          "paddingVertical": 15,
+          "width": "100%",
+        }
+      }
+    >
+      <Text
+        style={
+          {
+            "color": "#fff",
+            "fontSize": 18,
+            "fontWeight": "bold",
+          }
+        }
+      >
+        Go to Login
+      </Text>
+    </View>
+    <View
+      accessibilityState={
+        {
+          "busy": undefined,
+          "checked": undefined,
+          "disabled": undefined,
+          "expanded": undefined,
+          "selected": undefined,
+        }
+      }
+      accessibilityValue={
+        {
+          "max": undefined,
+          "min": undefined,
+          "now": undefined,
+          "text": undefined,
+        }
+      }
+      accessible={true}
+      collapsable={false}
+      focusable={true}
+      onClick={[Function]}
+      onResponderGrant={[Function]}
+      onResponderMove={[Function]}
+      onResponderRelease={[Function]}
+      onResponderTerminate={[Function]}
+      onResponderTerminationRequest={[Function]}
+      onStartShouldSetResponder={[Function]}
+      style={
+        {
+          "alignItems": "center",
+          "backgroundColor": "#4CAF50",
+          "borderRadius": 5,
+          "marginBottom": 15,
+          "opacity": 1,
+          "paddingHorizontal": 30,
+          "paddingVertical": 15,
+          "width": "100%",
+        }
+      }
+    >
+      <Text
+        style={
+          {
+            "color": "#fff",
+            "fontSize": 18,
+            "fontWeight": "bold",
+          }
+        }
+      >
+        Go to Signup
+      </Text>
+    </View>
+  </View>
+</RCTScrollView>
+`;

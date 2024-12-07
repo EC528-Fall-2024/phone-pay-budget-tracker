@@ -1,0 +1,86 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: User Profile Microservice
+
+Parameters:
+  ProfileDataTableName:
+    Type: String
+    Description: Name of the profileData DynamoDB table
+  CognitoUserPoolId:
+    Type: String
+    Description: ID of the Cognito User Pool
+
+Resources:
+  UserProfileApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: UserProfileApi
+      StageName: Prod
+
+  UserProfileFunctionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: "lambda.amazonaws.com"
+            Action: "sts:AssumeRole"
+      Policies:
+        - PolicyName: UserProfileDynamoDBAccess
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:GetItem
+                  - dynamodb:Query
+                  - dynamodb:PutItem
+                  - dynamodb:UpdateItem
+                Resource: 
+                  - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${ProfileDataTableName}"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+
+  UserProfileFunctionGet:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./src/
+      Handler: app.lambda_handler
+      Runtime: nodejs20.x
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref ProfileDataTableName
+      Role: !GetAtt UserProfileFunctionRole.Arn
+      Events:
+        GetUserProfile:
+          Type: Api
+          Properties:
+            RestApiId: !Ref UserProfileApi
+            Path: /user-profile
+            Method: GET
+
+  UserProfileFunctionSet:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./src/
+      Handler: app.lambda_handler_setProfile
+      Runtime: nodejs20.x
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref ProfileDataTableName
+      Role: !GetAtt UserProfileFunctionRole.Arn
+      Events:
+        SetUserProfile:
+          Type: Api
+          Properties:
+            RestApiId: !Ref UserProfileApi
+            Path: /user-profile
+            Method: POST
+
+Outputs:
+  UserProfileApiUrl:
+    Description: API Gateway endpoint URL for User Profile Service
+    Value: !Sub 'https://${UserProfileApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/user-profile'
+

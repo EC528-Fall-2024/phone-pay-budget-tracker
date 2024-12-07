@@ -1,0 +1,49 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Admin Control Microservice
+
+Parameters:
+  ProfileDataTableName:
+    Type: String
+    Description: Name of the profileData DynamoDB table
+
+Resources:
+  AdminControlFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./src/
+      Handler: app.lambda_handler
+      Runtime: python3.10
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref ProfileDataTableName
+          #AWS_REGION: !Ref AWS::Region
+      Events:
+        ListUsersApi:
+          Type: Api
+          Properties:
+            Path: /admin-control/users
+            Method: GET
+        GetUserApi:
+          Type: Api
+          Properties:
+            Path: /admin-control/users/{user_id}
+            Method: GET
+        AddUserApi:
+          Type: Api
+          Properties:
+            Path: /admin-control/users
+            Method: POST
+        DeleteUserApi:
+          Type: Api
+          Properties:
+            Path: /admin-control/users/{user_id}
+            Method: DELETE
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ProfileDataTableName
+
+Outputs:
+  AdminControlApiUrl:
+    Description: API Gateway endpoint URL for Admin Control Service
+    Value: !Sub 'https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/admin-control/users'
