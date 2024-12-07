@@ -110,8 +110,6 @@ PhonePayBudgetTracker/
 ![mainScreen](/images/mainScreen.png)
 ![analysisScreen1](/images/analysisScreen1.png)
 ![analysisScreen2](/images/analysisScreen2.png)
-![onBoard gif](/images/onBoardScreen.gif)
-![Animated gif](/images/animatedScreen.gif)
 
 ## 1. Vision and Goal
 The goal of the project is to create a scalable, cloud-native, budget-tracking mobile app that integrates with popular mobile payment systems, providing users with enhanced visuals and analysis of their spending habits. 
