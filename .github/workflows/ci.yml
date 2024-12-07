@@ -28,9 +28,14 @@ jobs:
 
       - name: Run tests
         working-directory: microservices/Admin-Control/src
+        env:
+          AWS_REGION: 'us-west-2'
+          USER_POOL_ID: 'us-west-2_example'
+          EXPECTED_AUDIENCE: 'something'
+          TABLE_NAME: 'profileData'
         run: |
           python -m unittest discover -s . -p 'test_*.py'
-
+          
   trans-dataanalysis-tests:
     name: Trans-DataAnalysis Tests
     runs-on: ubuntu-latest
