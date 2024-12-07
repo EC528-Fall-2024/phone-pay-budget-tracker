@@ -1,30 +1,5 @@
 const AWS = require('aws-sdk');
-const jwt = require('jsonwebtoken');
-const jwkToPem = require('jwk-to-pem');
-const axios = require('axios');
 
-// Cognito configuration
-const cognitoIssuer = `https://cognito-idp.${process.env.AWS_REGION}.amazonaws.com/${process.env.USER_POOL_ID}`;
-const EXPECTED_AUDIENCE = process.env.EXPECTED_AUDIENCE;
-
-const validateToken = async (token) => {
-    try {
-        const { data: jwks } = await axios.get(`${cognitoIssuer}/.well-known/jwks.json`);
-        const { header } = jwt.decode(token, { complete: true });
-        const jwk = jwks.keys.find((key) => key.kid === header.kid);
-        if (!jwk) throw new Error('Invalid token');
-        const pem = jwkToPem(jwk);
-        return jwt.verify(token, pem, {
-            issuer: cognitoIssuer,
-            audience: process.env.EXPECTED_AUDIENCE,
-        });
-    } catch (error) {
-        console.error('Token validation failed:', error.message);
-        throw new Error('Unauthorized');
-    }
-};
-
-// Add common CORS headers
 const CORS_HEADERS = {
     'Access-Control-Allow-Origin': '*', // Allow all origins (adjust as needed for security)
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS', // Allowed HTTP methods
@@ -36,17 +11,22 @@ exports.lambda_handler = async (event) => {
     const tableName = process.env.TABLE_NAME;
 
     try {
-        // Validate Authorization header and extract token
-        const authHeader = event.headers.Authorization || '';
-        const token = authHeader.replace('Bearer ', '');
-        const decodedToken = await validateToken(token);
+        console.log("queryStringParameters:", event.queryStringParameters);
+        console.log("body:", event.body);
 
-        // Use the `sub` claim as the partition key
-        const userSub = decodedToken.sub;
+        const pk = event.queryStringParameters?.pk || (event.body ? JSON.parse(event.body).pk : undefined);
+
+        if (!pk) {
+            return {
+                statusCode: 400,
+                headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
+                body: JSON.stringify({ error: "Missing user id (pk)" }),
+            };
+        }
 
         const params = {
             TableName: tableName,
-            Key: { pk: userSub },
+            Key: { pk: pk },
         };
 
         const response = await dynamodb.get(params).promise();
@@ -54,21 +34,21 @@ exports.lambda_handler = async (event) => {
         if (response.Item) {
             return {
                 statusCode: 200,
-                headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+                headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
                 body: JSON.stringify(response.Item),
             };
         } else {
             return {
                 statusCode: 404,
-                headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+                headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
                 body: JSON.stringify({ error: 'Profile not found' }),
             };
         }
     } catch (error) {
-        console.error('Error occurred:', error.message);
+        console.error('Error occurred:', error);
         return {
             statusCode: error.message === 'Unauthorized' ? 401 : 500,
-            headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+            headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
             body: JSON.stringify({ error: 'Unable to retrieve profile data.' }),
         };
     }
@@ -79,39 +59,106 @@ exports.lambda_handler_setProfile = async (event) => {
     const tableName = process.env.TABLE_NAME;
 
     try {
-        // Validate Authorization header and extract token
-        const authHeader = event.headers.Authorization || '';
-        const token = authHeader.replace('Bearer ', '');
-        const decodedToken = await validateToken(token);
+        // Extract parameters from query string or body
+        let pk, email, profilePhoto;
+        if (event.queryStringParameters) {
+            pk = event.queryStringParameters.pk;
+            email = event.queryStringParameters.email;
+            profilePhoto = event.queryStringParameters.profilePhoto;
+        }
 
-        // Use the `sub` claim as the partition key
-        const userSub = decodedToken.sub;
+        if (event.body) {
+            const body = JSON.parse(event.body);
+            pk = pk || body.pk;
+            email = email || body.email;
+            profilePhoto = profilePhoto || body.profilePhoto;
+        }
 
-        // Parse the request body
-        const requestBody = JSON.parse(event.body);
+        // Ensure pk is provided
+        if (!pk) {
+            return {
+                statusCode: 400,
+                headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ error: 'Missing pk' })
+            };
+        }
 
-        const params = {
+        // Fetch the existing item
+        const getParams = {
             TableName: tableName,
-            Item: {
-                pk: userSub, // Securely set `pk` to user's `sub`
-                email: requestBody.email,
-                profilePhoto: requestBody.profilePhoto,
-            },
+            Key: { pk }
         };
+        const existingItem = await dynamodb.get(getParams).promise();
 
-        await dynamodb.put(params).promise();
+        if (!existingItem.Item) {
+            // Item not found, create a new one with whatever fields are provided
+            const newItem = { pk };
+            if (email !== undefined) newItem.email = email;
+            if (profilePhoto !== undefined) newItem.profilePhoto = profilePhoto;
 
-        return {
-            statusCode: 200,
-            headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message: 'Profile data saved successfully' }),
-        };
+            const putParams = {
+                TableName: tableName,
+                Item: newItem
+            };
+
+            await dynamodb.put(putParams).promise();
+
+            return {
+                statusCode: 201,
+                headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: 'Profile data created successfully', item: newItem })
+            };
+
+        } else {
+            // Item exists, update only provided fields
+            const updateExpressions = [];
+            const expressionAttributeNames = {};
+            const expressionAttributeValues = {};
+
+            if (email !== undefined) {
+                updateExpressions.push("#email = :email");
+                expressionAttributeNames["#email"] = "email";
+                expressionAttributeValues[":email"] = email;
+            }
+
+            if (profilePhoto !== undefined) {
+                updateExpressions.push("#profilePhoto = :profilePhoto");
+                expressionAttributeNames["#profilePhoto"] = "profilePhoto";
+                expressionAttributeValues[":profilePhoto"] = profilePhoto;
+            }
+
+            if (updateExpressions.length === 0) {
+                // Nothing to update, return the existing item as is
+                return {
+                    statusCode: 200,
+                    headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: 'No changes provided, existing item unchanged', item: existingItem.Item })
+                };
+            }
+
+            const updateParams = {
+                TableName: tableName,
+                Key: { pk },
+                UpdateExpression: `SET ${updateExpressions.join(", ")}`,
+                ExpressionAttributeNames: expressionAttributeNames,
+                ExpressionAttributeValues: expressionAttributeValues,
+                ReturnValues: 'ALL_NEW'
+            };
+
+            const updatedItem = await dynamodb.update(updateParams).promise();
+
+            return {
+                statusCode: 200,
+                headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: 'Profile data updated successfully', item: updatedItem.Attributes })
+            };
+        }
     } catch (error) {
         console.error('Error occurred:', error.message);
         return {
             statusCode: error.message === 'Unauthorized' ? 401 : 500,
             headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ error: 'Unable to update profile data.' }),
+            body: JSON.stringify({ error: 'Unable to update profile data.' })
         };
     }
 };
