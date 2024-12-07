@@ -116,7 +116,7 @@ Resources:
                 - dynamodb:UpdateItem
               Resource: !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${TransactionDataTableName}"
 
-  # **New: Get All Transactions Function**
+  # Get All Transactions Function
   GetAllTransactionsFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -141,34 +141,6 @@ Resources:
                 - dynamodb:GetItem
               Resource: !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${TransactionDataTableName}"
 
-  # **New: Store Transactions Function**
-  StoreTransactionsFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: ./src/
-      Handler: app.store_transactions_handler
-      Runtime: nodejs20.x
-      Environment:
-        Variables:
-          TABLE_NAME: !Ref TransactionDataTableName
-      Events:
-        StoreTransactionsApi:
-          Type: Api
-          Properties:
-            Path: /transactions/store
-            Method: POST
-            # Cors:
-            #   AllowOrigins: "'*'"  # Adjust as needed for security
-            #   AllowMethods: "'POST,OPTIONS'"
-            #   AllowHeaders: "'Content-Type,Authorization'"
-      Policies:
-        - Version: "2012-10-17"
-          Statement:
-            - Effect: Allow
-              Action:
-                - dynamodb:PutItem
-              Resource: !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${TransactionDataTableName}"
-
 Outputs:
   CreateLinkTokenApiUrl:
     Description: "API Gateway endpoint URL for Create Link Token Service"
@@ -185,8 +157,3 @@ Outputs:
   GetAllTransactionsApiUrl:
     Description: "API Gateway endpoint URL for Get All Transactions Service"
     Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/transactions/get-all"
-
-  StoreTransactionsApiUrl:
-    Description: "API Gateway endpoint URL for Store Transactions Service"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/transactions/store"
-

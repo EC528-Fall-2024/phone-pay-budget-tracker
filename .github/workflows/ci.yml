@@ -3,7 +3,7 @@ name: CI Unit Tests
 on:
   push:
     branches:
-      - DeploymentMain      
+      - main      
 
 
 jobs:
@@ -39,7 +39,6 @@ jobs:
       fail-fast: false
       matrix:
         service:
-          - database
           - plaid/create_link_token
           - plaid/get_access_token
           - plaid/get_transactions

@@ -1,330 +1,347 @@
-jest.mock('plaid');
-jest.mock('axios');
-jest.mock('jsonwebtoken');
+// app.test.js
 
-const AWSMock = require('aws-sdk-mock');
 const AWS = require('aws-sdk');
 const plaid = require('plaid');
-const axios = require('axios');
-const jwt = require('jsonwebtoken');
-const { lambda_handler } = require('./app'); 
+const { getAccessTokenHandler } = require('./app'); // Adjust the path if necessary
 
-describe('Get Access Token Microservice Tests', () => {
-    beforeAll(() => {
-        // Set environment variables required by the Lambda function
-        process.env.PLAID_CLIENT_ID = 'test-client-id';
-        process.env.PLAID_SECRET = 'test-secret';
-        process.env.TABLE_NAME = 'test-transactionData'; 
-        process.env.AWS_REGION = 'us-east-2';
-        process.env.USER_POOL_ID = 'us-east-2_example'; 
+jest.mock('aws-sdk');
+jest.mock('plaid');
+
+describe('getAccessTokenHandler', () => {
+  const OLD_ENV = process.env;
+  let mockDocumentClient;
+  let mockPlaidApi;
+
+  beforeEach(() => {
+    jest.resetModules(); 
+    process.env = { ...OLD_ENV, TABLE_NAME: 'TestTable', PLAID_CLIENT_ID: 'test_client_id', PLAID_SECRET: 'test_secret' };
+
+    // Mock DynamoDB DocumentClient
+    mockDocumentClient = {
+      update: jest.fn().mockReturnThis(),
+      promise: jest.fn(),
+    };
+    AWS.DynamoDB.DocumentClient.mockImplementation(() => mockDocumentClient);
+
+    // Mock Plaid API
+    mockPlaidApi = {
+      itemPublicTokenExchange: jest.fn(),
+      accountsGet: jest.fn(),
+      institutionsGetById: jest.fn(),
+    };
+    plaid.PlaidApi.mockImplementation(() => mockPlaidApi);
+  });
+
+  afterAll(() => {
+    process.env = OLD_ENV; // Restore original environment
+  });
+
+  test('returns 400 if pk is missing in the request body', async () => {
+    const event = {
+      body: JSON.stringify({
+        public_token: 'public-token',
+        bank: 'Test Bank',
+        id: 'ins_123',
+        accounts: [],
+      }),
+    };
+
+    const response = await getAccessTokenHandler(event);
+
+    expect(response.statusCode).toBe(400);
+    expect(response.headers['Content-Type']).toBe('application/json');
+    expect(JSON.parse(response.body)).toEqual({ error: 'Missing user id (pk)' });
+  });
+
+  test('successfully exchanges public token, retrieves account, updates DynamoDB, and returns 200', async () => {
+    const event = {
+      body: JSON.stringify({
+        public_token: 'public-token',
+        bank: 'Test Bank',
+        id: 'ins_123',
+        accounts: [],
+        pk: 'user123',
+      }),
+    };
+
+    // Mock Plaid API responses
+    mockPlaidApi.itemPublicTokenExchange.mockResolvedValue({
+      data: { access_token: 'access-token-123' },
+    });
+    mockPlaidApi.accountsGet.mockResolvedValue({
+      data: {
+        accounts: [
+          {
+            account_id: 'acc_123',
+            balances: { current: 1000 },
+            mask: '1234',
+            name: 'Checking Account',
+          },
+        ],
+      },
+    });
+    mockPlaidApi.institutionsGetById.mockResolvedValue({
+      data: { institution: { logo: 'https://logo.url' } },
     });
 
-    afterEach(() => {
-        // Restore AWS SDK mocks and clear Jest mocks after each test
-        AWSMock.restore('DynamoDB.DocumentClient');
-        jest.clearAllMocks();
+    // Mock DynamoDB update response
+    mockDocumentClient.promise.mockResolvedValue({
+      Attributes: {
+        accounts: [
+          {
+            Bank: 'Test Bank',
+            Logo: 'https://logo.url',
+            Balance: 1000,
+            Mask: '1234',
+            Name: 'Checking Account',
+            accountID: 'acc_123',
+            accessToken: 'access-token-123',
+          },
+        ],
+      },
     });
 
-    test('lambda_handler - success', async () => {
-        // Mock Cognito JWKS response
-        const mockJwks = {
-            keys: [
-                {
-                    kid: 'test-kid',
-                    kty: 'RSA',
-                    n: 'test-n',
-                    e: 'AQAB'
-                }
-            ]
-        };
-        axios.get.mockResolvedValue({ data: mockJwks });
+    const response = await getAccessTokenHandler(event);
 
-        // Mock jwt.decode to return a decoded token header
-        jwt.decode.mockReturnValue({ header: { kid: 'test-kid' } });
-
-        // Mock jwt.verify to successfully verify the token
-        jwt.verify.mockReturnValue({ sub: 'user123' });
-
-        // Mock PlaidApi methods
-        const mockAccessToken = 'access-token-123';
-        const mockAccountId = 'account-id-456';
-        const mockLogoUrl = 'https://example.com/logo.png';
-
-        plaid.PlaidApi.mockImplementation(() => ({
-            itemPublicTokenExchange: jest.fn().mockResolvedValue({
-                data: { access_token: mockAccessToken }
-            }),
-            accountsGet: jest.fn().mockResolvedValue({
-                data: { accounts: [{
-                    account_id: mockAccountId,
-                    balances: { current: 1000 },
-                    mask: '1234',
-                    name: 'Test Checking'
-                }] }
-            }),
-            institutionsGetById: jest.fn().mockResolvedValue({
-                data: { institution: { logo: mockLogoUrl } }
-            })
-        }));
-
-        // Create a mock function for DynamoDB.put
-        const putMock = jest.fn((params, callback) => {
-            callback(null, {}); // Simulate successful put
-        });
-
-        // Mock DynamoDB put
-        AWSMock.setSDKInstance(AWS);
-        AWSMock.mock('DynamoDB.DocumentClient', 'put', putMock);
-
-        // Create a mock event with Authorization header
-        const event = {
-            headers: {
-                Authorization: 'Bearer valid-token'
-            },
-            body: JSON.stringify({
-                public_token: 'public-token-789',
-                bank: 'Test Bank',
-                id: 'ins_12345',
-                accounts: [],
-                pk: 'user123'
-            })
-        };
-
-        // Invoke the Lambda handler
-        const response = await lambda_handler(event);
-
-        // Assertions
-        expect(response.statusCode).toBe(200);
-        const responseBody = JSON.parse(response.body);
-        expect(responseBody).toEqual({
-            accessToken: mockAccessToken,
-            accounts: mockAccountId
-        });
-
-        // Verify that PlaidApi methods were called correctly
-        expect(plaid.PlaidApi).toHaveBeenCalledTimes(1);
-        const plaidInstance = plaid.PlaidApi.mock.results[0].value;
-        expect(plaidInstance.itemPublicTokenExchange).toHaveBeenCalledWith({
-            public_token: 'public-token-789'
-        });
-        expect(plaidInstance.accountsGet).toHaveBeenCalledWith({
-            access_token: mockAccessToken
-        });
-        expect(plaidInstance.institutionsGetById).toHaveBeenCalledWith({
-            institution_id: 'ins_12345',
-            country_codes: ['US'],
-            options: {
-                include_optional_metadata: true,
-            }
-        });
-
-        // Verify that DynamoDB put was called once with correct parameters
-        expect(putMock).toHaveBeenCalledTimes(1);
-        expect(putMock).toHaveBeenCalledWith({
-            TableName: 'test-transactionData', // From process.env.TABLE_NAME
-            Item: {
-                pk: 'user123',
-                accounts: [{
-                    Bank: 'Test Bank',
-                    Logo: mockLogoUrl,
-                    Balance: 1000,
-                    Mask: '1234',
-                    Name: 'Test Checking',
-                    accountID: mockAccountId,
-                    accessToken: mockAccessToken
-                }],
-                email: 'bmahoney132@gmail.com',
-                profilePhoto: 'https://www.oakdaleveterinarygroup.com/cdn-cgi/image/q=75,f=auto,metadata=none/sites/default/files/styles/large/public/golden-retriever-dog-breed-info.jpg?itok=NWXHSSii'
-            },
-        }, expect.any(Function));
+    // Assertions for Plaid API calls
+    expect(mockPlaidApi.itemPublicTokenExchange).toHaveBeenCalledWith({ public_token: 'public-token' });
+    expect(mockPlaidApi.accountsGet).toHaveBeenCalledWith({ access_token: 'access-token-123' });
+    expect(mockPlaidApi.institutionsGetById).toHaveBeenCalledWith({
+      institution_id: 'ins_123',
+      country_codes: ['US'],
+      options: { include_optional_metadata: true },
     });
 
-    test('lambda_handler - missing user id (pk)', async () => {
-        const event = {
-            headers: {
-                Authorization: 'Bearer valid-token'
-            },
-            body: JSON.stringify({
-                public_token: 'public-token-789',
-                bank: 'Test Bank',
-                id: 'ins_12345',
-                accounts: []
-                // pk is missing
-            })
-        };
+    // Assertions for DynamoDB update
+    expect(mockDocumentClient.update).toHaveBeenCalledWith({
+      TableName: 'TestTable',
+      Key: { pk: 'user123' },
+      UpdateExpression: 'SET accounts = list_append(if_not_exists(accounts, :empty_list), :new_account)',
+      ExpressionAttributeValues: {
+        ':new_account': [
+          {
+            Bank: 'Test Bank',
+            Logo: 'https://logo.url',
+            Balance: 1000,
+            Mask: '1234',
+            Name: 'Checking Account',
+            accountID: 'acc_123',
+            accessToken: 'access-token-123',
+          },
+        ],
+        ':empty_list': [],
+      },
+      ReturnValues: 'UPDATED_NEW',
+    });
+    expect(mockDocumentClient.promise).toHaveBeenCalled();
 
-        const response = await lambda_handler(event);
+    // Assertions for response
+    expect(response.statusCode).toBe(200);
+    expect(response.headers['Content-Type']).toBe('application/json');
+    expect(JSON.parse(response.body)).toEqual({
+      accessToken: 'access-token-123',
+      accountID: 'acc_123',
+    });
+  });
 
-        expect(response.statusCode).toBe(400);
-        const responseBody = JSON.parse(response.body);
-        expect(responseBody).toEqual({ error: 'Missing user id (pk)' });
+  test('handles Plaid itemPublicTokenExchange failure and returns appropriate error', async () => {
+    const event = {
+      body: JSON.stringify({
+        public_token: 'invalid-public-token',
+        bank: 'Test Bank',
+        id: 'ins_123',
+        accounts: [],
+        pk: 'user123',
+      }),
+    };
 
-        // Verify that PlaidApi was not called
-        expect(plaid.PlaidApi).not.toHaveBeenCalled();
+    // Mock Plaid API failure
+    mockPlaidApi.itemPublicTokenExchange.mockRejectedValue(new Error('Invalid public token'));
 
-        // Verify that DynamoDB put was not called
-        const putMock = jest.fn();
-        AWSMock.setSDKInstance(AWS);
-        AWSMock.mock('DynamoDB.DocumentClient', 'put', putMock);
-        expect(putMock).not.toHaveBeenCalled();
+    const response = await getAccessTokenHandler(event);
+
+    // Assertions for Plaid API calls
+    expect(mockPlaidApi.itemPublicTokenExchange).toHaveBeenCalledWith({ public_token: 'invalid-public-token' });
+    expect(mockPlaidApi.accountsGet).not.toHaveBeenCalled();
+    expect(mockPlaidApi.institutionsGetById).not.toHaveBeenCalled();
+
+    // Assertions for response
+    expect(response.statusCode).toBe(500);
+    expect(response.headers['Content-Type']).toBe('application/json');
+    expect(JSON.parse(response.body)).toEqual({ error: 'Invalid public token' });
+  });
+
+  test('handles Plaid API unauthorized error and returns 401', async () => {
+    const event = {
+      body: JSON.stringify({
+        public_token: 'public-token',
+        bank: 'Test Bank',
+        id: 'ins_123',
+        accounts: [],
+        pk: 'user123',
+      }),
+    };
+
+    // Mock Plaid API unauthorized error
+    const unauthorizedError = new Error('Unauthorized');
+    mockPlaidApi.itemPublicTokenExchange.mockRejectedValue(unauthorizedError);
+
+    const response = await getAccessTokenHandler(event);
+
+    // Assertions for response
+    expect(response.statusCode).toBe(401);
+    expect(JSON.parse(response.body)).toEqual({ error: 'Unauthorized' });
+  });
+
+  test('handles DynamoDB update failure and returns 500', async () => {
+    const event = {
+      body: JSON.stringify({
+        public_token: 'public-token',
+        bank: 'Test Bank',
+        id: 'ins_123',
+        accounts: [],
+        pk: 'user123',
+      }),
+    };
+
+    // Mock Plaid API responses
+    mockPlaidApi.itemPublicTokenExchange.mockResolvedValue({
+      data: { access_token: 'access-token-123' },
+    });
+    mockPlaidApi.accountsGet.mockResolvedValue({
+      data: {
+        accounts: [
+          {
+            account_id: 'acc_123',
+            balances: { current: 1000 },
+            mask: '1234',
+            name: 'Checking Account',
+          },
+        ],
+      },
+    });
+    mockPlaidApi.institutionsGetById.mockResolvedValue({
+      data: { institution: { logo: 'https://logo.url' } },
     });
 
-    test('lambda_handler - Plaid API error during itemPublicTokenExchange', async () => {
-        // Mock Cognito JWKS response
-        const mockJwks = {
-            keys: [
-                {
-                    kid: 'test-kid',
-                    kty: 'RSA',
-                    n: 'test-n',
-                    e: 'AQAB'
-                }
-            ]
-        };
-        axios.get.mockResolvedValue({ data: mockJwks });
+    // Mock DynamoDB update failure
+    mockDocumentClient.promise.mockRejectedValue(new Error('DynamoDB update failed'));
 
-        // Mock jwt.decode to return a decoded token header
-        jwt.decode.mockReturnValue({ header: { kid: 'test-kid' } });
+    const response = await getAccessTokenHandler(event);
 
-        // Mock jwt.verify to successfully verify the token
-        jwt.verify.mockReturnValue({ sub: 'user123' });
+    // Assertions for response
+    expect(response.statusCode).toBe(500);
+    expect(JSON.parse(response.body)).toEqual({ error: 'DynamoDB update failed' });
+  });
 
-        // Mock PlaidApi to throw an error on itemPublicTokenExchange
-        plaid.PlaidApi.mockImplementation(() => ({
-            itemPublicTokenExchange: jest.fn().mockRejectedValue(new Error('Plaid API Error'))
-        }));
+  test('handles missing request body gracefully', async () => {
+    const event = {
+      // No body
+    };
 
-        // Create a mock function for DynamoDB.put
-        const putMock = jest.fn();
+    const response = await getAccessTokenHandler(event);
 
-        // Mock DynamoDB put
-        AWSMock.setSDKInstance(AWS);
-        AWSMock.mock('DynamoDB.DocumentClient', 'put', putMock);
+    expect(response.statusCode).toBe(500);
+    expect(JSON.parse(response.body)).toHaveProperty('error');
+  });
 
-        // Create a mock event with Authorization header
-        const event = {
-            headers: {
-                Authorization: 'Bearer valid-token'
-            },
-            body: JSON.stringify({
-                public_token: 'public-token-789',
-                bank: 'Test Bank',
-                id: 'ins_12345',
-                accounts: [],
-                pk: 'user123'
-            })
-        };
+  test('handles malformed JSON in request body', async () => {
+    const event = {
+      body: '{ invalidJson: true, }', // Malformed JSON
+    };
 
-        // Invoke the Lambda handler
-        const response = await lambda_handler(event);
+    const response = await getAccessTokenHandler(event);
 
-        // Assertions
-        expect(response.statusCode).toBe(500);
-        const responseBody = JSON.parse(response.body);
-        expect(responseBody).toEqual({ error: 'Plaid API Error' });
+    expect(response.statusCode).toBe(500);
+    expect(JSON.parse(response.body)).toHaveProperty('error');
+  });
 
-        // Verify that PlaidApi methods were called correctly
-        expect(plaid.PlaidApi).toHaveBeenCalledTimes(1);
-        const plaidInstance = plaid.PlaidApi.mock.results[0].value;
-        expect(plaidInstance.itemPublicTokenExchange).toHaveBeenCalledWith({
-            public_token: 'public-token-789'
-        });
+  test('handles missing account data from Plaid and continues without logo', async () => {
+    const event = {
+      body: JSON.stringify({
+        public_token: 'public-token',
+        bank: 'Test Bank',
+        id: 'ins_123',
+        accounts: [],
+        pk: 'user123',
+      }),
+    };
 
-        // Ensure DynamoDB put was not called
-        expect(putMock).not.toHaveBeenCalled();
+    // Mock Plaid API responses without logo
+    mockPlaidApi.itemPublicTokenExchange.mockResolvedValue({
+      data: { access_token: 'access-token-123' },
+    });
+    mockPlaidApi.accountsGet.mockResolvedValue({
+      data: {
+        accounts: [
+          {
+            account_id: 'acc_123',
+            balances: { current: 1000 },
+            mask: '1234',
+            name: 'Checking Account',
+          },
+        ],
+      },
+    });
+    // Mock institutionsGetById to throw an error (logo retrieval failure)
+    mockPlaidApi.institutionsGetById.mockRejectedValue(new Error('Logo fetch failed'));
+
+    // Mock DynamoDB update response
+    mockDocumentClient.promise.mockResolvedValue({
+      Attributes: {
+        accounts: [
+          {
+            Bank: 'Test Bank',
+            Logo: '',
+            Balance: 1000,
+            Mask: '1234',
+            Name: 'Checking Account',
+            accountID: 'acc_123',
+            accessToken: 'access-token-123',
+          },
+        ],
+      },
     });
 
-    test('lambda_handler - DynamoDB put error', async () => {
-        // Mock Cognito JWKS response
-        const mockJwks = {
-            keys: [
-                {
-                    kid: 'test-kid',
-                    kty: 'RSA',
-                    n: 'test-n',
-                    e: 'AQAB'
-                }
-            ]
-        };
-        axios.get.mockResolvedValue({ data: mockJwks });
+    const response = await getAccessTokenHandler(event);
 
-        // Mock jwt.decode to return a decoded token header
-        jwt.decode.mockReturnValue({ header: { kid: 'test-kid' } });
-
-        // Mock jwt.verify to successfully verify the token
-        jwt.verify.mockReturnValue({ sub: 'user123' });
-
-        // Mock PlaidApi methods
-        const mockAccessToken = 'access-token-123';
-        const mockAccountId = 'account-id-456';
-        const mockLogoUrl = 'https://example.com/logo.png';
-
-        plaid.PlaidApi.mockImplementation(() => ({
-            itemPublicTokenExchange: jest.fn().mockResolvedValue({
-                data: { access_token: mockAccessToken }
-            }),
-            accountsGet: jest.fn().mockResolvedValue({
-                data: { accounts: [{
-                    account_id: mockAccountId,
-                    balances: { current: 1000 },
-                    mask: '1234',
-                    name: 'Test Checking'
-                }] }
-            }),
-            institutionsGetById: jest.fn().mockResolvedValue({
-                data: { institution: { logo: mockLogoUrl } }
-            })
-        }));
-
-        // Create a mock function for DynamoDB.put that simulates an error
-        const putMock = jest.fn((params, callback) => {
-            callback(new Error('DynamoDB Error'), null); // Simulate DynamoDB put error
-        });
-
-        // Mock DynamoDB put
-        AWSMock.setSDKInstance(AWS);
-        AWSMock.mock('DynamoDB.DocumentClient', 'put', putMock);
-
-        // Create a mock event with Authorization header
-        const event = {
-            headers: {
-                Authorization: 'Bearer valid-token'
-            },
-            body: JSON.stringify({
-                public_token: 'public-token-789',
-                bank: 'Test Bank',
-                id: 'ins_12345',
-                accounts: [],
-                pk: 'user123'
-            })
-        };
-
-        // Invoke the Lambda handler
-        const response = await lambda_handler(event);
-
-        // Assertions
-        expect(response.statusCode).toBe(500);
-        const responseBody = JSON.parse(response.body);
-        expect(responseBody).toEqual({ error: 'DynamoDB Error' });
-
-        // Verify that PlaidApi methods were called correctly
-        expect(plaid.PlaidApi).toHaveBeenCalledTimes(1);
-        const plaidInstance = plaid.PlaidApi.mock.results[0].value;
-        expect(plaidInstance.itemPublicTokenExchange).toHaveBeenCalledWith({
-            public_token: 'public-token-789'
-        });
-        expect(plaidInstance.accountsGet).toHaveBeenCalledWith({
-            access_token: mockAccessToken
-        });
-        expect(plaidInstance.institutionsGetById).toHaveBeenCalledWith({
-            institution_id: 'ins_12345',
-            country_codes: ['US'],
-            options: {
-                include_optional_metadata: true,
-            }
-        });
-
-        // Verify that DynamoDB put was called once
-        expect(putMock).toHaveBeenCalledTimes(1);
+    // Assertions for Plaid API calls
+    expect(mockPlaidApi.itemPublicTokenExchange).toHaveBeenCalledWith({ public_token: 'public-token' });
+    expect(mockPlaidApi.accountsGet).toHaveBeenCalledWith({ access_token: 'access-token-123' });
+    expect(mockPlaidApi.institutionsGetById).toHaveBeenCalledWith({
+      institution_id: 'ins_123',
+      country_codes: ['US'],
+      options: { include_optional_metadata: true },
     });
+
+    // Assertions for DynamoDB update
+    expect(mockDocumentClient.update).toHaveBeenCalledWith({
+      TableName: 'TestTable',
+      Key: { pk: 'user123' },
+      UpdateExpression: 'SET accounts = list_append(if_not_exists(accounts, :empty_list), :new_account)',
+      ExpressionAttributeValues: {
+        ':new_account': [
+          {
+            Bank: 'Test Bank',
+            Logo: '',
+            Balance: 1000,
+            Mask: '1234',
+            Name: 'Checking Account',
+            accountID: 'acc_123',
+            accessToken: 'access-token-123',
+          },
+        ],
+        ':empty_list': [],
+      },
+      ReturnValues: 'UPDATED_NEW',
+    });
+    expect(mockDocumentClient.promise).toHaveBeenCalled();
+
+    // Assertions for response
+    expect(response.statusCode).toBe(200);
+    expect(JSON.parse(response.body)).toEqual({
+      accessToken: 'access-token-123',
+      accountID: 'acc_123',
+    });
+  });
 });
