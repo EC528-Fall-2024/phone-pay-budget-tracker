@@ -24,7 +24,7 @@ function MainPage() {
       };
 
       const data = await cognitoISP.listUsers(params).promise();
-      setUsers(data.Users);
+      setUsers(data.Users || []); // Handle empty user pool gracefully
     } catch (err) {
       setError('Failed to fetch users.');
       console.error('Error fetching users:', err);
@@ -49,17 +49,21 @@ function MainPage() {
       };
 
       await cognitoISP.adminDeleteUser(params).promise();
-      setUsers(users.filter((user) => user.Username !== username));
-      alert(`User ${username} deleted successfully.`);
+      setUsers((prevUsers) => prevUsers.filter((user) => user.Username !== username));
+      alert(`User ${username} deleted from Cognito successfully.`);
     } catch (err) {
-      setError(`Failed to delete user ${username}.`);
-      console.error(`Error deleting user ${username}:`, err);
+      setError(`Failed to delete user ${username} from Cognito.`);
+      console.error(`Error deleting user ${username} from Cognito:`, err);
     }
   };
 
   // Delete user from DynamoDB via microservice
   const deleteUserFromApi = async (username) => {
     try {
+      if (!username) {
+        throw new Error('Missing user_id (pk) for the user.');
+      }
+
       const token = (await Auth.currentSession()).getIdToken().getJwtToken();
 
       const response = await fetch(
@@ -111,27 +115,33 @@ function MainPage() {
         Admin Dashboard
       </Typography>
       <Grid container spacing={3}>
-        {users.map((user) => (
-          <Grid item xs={12} md={6} key={user.Username}>
-            <Paper sx={{ padding: 2, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <Typography variant="h6">{user.Username}</Typography>
-              <Typography variant="body2" color="textSecondary">
-                Status: {user.UserStatus}
-              </Typography>
-              <Button
-                variant="contained"
-                color="error"
-                sx={{ marginTop: 2 }}
-                onClick={async () => {
-                  await deleteUser(user.Username);
-                  await deleteUserFromApi(user.Username);
-                }}
-              >
-                Delete
-              </Button>
-            </Paper>
-          </Grid>
-        ))}
+        {users.map((user) => {
+          const username = user.Username; // Use User name field as pk
+          return (
+            <Grid item xs={12} md={6} key={username}>
+              <Paper sx={{ padding: 2, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <Typography variant="h6">{username}</Typography>
+                <Typography variant="body2" color="textSecondary">
+                  Email: {user.Attributes?.find((attr) => attr.Name === 'email')?.Value || 'N/A'}
+                </Typography>
+                <Typography variant="body2" color="textSecondary">
+                  Status: {user.UserStatus}
+                </Typography>
+                <Button
+                  variant="contained"
+                  color="error"
+                  sx={{ marginTop: 2 }}
+                  onClick={async () => {
+                    await deleteUser(username); // Delete from Cognito
+                    await deleteUserFromApi(username); // Delete from DynamoDB
+                  }}
+                >
+                  Delete
+                </Button>
+              </Paper>
+            </Grid>
+          );
+        })}
       </Grid>
     </Container>
   );

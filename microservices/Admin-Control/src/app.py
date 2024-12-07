@@ -52,12 +52,12 @@ def lambda_handler(event, context):
         if not user_sub:
             raise Exception("Invalid token: Missing sub claim")
 
-        # Handle DELETE request to delete a user by username
+        # Handle DELETE request to delete a user by their `pk`
         if path.startswith('/admin-control/users/') and http_method == 'DELETE':
-            username = path_parameters.get('user_id')  # user_id is passed as the username
-            if not username:
-                raise Exception("Invalid request: Missing username")
-            return delete_user(dynamodb, username)
+            pk = path_parameters.get('pk')  # Assuming pk is passed as a parameter in the path
+            if not pk:
+                raise Exception("Invalid request: Missing pk")
+            return delete_user(dynamodb, pk)
 
         # Handle invalid paths or methods
         return {
@@ -74,34 +74,20 @@ def lambda_handler(event, context):
             'body': json.dumps({'error': str(e)})
         }
 
-def delete_user(dynamodb, username):
+def delete_user(dynamodb, pk):
     try:
         # Access the DynamoDB table
         profile_table = dynamodb.Table(os.environ['TABLE_NAME'])
 
-        # Query to find the user by username
-        response = profile_table.scan(
-            FilterExpression='username = :username',
-            ExpressionAttributeValues={':username': username}
+        # Delete the user by their primary key (pk)
+        response = profile_table.delete_item(
+            Key={'pk': pk}
         )
-
-        # Check if the user exists
-        items = response.get('Items', [])
-        if not items:
-            return {
-                'statusCode': 404,
-                'headers': cors_headers(),
-                'body': json.dumps({'error': f'User {username} not found'})
-            }
-
-        # Use the `sub` (pk) to delete the user
-        user_sub = items[0]['pk']  # Assume `pk` is the primary key stored as `sub`
-        profile_table.delete_item(Key={'pk': user_sub})
 
         return {
             'statusCode': 200,
             'headers': cors_headers(),
-            'body': json.dumps({'message': f'User {username} deleted successfully'})
+            'body': json.dumps({'message': f'User with pk {pk} deleted successfully'})
         }
     except Exception as e:
         print(f"Error deleting user: {e}")
@@ -117,6 +103,7 @@ def cors_headers():
         'Access-Control-Allow-Headers': 'Authorization, Content-Type',
         'Access-Control-Allow-Methods': 'DELETE, GET, POST, OPTIONS'
     }
+
 
 
 # def list_all_users(dynamodb):

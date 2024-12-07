@@ -20,6 +20,9 @@ function LoginPage() {
       // Decode the ID token to check for the Admin group
       const idToken = user.signInUserSession.idToken.jwtToken;
       const decodedToken = jwtDecode(idToken);
+
+      console.log('Decoded Token:', decodedToken);
+      
       const groups = decodedToken['cognito:groups'] || [];
 
       if (groups.includes('admins')) {
