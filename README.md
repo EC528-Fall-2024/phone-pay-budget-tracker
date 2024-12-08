@@ -146,6 +146,61 @@ Plaid is used as a reputable and safe third party api to link user bank account 
 - API Gateway: GCP Cloud Functions
 - CI/CD: GitHub Actions
 
+### Android Structure:
+Here is an overview of the project structure:
+```plaintext
+PhonePayBudgetTracker/
+ ├── functions/
+     └── index.js                         # Cloud functions integration
+ 
+ └── app/
+     └── (auth)/
+         ├── _layout.tsx                  # Layout for authentication-related screens
+         ├── loginScreen.tsx              # User login screen
+         └── signupScreen.tsx             # User signup screen
+     └── (components)/
+         ├── AccountCard.js               # Displays account details
+         ├── DonutChart.tsx               # Visualizes spending by category as a donut chart
+         ├── inputForm.tsx                # Reusable input form component
+         ├── LineChart.tsx                # Displays monthly spending trends as a line chart
+         ├── TopCategoriesCard.tsx        # Shows top spending categories
+         ├── TopTransactionsCard.tsx      # Shows top transactions by spending
+         └── TransactionCard.js           # Displays individual transaction details
+     └── (context)/
+         ├── accountContext.tsx           # Context for managing account data
+         ├── transactionContext.tsx       # Context for managing transaction data
+         └── UserContext.tsx              # Context for managing user information
+     └── (sections)/
+         ├── Accounts.js                  # Displays accounts overview on dashboard
+         ├── Header.js                    # Header component with navigation toggle
+         ├── Sidebar.js                   # Sidebar navigation menu
+         └── Transaction.js               # Displays transaction list on dashboard
+     └── (tabs)/
+         ├── _layout.tsx                  # Layout for post-login navigation
+         ├── aboutUsScreen.tsx            # About Us screen with app details
+         ├── analysisScreen.tsx           # Spending analysis and trends
+         ├── billPlanScreen.tsx           # Billing plan selection screen
+         ├── helpCenterScreen.tsx         # Help center screen with FAQs
+         ├── mainScreen.tsx               # Main dashboard after login
+         ├── manageScreen.tsx             # Edit user profile and settings
+         ├── onBoardingScreen.tsx         # New users onboarding and link Plaid
+         ├── privacyPolicyScreen.tsx      # Privacy policy details
+         └── profileScreen.tsx            # Application settings and details
+     └── (utils)/
+         ├── fetchUtils.tsx               # Utility functions for data fetching
+         ├── linkPlaidUtils.tsx           # Utility functions for Plaid integration
+         ├── loginUtils.tsx               # Helper functions for login
+         ├── signupUtils.tsx              # Helper functions for signup
+         └── validationUtils.jsx          # Validation for login/signup form inputs
+     └── _layout.jsx                      # Main layout entry point for the app
+
+```
+### Android UI
+![mainScreen](/images/mainScreen.png)
+![analysisScreen1](/images/analysisScreen1.png)
+![analysisScreen2](/images/analysisScreen2.png)
+
+
 Design Implications and Discussion:
 
 This application adopts a microservice architecture to enable modular development, scalability, and flexibility in technology choices for each service. Here is an overview of the key components:
