@@ -26,7 +26,10 @@
    - **For physical devices**: Transfer the APK file to your device and install it.
    - **For an emulator**: Drag and drop the APK file into the running emulator.
 3. **Run the Application**.
-
+#### Known issues
+1. **Wait at least 1 second on clicking "next" in onBoarding Screen or may cause crash**
+2. **Plaid link Page redirect to google.com, need manual alt tab return to app**
+3. **Plaid Link complete will remain on onBoarding screen for small delay**
 ---
 
 ### Option 2: Clone and Run Locally
