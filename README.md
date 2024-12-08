@@ -77,6 +77,18 @@ npm install
 npx expo start
 ```
 
+### Admin Portal
+#### 1. Install Dependencies:
+```bash
+cd admin_portal
+npm install
+```
+
+#### 2. Run the react web app
+```bash
+npm start
+```
+
 ## 1. Vision and Goal
 The goal of the project is to create a scalable, cloud-native, budget-tracking mobile app that integrates with plaid for an all-in-one space to view and analyze your financial data.
 
